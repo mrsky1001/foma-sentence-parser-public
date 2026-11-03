@@ -4890,10 +4890,6 @@ function updateWordPopover() {
   const topY = L ? (L.b + (L.mb ? 12 + L.mb * MR : 20)) : 100;
 
   popover.style.display = 'flex';
-  const wrapW = $('wrap')?.clientWidth || 800;
-  popover.style.left = Math.max(160, Math.min(centerX, wrapW - 180)) + 'px';
-  popover.style.top = topY + 'px';
-
   popover.innerHTML = '';
 
   const primaryTok = selectedToks[0];
@@ -5128,6 +5124,36 @@ function updateWordPopover() {
   }
 
   popover.appendChild(bodyEl);
+
+  // Position and clamp popover so it never escapes container or screen boundaries
+  const wrapEl = $('wrap');
+  const wrapW = wrapEl ? wrapEl.clientWidth : (window.innerWidth || 800);
+  const wrapH = wrapEl ? wrapEl.clientHeight : 280;
+  const scrollL = wrapEl ? wrapEl.scrollLeft : 0;
+  const scrollT = wrapEl ? wrapEl.scrollTop : 0;
+
+  const popW = popover.offsetWidth || 340;
+  const popH = popover.offsetHeight || 180;
+
+  // Center horizontally over selected word(s)
+  const targetLeft = centerX - (popW / 2);
+  const minLeft = scrollL + 12;
+  const maxLeft = Math.max(minLeft, scrollL + wrapW - popW - 12);
+  const finalLeft = Math.max(minLeft, Math.min(targetLeft, maxLeft));
+
+  // Vertical: default below line markings
+  let finalTop = topY;
+  // If placing below overflows container height, try placing above selected word
+  const wordTop = selectedToks[0]?.y ?? (L ? (L.b - 24) : 40);
+  if (finalTop + popH > scrollT + wrapH - 10 && (wordTop - popH) > scrollT + 10) {
+    finalTop = wordTop - popH - 8;
+  } else {
+    const maxTop = Math.max(scrollT + 10, scrollT + wrapH - popH - 10);
+    finalTop = Math.max(scrollT + 8, Math.min(finalTop, maxTop));
+  }
+
+  popover.style.left = Math.round(finalLeft) + 'px';
+  popover.style.top = Math.round(finalTop) + 'px';
 }
 
 function updateProgressBar() {
@@ -5197,6 +5223,19 @@ function setupWordHoverTooltip() {
   cv.addEventListener('mouseleave', () => {
     tooltip.style.display = 'none';
   });
+
+  // Keep popover securely clamped when scrolling or resizing
+  $('wrap')?.addEventListener('scroll', () => {
+    if (showWordPopover && $('word-popover')?.style.display !== 'none' && sel.length > 0) {
+      updateWordPopover();
+    }
+  }, { passive: true });
+
+  window.addEventListener('resize', () => {
+    if (showWordPopover && $('word-popover')?.style.display !== 'none' && sel.length > 0) {
+      updateWordPopover();
+    }
+  }, { passive: true });
 }
 
 
