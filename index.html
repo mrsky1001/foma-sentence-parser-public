@@ -28,16 +28,10 @@
   <div class="top-nav-tabs foma-toolbar-main" id="top-nav-tabs">
     <!-- Left: Modes Switcher -->
     <div class="foma-group">
-      <div class="foma-brand-block">
-        <div class="foma-brand-title" title="FOMA Sentence Parser — Beta-версия">
-          <span class="brand-name">FOMA SENTENCE PARSER</span>
-          <span class="beta-badge">BETA</span>
+      <div class="foma-brand-block" id="foma-brand-block">
+        <div class="foma-brand-title" id="foma-brand-title" title="FOMA Sentence Parser — Beta-версия">
+          <span class="brand-name">FOMA</span>
         </div>
-        <a href="https://foma-creative.com" target="_blank" rel="noopener noreferrer" class="foma-brand-author" title="Автор и разработчик: Nikita Kolyada (foma-creative.com)">
-          <span class="author-label">by Nikita Kolyada</span>
-          <span class="author-dot">·</span>
-          <span class="author-link">foma-creative.com</span>
-        </a>
       </div>
       
 
@@ -59,12 +53,13 @@
       <!-- History -->
       <button type="button" id="btn-history" class="foma-btn-ghost btn-top-hist" title="Открыть историю предложений">
         <svg viewBox="0 0 24 24" class="ic"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
-        <span id="lbl-btn-history">История</span>
         <span class="foma-counter" id="hist-cnt">0</span>
       </button>
 
-      <!-- TIPS -->
-      <button type="button" id="btn-tips" class="foma-btn-ghost foma-btn-xs" title="Горячие клавиши и справка">TIPS</button>
+      <!-- TIPS (?) -->
+      <button type="button" id="btn-tips" class="foma-btn-ghost foma-btn-icon" title="Горячие клавиши и справка">
+        <span class="foma-tips-q">?</span>
+      </button>
 
       <!-- Theme Switcher (Light / Dark) -->
       <button type="button" id="btn-theme-toggle" class="foma-btn-ghost foma-btn-icon" title="Переключить тему оформления (Светлая / Тёмная)" aria-label="Toggle theme">
@@ -77,9 +72,30 @@
         <button type="button" data-l="ru" class="active">RU</button>
         <button type="button" data-l="en">EN</button>
       </div>
+
+      <!-- Author Avatar with Dropdown -->
+      <div class="foma-avatar-wrap">
+        <button type="button" id="btn-author-avatar" class="foma-avatar-btn" title="Nikita Kolyada (foma-creative.com)">NK</button>
+        <div class="foma-author-dropdown" id="author-dropdown" style="display: none;">
+          <div class="author-dropdown-row">
+            <span class="author-dropdown-name">Nikita Kolyada</span>
+            <span class="beta-badge">BETA</span>
+          </div>
+          <div class="author-dropdown-sub">FOMA Sentence Parser v1.0</div>
+          <div class="author-dropdown-sep"></div>
+          <a href="https://foma-creative.com" target="_blank" rel="noopener noreferrer" class="author-dropdown-link">
+            <span>foma-creative.com</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 
+  <!-- Thin Progress Bar right below header -->
+  <div class="top-progress-bar" id="top-progress-bar" title="Прогресс разметки предложения">
+    <div class="top-progress-fill" id="top-progress-fill" style="width: 0%;"></div>
+  </div>
 
   <div id="card">
     <!-- VIEW 1: MANUAL (STUDENT EDITABLE) -->
@@ -88,22 +104,97 @@
         <div class="canvas-main-col">
           <div class="paper" id="wrap">
             <canvas id="cv"></canvas>
+            <!-- Floating word-anchored popover -->
+            <div id="word-popover" class="word-popover" style="display: none;"></div>
+            <!-- Word hover details tooltip -->
+            <div id="word-hover-tooltip" class="word-hover-tooltip" style="display: none;"></div>
           </div>
         </div>
 
-        <div class="bar bar--sidebar">
-          <button type="button" id="btn-toggle-edit" class="btn-toggle-edit" title="Edit sentence text (show / hide text box)" aria-expanded="false">Edit text</button>
-          <div class="auto-btn-group" id="auto-btn-group">
-            <button type="button" id="auto" title="Автоматически расставить выбранные параметры со 100% уверенностью">Auto (100%)</button>
-            <button type="button" id="btn-auto-config" class="btn-auto-config" title="Настроить параметры авторасстановки (100% уверенность)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></button>
+        <div class="bar bar--sidebar" id="sidebar-panel">
+          <!-- 1. Active Layer Legend / Palette -->
+          <div class="sidebar-section sidebar-legend-section" id="sidebar-legend-section">
+            <div class="sidebar-sec-header">
+              <span class="sidebar-sec-title" id="sidebar-legend-title">Метки слоя «Члены»</span>
+            </div>
+            <div class="sidebar-legend-list" id="sidebar-legend-list">
+              <!-- Dynamically populated by JS according to activeLayer -->
+            </div>
           </div>
-          <button id="clr" title="Remove marks from the selected words">Remove marks <kbd>Del</kbd></button>
-          <button id="all">Clear all</button>
-          <div class="bar-sep-h"></div>
-          <button type="button" id="btn-manual-toggle-height" class="btn-top-hist" style="padding: 4px 9px;" title="Развернуть на всю высоту разбора без внутреннего скролла">На всю высоту</button>
-          <label class="ck"><input type="checkbox" id="multi"> multi-select</label>
-          <label class="ck" title="Labels can only be set on suitable parts of speech and sentence parts"><input type="checkbox" id="restr" checked> restrict by part of speech / sentence part</label>
-          
+
+          <div class="sidebar-sep"></div>
+
+          <!-- 2. Selection Group -->
+          <div class="sidebar-section">
+            <div class="sidebar-sec-title" id="lbl-sec-selection">Выделение</div>
+            <label class="foma-switch-row" for="multi">
+              <span class="switch-label" id="lbl-multi-text">Мульти-выбор</span>
+              <input type="checkbox" id="multi" class="foma-switch-input">
+              <span class="foma-switch-toggle"></span>
+            </label>
+            <label class="foma-switch-row" for="restr" title="Метки можно ставить только на подходящие части речи и члены предложения">
+              <span class="switch-label">
+                <span id="lbl-restr-text">Строгий режим</span>
+                <span class="foma-info-tip" title="Метки ставятся только на подходящие части речи и члены предложения">ⓘ</span>
+              </span>
+              <input type="checkbox" id="restr" checked class="foma-switch-input">
+              <span class="foma-switch-toggle"></span>
+            </label>
+          </div>
+
+          <div class="sidebar-sep"></div>
+
+          <!-- 3. View Group -->
+          <div class="sidebar-section">
+            <div class="sidebar-sec-title" id="lbl-sec-view">Вид</div>
+            <div class="foma-seg-sm foma-render-mode-seg" role="group" aria-label="Стиль отображения схемы">
+              <button type="button" class="btn-render-mode active" id="btn-render-color" title="Цветная схема с фокусом на активном слое">Цветной</button>
+              <button type="button" class="btn-render-mode" id="btn-render-bw" title="Классическая монохромная школьная схема">Ч/Б</button>
+            </div>
+            <button type="button" id="btn-manual-toggle-height" class="sidebar-row-btn" title="Развернуть на всю высоту разбора без внутреннего скролла">
+              <svg viewBox="0 0 24 24" class="ic-xs"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+              <span id="lbl-manual-height">На всю высоту</span>
+            </button>
+          </div>
+
+          <div class="sidebar-sep"></div>
+
+          <!-- 4. Text Group -->
+          <div class="sidebar-section">
+            <div class="sidebar-sec-title" id="lbl-sec-text">Текст</div>
+            <button type="button" id="btn-toggle-edit" class="sidebar-row-btn" title="Редактировать текст предложения" aria-expanded="false">
+              <svg viewBox="0 0 24 24" class="ic-xs"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+              <span id="lbl-btn-edit-text">Изменить текст</span>
+            </button>
+            
+            <div class="auto-btn-group" id="auto-btn-group" style="width: 100%;">
+              <button type="button" id="auto" class="sidebar-row-btn" title="Автоматически расставить выбранные параметры со 100% уверенностью" style="flex:1;">Авто (100%)</button>
+              <button type="button" id="btn-auto-config" class="btn-auto-config" title="Настроить параметры авторасстановки"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></button>
+            </div>
+          </div>
+
+          <div class="sidebar-spacer"></div>
+
+          <!-- 5. Bottom Actions & Danger -->
+          <div class="sidebar-section sidebar-bottom-actions">
+            <button type="button" class="sidebar-row-btn btn-copy-scheme" id="btn-copy-color-scheme" title="Скопировать цветную схему в буфер обмена">
+              <svg viewBox="0 0 24 24" class="ic-xs"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+              <span id="lbl-btn-copy-color">Копировать цветную</span>
+            </button>
+            <button type="button" class="sidebar-row-btn btn-copy-scheme" id="btn-copy-bw-scheme" title="Скопировать классическую Ч/Б схему в буфер обмена">
+              <svg viewBox="0 0 24 24" class="ic-xs"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/></svg>
+              <span id="lbl-btn-copy-bw">Копировать Ч/Б</span>
+            </button>
+            <button type="button" class="sidebar-row-btn" id="clr" disabled title="Убрать метки с выделенных слов">
+              <svg viewBox="0 0 24 24" class="ic-xs"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              <span id="lbl-btn-clr">Снять метки</span>
+              <kbd>Del</kbd>
+            </button>
+            <button type="button" class="sidebar-row-btn btn-danger-action" id="all" title="Полностью очистить все разметки текущего предложения">
+              <svg viewBox="0 0 24 24" class="ic-xs"><path d="m3 3 18 18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              <span id="lbl-btn-all">Очистить всё</span>
+            </button>
+          </div>
         </div>
       </div>
       <div class="canvas-resizer" id="canvas-resizer" title="Потяните вверх или вниз, чтобы изменить высоту области схемы (двойной клик — сброс)">
@@ -112,13 +203,13 @@
 
       <div class="edit collapsed" id="ed" style="display: none;">
         <div class="lbl">
-          <span>Edit sentence text</span>
+          <span id="lbl-ed-title">Редактирование текста</span>
           <div style="display: inline-flex; gap: 6px; align-items: center;">
-            <button id="trb">Translate</button>
-            <button type="button" id="btn-close-edit" class="btn-close-edit" title="Close text editor" style="padding: 2px 7px; color: var(--mute);">&times;</button>
+            <button id="trb" title="Перевести текст предложения">Перевести</button>
+            <button type="button" id="btn-close-edit" class="btn-close-edit" title="Закрыть редактор текста" style="padding: 2px 7px; color: var(--mute);">&times;</button>
           </div>
         </div>
-        <textarea id="ta" rows="2" spellcheck="false" aria-label="Sentence text"></textarea>
+        <textarea id="ta" rows="2" spellcheck="false" placeholder="Введите предложение на английском..." aria-label="Текст предложения"></textarea>
         <div id="tr" class="tr" hidden></div>
       </div>
     </div>
@@ -127,6 +218,7 @@
     
   </div>
 
+  <!-- TABS ROW / PALETTE DOCK -->
   <div id="msg" role="status"></div>
   <div class="tabs" id="tabs"></div>
 </div>
@@ -149,7 +241,7 @@
     <span class="sp" id="mode"></span>
     <button id="cp" type="button"></button>
   </div>
-  <button id="ins" class="pri btn-copy-close">Copy and close <kbd>Ctrl+Enter</kbd></button>
+  <button id="ins" class="pri btn-copy-close" title="Скопировать изображение в буфер обмена для Google Docs (Ctrl+Enter)">Скопировать и закрыть <kbd>Ctrl+Enter</kbd></button>
 </footer>
 
 <div id="hist-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="hist-title">
@@ -164,7 +256,7 @@
           <h3 id="hist-title">История разборов</h3>
           <span id="hist-header-count" class="hist-count-badge">0</span>
         </div>
-        <div class="hist-header-sub">Сохранённые предложения с быстрым восстановлением на холст</div>
+        <div class="hist-header-sub" id="hist-sub">Сохранённые предложения с быстрым восстановлением на холст</div>
       </div>
       <button id="hist-close" class="hist-close-btn" title="Закрыть (Esc)" aria-label="Закрыть">&times;</button>
     </div>
@@ -198,7 +290,7 @@
             <polyline points="3 6 5 6 21 6"></polyline>
             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
           </svg>
-          Очистить всё
+          <span id="lbl-hist-clear">Очистить всё</span>
         </button>
         <button id="hist-export" class="btn-hist-sec" title="Экспортировать историю в файл JSON">
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -206,7 +298,7 @@
             <polyline points="7 10 12 15 17 10"></polyline>
             <line x1="12" y1="15" x2="12" y2="3"></line>
           </svg>
-          Экспорт JSON
+          <span id="lbl-hist-export">Экспорт JSON</span>
         </button>
       </div>
     </div>
@@ -222,7 +314,7 @@
     <div class="auto-config-header">
       <div>
         <div id="auto-config-title" class="auto-config-title">Авторасстановка со 100% уверенностью</div>
-        <div class="auto-config-subtitle">Выберите параметры для авторазметки. Включены только строгие лингвистические инварианты без догадок.</div>
+        <div id="auto-config-sub" class="auto-config-subtitle">Выберите параметры для авторазметки. Включены только строгие лингвистические инварианты без догадок.</div>
       </div>
       <button type="button" id="auto-config-close" class="btn-hist-sec" title="Закрыть">&times;</button>
     </div>
@@ -230,7 +322,7 @@
     <div class="auto-config-body">
       <!-- Presets bar -->
       <div class="auto-config-presets">
-        <span class="auto-presets-label">Пресеты:</span>
+        <span id="auto-presets-label" class="auto-presets-label">Пресеты:</span>
         <button type="button" class="btn-auto-preset" data-preset="all">Все 100% параметры</button>
         <button type="button" class="btn-auto-preset" data-preset="pos_only">Только части речи (POS)</button>
         <button type="button" class="btn-auto-preset" data-preset="func_only">Только служебные слова</button>

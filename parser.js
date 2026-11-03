@@ -712,6 +712,93 @@ let dockLayout = {
 
 const L = (r, e) => TL === 'ru' ? r : e;
 
+const TAB_LOCALES = {
+  m: ['Члены предложения', 'Sentence parts'],
+  pos: ['Части речи', 'Part of speech'],
+  c: ['Обороты и придаточные', 'Clauses & phrases'],
+  f: ['Время · залог · наклонение', 'Tense · voice · mood'],
+  s: ['Тип предложения', 'Sentence type'],
+  ai: ['Проверка ИИ', 'AI check']
+};
+const getTabTitle = k => {
+  const item = TAB_LOCALES[k];
+  return item ? (TL === 'ru' ? item[0] : item[1]) : k;
+};
+
+const G_LOCALES = {
+  'Core': ['Главные члены', 'Core elements'],
+  'Objects': ['Дополнения', 'Objects'],
+  'Attributes': ['Определения', 'Attributes'],
+  'Adverbial modifiers': ['Обстоятельства', 'Adverbial modifiers'],
+  'Other': ['Прочее', 'Other elements'],
+  'Clauses': ['Придаточные предложения', 'Clauses'],
+  'Adverbial clauses': ['Обстоятельственные придаточные', 'Adverbial clauses'],
+  'Phrases & constructions': ['Обороты и конструкции', 'Phrases & constructions'],
+  'Tense': ['Время', 'Tense'],
+  'Aspect': ['Вид', 'Aspect'],
+  'Voice': ['Залог', 'Voice'],
+  'Mood': ['Наклонение', 'Mood'],
+  'Structure': ['Структура предложения', 'Sentence structure'],
+  'Purpose': ['Цель высказывания', 'Sentence purpose'],
+  'Question type': ['Тип вопроса', 'Question type'],
+  'Polarity': ['Полярность', 'Polarity']
+};
+const getGroupTitle = g => {
+  const item = G_LOCALES[g];
+  return item ? (TL === 'ru' ? item[0] : item[1]) : g;
+};
+
+const AUTO_100_RULES_INFO = {
+  articles: {
+    name: ['Артикли (Articles)', 'Articles (Articles)'],
+    desc: ['<code>a, an</code> (indefinite) и <code>the</code> (definite)', '<code>a, an</code> (indefinite) and <code>the</code> (definite)']
+  },
+  pronouns_cases: {
+    name: ['Однозначные местоимения и падежи (Pronouns)', 'Unambiguous pronouns & cases (Pronouns)'],
+    desc: ['Именительный: <code>I, he, she, we, they</code>; Объектный: <code>me, him, us, them</code>; Возвратные: <code>myself...</code>; Абсолютные: <code>mine, yours, theirs</code>; Неопределенные/Отрицательные: <code>someone, nobody...</code>', 'Nominative: <code>I, he, she, we, they</code>; Objective: <code>me, him, us, them</code>; Reflexive: <code>myself...</code>; Absolute: <code>mine, yours, theirs</code>; Indefinite/Negative: <code>someone, nobody...</code>']
+  },
+  numerals: {
+    name: ['Числительные (Numerals)', 'Numerals (Numerals)'],
+    desc: ['Цифры (<code>42, 2026</code> → cardinal), порядковые с суффиксом (<code>1st, 2nd, 3rd</code> → ordinal) и числа словами (<code>two, three... tenth, hundredth</code>)', 'Digits (<code>42, 2026</code> → cardinal), ordinals with suffix (<code>1st, 2nd, 3rd</code> → ordinal) and number words (<code>two, three... tenth, hundredth</code>)']
+  },
+  calendar_proper: {
+    name: ['Календарные имена собственные (Proper Nouns)', 'Calendar proper nouns (Proper Nouns)'],
+    desc: ['Дни недели (<code>Monday...Sunday</code>) и месяцы (<code>January...December</code>, кроме омонимов May/March)', 'Days of the week (<code>Monday...Sunday</code>) and months (<code>January...December</code>, except homonyms May/March)']
+  },
+  particles_conj: {
+    name: ['Однозначные союзы и отрицание (Conjunctions & Particles)', 'Unambiguous conjunctions & negation (Conjunctions & Particles)'],
+    desc: ['Частица <code>not, n\'t</code> (negative); союзы <code>and, nor</code> (coordinating); <code>because, although, whereas, unless</code> (subordinating)', 'Particle <code>not, n\'t</code> (negative); conjunctions <code>and, nor</code> (coordinating); <code>because, although, whereas, unless</code> (subordinating)']
+  },
+  pure_prepositions: {
+    name: ['Безусловные предлоги (Pure Prepositions)', 'Pure prepositions (Pure Prepositions)'],
+    desc: ['Только слова, которые в английском никогда не бывают наречиями: <code>of, into, onto, upon, among, between, during, toward, throughout, against</code>', 'Words that never act as adverbs in English: <code>of, into, onto, upon, among, between, during, toward, throughout, against</code>']
+  },
+  modals: {
+    name: ['Модальные глаголы без омонимов (Modal Verbs)', 'Modal verbs without homonyms (Modal Verbs)'],
+    desc: ['Строгие модальные глаголы: <code>must, should, would, could</code> (исключая омонимы can/will/may)', 'Strict modal verbs: <code>must, should, would, could</code> (excluding homonyms can/will/may)']
+  },
+  sentence_purpose: {
+    name: ['Цель высказывания по пунктуации (Purpose)', 'Sentence purpose by punctuation (Purpose)'],
+    desc: ['<code>!</code> → Exclamatory; <code>?</code> → Interrogative (+ Wh-вопросы → Special); <code>.</code> → Declarative', '<code>!</code> → Exclamatory; <code>?</code> → Interrogative (+ Wh-questions → Special); <code>.</code> → Declarative']
+  },
+  sentence_polarity: {
+    name: ['Полярность: утверждение / отрицание (Polarity)', 'Polarity: affirmative / negative (Polarity)'],
+    desc: ['100% Negative при наличии <code>not, n\'t, never, nobody, nothing, nowhere, neither, none</code>; иначе Affirmative', '100% Negative with <code>not, n\'t, never, nobody, nothing, nowhere, neither, none</code>; otherwise Affirmative']
+  },
+  passive_voice: {
+    name: ['Пассивный залог глаголов (Passive Voice)', 'Passive voice in verbs (Passive Voice)'],
+    desc: ['Аналитическая цепочка <code>be / been / being + Participle II</code> (<i>“should be disregarded”</i>) → Voice: Passive', 'Analytical chain <code>be / been / being + Participle II</code> (<i>“should be disregarded”</i>) → Voice: Passive']
+  },
+  subject_pronouns: {
+    name: ['Подлежащее при именительном местоимении (Subject)', 'Subject with nominative pronoun (Subject)'],
+    desc: ['<code>I, he, she, we, they</code> непосредственно перед личным глаголом (<i>“that <u>I</u> want”</i>, <i>“<u>he</u> rises”</i>) → Subject', '<code>I, he, she, we, they</code> directly before finite verb (<i>“that <u>I</u> want”</i>, <i>“<u>he</u> rises”</i>) → Subject']
+  },
+  address_vocative: {
+    name: ['Обращение перед запятой (Address)', 'Direct address before comma (Address)'],
+    desc: ['Вокативное существительное в начале реплики перед запятой (<i>“<u>Gentlemen</u>, it is...”</i>) → Address', 'Vocative noun at turn beginning before comma (<i>“<u>Gentlemen</u>, it is...”</i>) → Address']
+  }
+};
+
 const PROVIDERS = {
   positionapi: {
     name: 'PositionAPI (positionapi.top)',
@@ -803,8 +890,31 @@ let lastAiFilledLatency = '';
 let lastAiVerdict = null;
 let isAiFilling = false;
 
-let toks = [], an = [], sel = [], anc = -1, last = -1, tab = 'pos', editing = false,
+let toks = [], an = [], sel = [], anc = -1, last = -1, tab = 'm', editing = false,
     FS = ['', '', '', ''], ST = ['', '', '', ''], Ls = [], hits = [], above = [], below = [];
+
+let activeLayer = 'parts'; // 'parts' | 'pos' | 'clauses' | 'tenses' | 'st'
+let renderMode = 'color_focus'; // 'color_focus' | 'bw'
+try {
+  const savedRMode = localStorage.getItem('foma_render_mode');
+  if (savedRMode === 'bw' || savedRMode === 'color_focus') renderMode = savedRMode;
+} catch (_) {}
+
+const LAYER_COLORS = {
+  pos: '#10b981',       // Emerald/Teal (Части речи)
+  parts: '#818cf8',     // Indigo/Violet (Члены предложения)
+  clauses: '#d97706',   // Amber/Brown (Придаточные и обороты)
+  tenses: '#eab308',    // Gold/Yellow (Время и залог)
+  st: '#ec4899'         // Rose/Magenta (Тип предложения)
+};
+
+const LAYER_SHORT_NAMES = {
+  pos: ['Части речи', 'Parts of speech'],
+  parts: ['Члены', 'Sentence parts'],
+  clauses: ['Придаточные', 'Clauses'],
+  tenses: ['Время', 'Tense · voice'],
+  st: ['Тип', 'Sentence type']
+};
 
 const same = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
 const ss = () => [...sel].sort((a, b) => a - b);
@@ -993,17 +1103,46 @@ function sanitizeSentenceParts() {
 
 /* ---------- parsing ---------- */
 function parse() {
-  const old = toks, re = /(\s*)([\p{L}\p{N}]+(?:[-'’][\p{L}\p{N}]+)*|[^\s])/gu, out = [];
+  const old = toks, re = /(\s*)([\p{L}\p{N}]+(?:[-'’][\p{L}\p{N}]+)*|[^\s])/gu, rawOut = [];
   let m;
   while ((m = re.exec(ta.value))) {
-    out.push({ t: m[2], word: /[\p{L}\p{N}]/u.test(m[2]), sp: m[1].length > 0, br: m[1].includes('\n') });
+    rawOut.push({ t: m[2], word: /[\p{L}\p{N}]/u.test(m[2]), sp: m[1].length > 0, br: m[1].includes('\n') });
   }
+
+  // Detect sentence number prefixes (e.g. "1.", "2)") and sentence boundaries
+  let currentSentence = 1;
+  let atSentenceStart = true;
+  for (let i = 0; i < rawOut.length; i++) {
+    const k = rawOut[i];
+    if (atSentenceStart) {
+      if (/^\d+$/.test(k.t) && rawOut[i + 1] && /^[.)]$/.test(rawOut[i + 1].t)) {
+        currentSentence = parseInt(k.t, 10) || currentSentence;
+        k.isSentNumPrefix = true;
+        rawOut[i + 1].isSentNumPrefix = true;
+        i++; // skip dot
+        continue;
+      }
+      k.sentIndex = currentSentence;
+      k.isSentStart = true;
+      if (currentSentence > 1) k.br = true;
+      atSentenceStart = false;
+    } else {
+      k.sentIndex = currentSentence;
+    }
+    if (k.br || (k.t === '.' || k.t === '!' || k.t === '?')) {
+      currentSentence++;
+      atSentenceStart = true;
+    }
+  }
+
+  const out = rawOut.filter(k => !k.isSentNumPrefix);
   out.forEach((k, i) => { const o = old[i]; if (o && o.t === k.t) { k.p = o.p; k.s = o.s; } });
   an.forEach(a => a.ix = a.ix.filter(i => old[i] && out[i] && old[i].t === out[i].t));
   an = an.filter(a => a.ix.length);
   sanitizeSentenceParts();
   toks = out;
   sel = sel.filter(i => i < toks.length && toks[i].word);
+  if (typeof updateProgressBar === 'function') updateProgressBar();
   window.__fomaCurrentText = ta.value;
   try {
     window.parent?.postMessage({ action: 'foma_parser_text_sync', text: ta.value }, '*');
@@ -1109,16 +1248,17 @@ function layout(ctx, W) {
 
   ctx.font = F;
   const sp = ctx.measureText(' ').width;
-  let x = PX, line = 0, fresh = true;
-  const hasExplicitBreaks = toks.some(k => k.br);
+  const GUTTER = 52;
+  const maxLineW = Math.min(W - GUTTER - 16, 880);
+  let x = GUTTER, line = 0, fresh = true;
 
   for (const k of toks) {
     ctx.font = F;
     const tw = ctx.measureText(k.t).width;
     const posVisible = showPos && isPosVisible(k.p);
     const bw = Math.max(tw, posVisible ? lw(ctx, k, showSubs) : 0);
-    const shouldWrap = hasExplicitBreaks ? k.br : (k.br || (k.sp && x + sp + bw > W - PX));
-    if (!fresh && shouldWrap) { line++; x = PX; fresh = true; }
+    const shouldWrap = (k.br && !fresh) || (k.sp && x + sp + bw > GUTTER + maxLineW);
+    if (!fresh && shouldWrap) { line++; x = GUTTER; fresh = true; }
     if (!fresh && k.sp) x += sp;
     k.x = x; k.w = bw; k.tx = x + (bw - tw) / 2; k.line = line; x += bw; fresh = false;
   }
@@ -1175,9 +1315,9 @@ function layout(ctx, W) {
 }
 
 /* ---------- painting ---------- */
-function ul(ctx, s, a, b, y, isDark = false) {
-  ctx.strokeStyle = isDark ? '#e4e4e7' : '#111';
-  ctx.lineWidth = 1.5;
+function ul(ctx, s, a, b, y, isDark = false, customColor = null, customWidth = 1.5) {
+  ctx.strokeStyle = customColor || (isDark ? '#e4e4e7' : '#111');
+  ctx.lineWidth = customWidth || 1.5;
   ctx.lineCap = 'butt';
   ctx.setLineDash([]);
   ctx.beginPath();
@@ -1205,7 +1345,7 @@ function ul(ctx, s, a, b, y, isDark = false) {
   ctx.lineCap = 'butt';
 }
 
-function renderSmartAbove(ctx, aboveList, getSegs, getTok, getLine, hitsCollector = null, isDark = false) {
+function renderSmartAbove(ctx, aboveList, getSegs, getTok, getLine, hitsCollector = null, isDark = false, isBw = false) {
   const items = [];
   for (const a of aboveList) {
     for (const s of getSegs(a)) {
@@ -1243,25 +1383,32 @@ function renderSmartAbove(ctx, aboveList, getSegs, getTok, getLine, hitsCollecto
   }
   ctx.restore();
 
+  const isColor = renderMode === 'color_focus' && !isBw;
+  const isClausesActive = activeLayer === 'clauses';
+
   for (const item of items) {
     const { a, x1, x2, cx, rt } = item;
-    ctx.strokeStyle = isDark ? '#71717a' : '#888';
-    ctx.lineWidth = 1;
+    const clauseColor = isColor ? LAYER_COLORS.clauses : (isDark ? '#71717a' : '#888');
+    ctx.strokeStyle = clauseColor;
+    ctx.lineWidth = isColor && !isClausesActive ? 0.9 : 1.2;
     ctx.beginPath();
     ctx.moveTo(x1 + 1, rt + 20);
     ctx.lineTo(x1 + 1, rt + 15);
     ctx.lineTo(x2 - 1, rt + 15);
     ctx.lineTo(x2 - 1, rt + 20);
     ctx.stroke();
-    ctx.font = FL;
-    ctx.fillStyle = isDark ? '#d4d4d8' : '#333';
-    const labelText = safeLabels.get(item) || a.v;
-    ctx.fillText(labelText, cx, rt + 11);
+
+    if (!isColor || isClausesActive) {
+      ctx.font = FL;
+      ctx.fillStyle = isColor ? LAYER_COLORS.clauses : (isDark ? '#d4d4d8' : '#333');
+      const labelText = safeLabels.get(item) || a.v;
+      ctx.fillText(labelText, cx, rt + 11);
+    }
     if (hitsCollector) hitsCollector.push({ a, x1, x2, y1: rt, y2: rt + CR });
   }
 }
 
-function renderSmartBelow(ctx, belowList, getSegs, getTok, getLine, hitsCollector = null, isDark = false) {
+function renderSmartBelow(ctx, belowList, getSegs, getTok, getLine, hitsCollector = null, isDark = false, isBw = false) {
   const items = [];
   for (const a of belowList) {
     for (const s of getSegs(a)) {
@@ -1299,19 +1446,33 @@ function renderSmartBelow(ctx, belowList, getSegs, getTok, getLine, hitsCollecto
   }
   ctx.restore();
 
+  const isColor = renderMode === 'color_focus' && !isBw;
+  const isPartsActive = activeLayer === 'parts';
+  const isTensesActive = activeLayer === 'tenses';
+
   for (const item of items) {
     const { a, x1, x2, cx, rt } = item;
     if (a.k === 'm') {
-      ul(ctx, MS[a.v] || 'solid', x1 + 1, x2 - 1, rt + 5, isDark);
-      ctx.font = FS_;
-      ctx.fillStyle = isDark ? '#a1a1aa' : '#666';
-      const labelText = safeLabels.get(item) || a.v;
-      ctx.fillText(labelText, cx, rt + 19);
+      const partsColor = isColor ? LAYER_COLORS.parts : null;
+      if (isColor && !isPartsActive) {
+        ul(ctx, 'solid', x1 + 1, x2 - 1, rt + 3, isDark, partsColor, 1.2);
+      } else {
+        ul(ctx, MS[a.v] || 'solid', x1 + 1, x2 - 1, rt + 5, isDark, partsColor, 1.5);
+        ctx.font = FS_;
+        ctx.fillStyle = isColor ? LAYER_COLORS.parts : (isDark ? '#a1a1aa' : '#666');
+        const labelText = safeLabels.get(item) || a.v;
+        ctx.fillText(labelText, cx, rt + 19);
+      }
     } else if (a.k === 'f') {
-      ctx.font = FS_;
-      ctx.fillStyle = isDark ? '#a5b4fc' : '#4338ca'; // Bright calm indigo for verb tense/aspect
-      const labelText = safeLabels.get(item) || a.v;
-      ctx.fillText(labelText, cx, rt + 18);
+      const tensesColor = isColor ? LAYER_COLORS.tenses : (isDark ? '#a5b4fc' : '#4338ca');
+      if (isColor && !isTensesActive) {
+        ul(ctx, 'solid', x1 + 1, x2 - 1, rt + 3, isDark, tensesColor, 1.0);
+      } else {
+        ctx.font = FS_;
+        ctx.fillStyle = tensesColor;
+        const labelText = safeLabels.get(item) || a.v;
+        ctx.fillText(labelText, cx, rt + 18);
+      }
     } else {
       ctx.font = FB;
       ctx.fillStyle = isDark ? '#e4e4e7' : '#222';
@@ -1322,18 +1483,37 @@ function renderSmartBelow(ctx, belowList, getSegs, getTok, getLine, hitsCollecto
   }
 }
 
-function paint(ctx, W, H, exp) {
+function paint(ctx, W, H, exp, expBw = false) {
   const isDark = !exp && currentTheme === 'dark';
+  const isBw = expBw || (renderMode === 'bw');
   ctx.fillStyle = isDark ? '#141416' : '#fff';
   ctx.fillRect(0, 0, W, H);
   hits = [];
 
+  const GUTTER = 52;
   if (!toks.length && !exp) {
     ctx.fillStyle = isDark ? '#71717a' : '#9aa0b0';
     ctx.font = FL;
     ctx.textAlign = 'left';
-    ctx.fillText('Type or paste a sentence below under “Edit sentence text”.', PX, TOP + 40);
+    ctx.fillText('Type or paste a sentence below under “Edit sentence text”.', GUTTER, TOP + 40);
   }
+
+  // Draw Gutter Sentence Numbers (Left Field)
+  ctx.save();
+  ctx.font = '600 13.5px "Inter", -apple-system, sans-serif';
+  ctx.fillStyle = isDark ? '#71717a' : '#9ca3af';
+  ctx.textAlign = 'right';
+  const drawnSentences = new Set();
+  toks.forEach(k => {
+    if (k.isSentStart && k.sentIndex && !drawnSentences.has(k.sentIndex)) {
+      drawnSentences.add(k.sentIndex);
+      const L = Ls[k.line];
+      if (L) {
+        ctx.fillText(String(k.sentIndex), 34, L.b);
+      }
+    }
+  });
+  ctx.restore();
 
   const showPos = aiLayers?.pos !== false;
   const showParts = aiLayers?.parts !== false;
@@ -1360,45 +1540,68 @@ function paint(ctx, W, H, exp) {
   if (lab) {
     ctx.font = FB;
     ctx.fillStyle = isDark ? '#d4d4d8' : '#444';
-    ctx.fillText(lab, PX, TOP + 14);
+    ctx.fillText(lab, GUTTER, TOP + 14);
   }
 
-  if (!exp) {
-    ctx.fillStyle = isDark ? 'rgba(204, 106, 71, 0.32)' : 'rgba(255, 122, 69, 0.16)';
+  // Selection highlight with calm neutral rounded box
+  if (!exp && sel.length > 0) {
+    ctx.save();
     for (const i of sel) {
       const k = toks[i], L = Ls[k.line];
-      ctx.fillRect(k.x - 3, L.y + L.ca, k.w + 6, L.p + 44);
+      if (!k || !L) continue;
+      const rx = k.x - 3, ry = L.y + L.ca, rw = k.w + 6, rh = L.p + 44;
+      ctx.fillStyle = isDark ? 'rgba(30, 41, 59, 0.9)' : 'rgba(224, 231, 255, 0.85)';
+      ctx.beginPath();
+      if (ctx.roundRect) {
+        ctx.roundRect(rx, ry, rw, rh, 4);
+      } else {
+        ctx.rect(rx, ry, rw, rh);
+      }
+      ctx.fill();
+      ctx.strokeStyle = isDark ? 'rgba(96, 165, 250, 0.45)' : 'rgba(59, 130, 246, 0.4)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
     }
+    ctx.restore();
   }
 
+  // Tokens text
   ctx.font = F;
   ctx.fillStyle = isDark ? '#f4f4f5' : '#111';
   for (const k of toks) ctx.fillText(k.t, k.tx, Ls[k.line].b);
 
+  // POS Rendering
+  const isPosActive = activeLayer === 'pos';
   if (showPos) {
     ctx.textAlign = 'center';
     for (const k of toks) {
       if (k.p && isPosVisible(k.p)) {
         const L = Ls[k.line], cx = k.x + k.w / 2, s = showSubs ? subs(k) : null, t = L.y + L.ca;
-        ctx.font = FL;
-        ctx.fillStyle = isDark ? '#a1a1aa' : '#444';
-        const pLabel = PO[k.p] ? PO[k.p][1] : String(k.p);
-        ctx.fillText(pLabel, cx, t + (s ? 13 : 14));
-        if (s) {
-          ctx.font = FS_;
-          ctx.fillStyle = isDark ? '#71717a' : '#777';
-          const displaySub = getSmartSubLabel(ctx, k, Math.max(k.w + 14, 52));
-          ctx.fillText(displaySub, cx, t + 28);
+        if (!isBw && !isPosActive) {
+          // Muted POS indicator: subtle hairline in POS color above word
+          ctx.fillStyle = LAYER_COLORS.pos;
+          ctx.fillRect(k.x + 2, t + 14, Math.max(k.w - 4, 6), 1.5);
+        } else {
+          ctx.font = FL;
+          ctx.fillStyle = (!isBw && isPosActive) ? LAYER_COLORS.pos : (isDark ? '#a1a1aa' : '#444');
+          const pLabel = PO[k.p] ? PO[k.p][1] : String(k.p);
+          ctx.fillText(pLabel, cx, t + (s ? 13 : 14));
+          if (s) {
+            ctx.font = FS_;
+            ctx.fillStyle = (!isBw && isPosActive) ? LAYER_COLORS.pos : (isDark ? '#71717a' : '#777');
+            const displaySub = getSmartSubLabel(ctx, k, Math.max(k.w + 14, 52));
+            ctx.fillText(displaySub, cx, t + 28);
+          }
         }
       }
     }
   }
 
   if (showClauses) {
-    renderSmartAbove(ctx, above, segs, i => toks[i], l => Ls[l], hits, isDark);
+    renderSmartAbove(ctx, above, segs, i => toks[i], l => Ls[l], hits, isDark, isBw);
   }
   if (showParts || showTenses) {
-    renderSmartBelow(ctx, below, segs, i => toks[i], l => Ls[l], hits, isDark);
+    renderSmartBelow(ctx, below, segs, i => toks[i], l => Ls[l], hits, isDark, isBw);
   }
 }
 
@@ -1746,7 +1949,7 @@ function renderInnerCard(tab, g, contentHtml) {
     <div class="gb gb-${gSlug} inner-dock-card" data-inner-tab="${tab}" data-inner-grp="${esc(g)}">
       <div class="grp inner-card-header" draggable="true" data-inner-tab="${tab}" data-inner-grp="${esc(g)}" title="${L('Потяните за заголовок, чтобы переставить блок внутри панели', 'Drag header to reposition card')}">
         <span class="dock-drag-handle" title="${L('Потяните для перемещения блока', 'Drag to reposition')}">⋮⋮</span>
-        <span class="inner-grp-title">${g}</span>
+        <span class="inner-grp-title">${getGroupTitle(g)}</span>
         <div class="inner-card-tools">
           <button type="button" class="btn-inner-tool" data-inner-act="left" data-inner-tab="${tab}" data-inner-grp="${esc(g)}" title="${L('Сдвинуть в колонку слева', 'Move to left column')}">⇇</button>
           <button type="button" class="btn-inner-tool" data-inner-act="up" data-inner-tab="${tab}" data-inner-grp="${esc(g)}" title="${L('Поднять выше', 'Move up')}">↑</button>
@@ -1967,7 +2170,7 @@ function paneHtml(tab) {
 
   if (tab === 'pos') {
     h += '<div class="gb-wrap">';
-    h += `<div class="gb gb-pos"><div class="grp">Part of speech${k1 ? ' — “' + k1.t + '”' : ''}</div>`;
+    h += `<div class="gb gb-pos"><div class="grp">${L('Часть речи', 'Part of speech')}${k1 ? ' — “' + k1.t + '”' : ''}</div>`;
     h += `<div class="chips ${k1 ? '' : 'dis'}">${PK.map(p => btn('p', p, PO[p][0], k1 && k1.p === p, k1 && off('p', p) ? 'off' : '')).join('')}</div>`;
     if (k1 && k1.p && PO[k1.p] && PO[k1.p][2]) {
       PO[k1.p][2].forEach(g => h += `<div class="chips sub">${g.map(v => btn('ps', v, v, (k1.s || []).includes(v))).join('')}</div>`);
@@ -2001,24 +2204,24 @@ function paneHtml(tab) {
     const curModel = AI.activeModel[prov] || cfg.defaultModel;
     const modelList = AI.models[prov] || [];
 
-    h += `<div class="gb gb-ai"><div class="grp">AI Check · ${esc(cfg.name)} ${hasKey ? '· key saved' : '· no key yet'}</div>`;
+    h += `<div class="gb gb-ai"><div class="grp">${L('Проверка AI', 'AI Check')} · ${esc(cfg.name)} ${hasKey ? L('· ключ сохранён', '· key saved') : L('· нет ключа', '· no key yet')}</div>`;
     h += `<div class="chips" style="align-items:center; flex-wrap:wrap; gap:8px;">
-      <select id="aip" class="ai-provider-select" title="Выберите сервис проверки">
+      <select id="aip" class="ai-provider-select" title="${L('Выберите сервис проверки', 'Select checking provider')}">
         <option value="groq"${prov === 'groq' ? ' selected' : ''}>Groq (Fast OSS / GPT-OSS)</option>
         <option value="positionapi"${prov === 'positionapi' ? ' selected' : ''}>PositionAPI (Aggregator)</option>
         <option value="custom"${prov === 'custom' ? ' selected' : ''}>Custom OpenAI-compatible</option>
       </select>
       ${prov === 'custom' ? `<input id="aiurl" value="${esc(AI.customUrl)}" placeholder="Base URL (http://localhost:11434/v1)" style="flex:1 1 200px;padding:6px 9px;border:1px solid #d9d6cf;border-radius:8px">` : ''}
-      <input type="password" id="aik" placeholder="${hasKey ? 'Key saved — paste to replace' : cfg.keyPlaceholder}" autocomplete="off" style="flex:1 1 220px;padding:6px 9px;border:1px solid #d9d6cf;border-radius:8px">
+      <input type="password" id="aik" placeholder="${hasKey ? L('Ключ сохранён — вставьте для замены', 'Key saved — paste to replace') : cfg.keyPlaceholder}" autocomplete="off" style="flex:1 1 220px;padding:6px 9px;border:1px solid #d9d6cf;border-radius:8px">
       <input id="aim" list="ml" value="${esc(curModel)}" style="width:190px;padding:6px 9px;border:1px solid #d9d6cf;border-radius:8px" aria-label="Model">
       <datalist id="ml">${modelList.map(m => `<option value="${esc(m)}">`).join('')}</datalist>
       <select id="ail">${['Russian', 'English'].map(l => `<option${AI.lang === l ? ' selected' : ''}>${l}</option>`).join('')}</select>
-      <button data-ai="save">Save</button>
-      <button data-ai="models">Load models</button>
-      ${hasKey ? `<button data-ai="rm">Remove key</button>` : ''}
+      <button data-ai="save">${L('Сохранить', 'Save')}</button>
+      <button data-ai="models">${L('Список моделей', 'Load models')}</button>
+      ${hasKey ? `<button data-ai="rm">${L('Удалить ключ', 'Remove key')}</button>` : ''}
     </div>`;
-    h += `<div class="note">${prov === 'groq' ? 'Groq обеспечивает мгновенный разбор (OpenAI GPT-OSS 120B/20B, Qwen 27B, Allam). Ключи начинаются с <code>gsk_</code>.' : prov === 'positionapi' ? 'PositionAPI подключается к моделям OpenAI/Anthropic через агрегатор.' : 'Подключение к локальному серверу Ollama/LM Studio или любому OpenAI-совместимому API.'} Ключи сохраняются локально в Chrome storage.</div>`;
-    h += `<div class="chips" style="margin-top:8px;"><button class="pri" data-ai="run">Check my parse</button></div></div><div id="res">${AIR}</div>`;
+    h += `<div class="note">${prov === 'groq' ? (TL === 'ru' ? 'Groq обеспечивает мгновенный разбор (OpenAI GPT-OSS 120B/20B, Qwen 27B, Allam). Ключи начинаются с <code>gsk_</code>.' : 'Groq provides instant parsing (OpenAI GPT-OSS 120B/20B, Qwen 27B, Allam). Keys start with <code>gsk_</code>.') : prov === 'positionapi' ? (TL === 'ru' ? 'PositionAPI подключается к моделям OpenAI/Anthropic через агрегатор.' : 'PositionAPI connects to OpenAI/Anthropic models via aggregator.') : (TL === 'ru' ? 'Подключение к локальному серверу Ollama/LM Studio или любому OpenAI-совместимому API.' : 'Connect to local Ollama/LM Studio server or any OpenAI-compatible API.')} ${L('Ключи сохраняются локально в Chrome storage.', 'Keys are saved locally in Chrome storage.')}</div>`;
+    h += `<div class="chips" style="margin-top:8px;"><button class="pri" data-ai="run">${L('Проверить разбор', 'Check my parse')}</button></div></div><div id="res">${AIR}</div>`;
   } else {
     const cardsMap = {};
     SG.forEach(([t, a], gi) => {
@@ -2030,6 +2233,8 @@ function paneHtml(tab) {
 }
 
 function applyStatic() {
+  document.documentElement.lang = TL;
+
   const hintEl = document.querySelector('.hint');
   if (hintEl) hintEl.title = tip('u:hint');
   if ($('cp')) $('cp').title = tip('u:copy');
@@ -2042,10 +2247,161 @@ function applyStatic() {
     const l = $(i) ? $(i).closest('label') : null;
     if (l) l.title = tip('u:' + k);
   });
-  if ($('lang')) $('lang').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.l === TL));
-  const topFilterLbl = $('top-filter-label');
-  if (topFilterLbl) topFilterLbl.textContent = L('Слои:', 'Layers:');
+
+  const setText = (id, ru, en) => { const el = $(id); if (el) el.textContent = L(ru, en); };
+  const setHtml = (id, ru, en) => { const el = $(id); if (el) el.innerHTML = L(ru, en); };
+  const setTitle = (id, ru, en) => { const el = $(id); if (el) el.title = L(ru, en); };
+  const setPlaceholder = (id, ru, en) => { const el = $(id); if (el) el.placeholder = L(ru, en); };
+
+  // Top Nav & Brand
+  setText('lbl-nav-manual', 'Мой разбор', 'My Parse');
+  setTitle('tab-nav-manual', 'Мой собственный интерактивный синтаксический разбор', 'My interactive sentence parsing');
+  setText('lbl-nav-ai', 'Разбор ИИ', 'AI Parse');
+  setTitle('tab-nav-ai', 'Разбор, сгенерированный языковой моделью ИИ', 'Sentence parsing generated by AI language model');
+  setTitle('top-mode-ai-lock', 'Только чтение', 'Read only');
+  setTitle('model-trigger', 'Настройки провайдера и модели ИИ', 'AI Provider and Model Settings');
+  setText('lbl-ai-provider', 'Сервис', 'Provider');
+  setText('lbl-ai-model', 'Модель', 'Model');
+  setText('ai-key-prompt-label', 'API-ключ:', 'API Key:');
+  setText('btn-ai-save-inline-key', 'Сохранить', 'Save');
+  setText('btn-api-key', 'Настроить ключ', 'Configure key');
+  setText('lbl-ai-run', 'Заполнить', 'Run AI');
+  setTitle('btn-ai-run', 'Заполнить синтаксический разбор этой языковой моделью', 'Generate parse using this model');
+  setTitle('btn-json-import-ai', 'Вставить готовый JSON-разбор от ChatGPT / Gemini / Claude', 'Paste pre-made JSON parse from ChatGPT / Gemini / Claude');
+  setText('top-filter-label', 'Слои:', 'Layers:');
+  setText('lbl-ai-apply-manual', 'В мой разбор', 'To My Parse');
+  setTitle('btn-ai-apply-manual', 'Скопировать результат ИИ в «Мой разбор» для правки', 'Copy AI result to My Parse for editing');
+  setText('lbl-ai-copy-img', 'Картинка', 'Image');
+  setTitle('btn-ai-copy-img', 'Скопировать изображение разбора ИИ', 'Copy AI parse image');
+  setText('lbl-btn-history', 'История', 'History');
+  setTitle('btn-history', 'Открыть историю предложений', 'Open sentence history');
+  setTitle('btn-tips', 'Горячие клавиши и справка', 'Hotkeys & Tips');
+  setTitle('btn-theme-toggle', 'Переключить тему оформления (Светлая / Тёмная)', 'Toggle theme (Light / Dark)');
+
+  // Language buttons
+  if ($('lang')) $('lang').querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.l === TL));
+
+  // Sidebar Controls
+  const ed = $('ed');
+  const isEditOpen = ed && !ed.classList.contains('collapsed') && ed.style.display !== 'none';
+  setText('btn-toggle-edit', isEditOpen ? 'Скрыть текст' : 'Изменить текст', isEditOpen ? 'Hide text' : 'Edit text');
+  setTitle('btn-toggle-edit', isEditOpen ? 'Скрыть поле редактирования текста' : 'Редактировать текст предложения (показать / скрыть поле)', isEditOpen ? 'Hide text editing field' : 'Edit sentence text (show / hide field)');
+  setText('lbl-btn-edit-text', isEditOpen ? 'Скрыть текст' : 'Изменить текст', isEditOpen ? 'Hide text' : 'Edit text');
+  setText('auto', 'Авто (100%)', 'Auto (100%)');
+  setTitle('auto', 'Автоматически расставить выбранные параметры со 100% уверенностью', 'Automatically set selected features with 100% confidence');
+  setTitle('btn-auto-config', 'Настроить параметры авторасстановки (100% уверенность)', 'Configure auto 100% parameters');
+  setText('lbl-btn-clr', 'Снять метки', 'Clear marks');
+  setTitle('clr', 'Убрать метки с выделенных слов', 'Remove marks from selected words');
+  setText('all', 'Очистить всё', 'Clear all');
+  setText('lbl-btn-all', 'Очистить всё', 'Clear all');
+  setTitle('all', 'Стереть всю разметку текущего предложения', 'Clear all markings for current sentence');
+  setText('btn-manual-toggle-height', 'На всю высоту', 'Full height');
+  setText('lbl-manual-height', 'На всю высоту', 'Full height');
+  setTitle('btn-manual-toggle-height', 'Развернуть на всю высоту разбора без внутреннего скролла', 'Expand to full parse height without internal scroll');
+  setText('lbl-sec-selection', 'Выделение', 'Selection');
+  setText('lbl-multi-text', 'Мульти-выбор', 'Multi-select');
+  setTitle('lbl-multi-wrap', 'Клик добавляет слово к выделению', 'Click adds word to selection');
+  setText('lbl-restr-text', 'Строгий режим', 'Strict mode');
+  setTitle('lbl-restr-wrap', 'Метки можно ставить только на подходящие части речи и члены предложения', 'Tags can only be applied to matching parts of speech and sentence members');
+  setText('lbl-sec-view', 'Вид', 'View');
+  setText('btn-render-color', 'Цветной', 'Color focus');
+  setText('btn-render-bw', 'Ч/Б', 'B&W');
+  setText('lbl-sec-text', 'Текст', 'Text');
+  setText('lbl-btn-import-json', 'Импорт JSON', 'Import JSON');
+  setText('btn-json-import', 'Импорт JSON', 'Import JSON');
+  setTitle('btn-json-import', 'Вставить готовый JSON-разбор от ChatGPT / Gemini / Claude', 'Paste pre-made JSON parse from ChatGPT / Gemini / Claude');
+  setText('lbl-btn-copy-color', 'Копировать цветную', 'Copy color diagram');
+  setText('lbl-btn-copy-bw', 'Копировать Ч/Б', 'Copy B&W diagram');
+  setTitle('btn-copy-color-scheme', 'Скопировать цветную схему в буфер обмена', 'Copy colored diagram to clipboard');
+  setTitle('btn-copy-bw-scheme', 'Скопировать классическую Ч/Б схему в буфер обмена', 'Copy classic B&W diagram to clipboard');
+  setTitle('canvas-resizer', 'Потяните вверх или вниз, чтобы изменить высоту области схемы (двойной клик — сброс)', 'Drag up or down to resize diagram area (double click to reset)');
+
+  // Sentence Editor Box
+  setText('lbl-ed-title', 'Редактирование текста', 'Edit sentence');
+  setText('trb', 'Перевести', 'Translate');
+  setTitle('trb', 'Перевести текст предложения', 'Translate sentence text');
+  setTitle('btn-close-edit', 'Закрыть редактор текста', 'Close sentence editor');
+  setPlaceholder('ta', 'Введите предложение на английском...', 'Enter English sentence...');
+  if ($('ta')) $('ta').setAttribute('aria-label', L('Текст предложения', 'Sentence text'));
+
+  // AI View Subbar
+  setText('btn-gran-detailed', 'Детальный', 'Detailed');
+  setTitle('btn-gran-detailed', 'Подробный аналитический разбор: атрибуты отдельно, ядерное подлежащее отдельно', 'Detailed analytical parse: attributes separate, core subject separate');
+  setText('btn-gran-macro', 'Составной', 'Compound');
+  setTitle('btn-gran-macro', 'Составной разбор: цельное подлежащее со всеми определениями', 'Compound parse: combined subject with modifiers');
+  setText('lbl-ai-toggle-height', 'На всю высоту', 'Full height');
+  setTitle('btn-ai-toggle-height', 'Развернуть на всю высоту разбора без внутреннего скролла', 'Expand to full parse height without internal scroll');
+  setText('ai-loading-title', 'ИИ выполняет синтаксический разбор предложения…', 'AI is parsing sentence structure…');
+  setText('btn-ai-retry', 'Повторить попытку', 'Retry');
+  setText('btn-ai-open-settings', 'Настройки API и модели', 'API & Model Settings');
+  setTitle('canvas-resizer-ai', 'Потяните вверх или вниз, чтобы изменить высоту области схемы (двойной клик — сброс)', 'Drag up or down to resize diagram area (double click to reset)');
+  setText('ai-verdict-status-ready', '✓ Разбор от ИИ готов', '✓ AI parse ready');
+  setText('lbl-ai-copy-text', 'Скопировать текст', 'Copy text');
+  setTitle('btn-ai-copy-text', 'Скопировать исходный текст предложения в буфер обмена', 'Copy original sentence text to clipboard');
+
+  // Floating Footer
+  setHtml('ins', 'Скопировать и закрыть <kbd>Ctrl+Enter</kbd>', 'Copy and close <kbd>Ctrl+Enter</kbd>');
+  setTitle('ins', 'Скопировать изображение в буфер обмена для Google Docs (Ctrl+Enter)', 'Copy diagram image to clipboard for Google Docs (Ctrl+Enter)');
+
+  // History Modal
+  setText('hist-title', 'История разборов', 'Parse History');
+  setText('hist-sub', 'Сохранённые предложения с быстрым восстановлением на холст', 'Saved sentences with instant restore to canvas');
+  setTitle('hist-close', 'Закрыть (Esc)', 'Close (Esc)');
+  setPlaceholder('hist-search', 'Поиск по тексту предложения…', 'Search sentence text…');
+  setTitle('hist-search-clear', 'Очистить поиск', 'Clear search');
+  setText('lbl-hist-clear', 'Очистить всё', 'Clear all');
+  setTitle('hist-clear', 'Полностью очистить сохранённую историю', 'Completely clear saved history');
+  setText('lbl-hist-export', 'Экспорт JSON', 'Export JSON');
+  setTitle('hist-export', 'Экспортировать историю в файл JSON', 'Export history to JSON file');
+
+  // JSON Import Modal
+  setText('json-import-title', 'Импорт JSON-разбора от внешнего LLM', 'Import JSON parse from external LLM');
+  setText('json-import-sub', 'Вставьте JSON от ChatGPT / Gemini / Claude — аддон применит его к текущему предложению', 'Paste JSON from ChatGPT / Gemini / Claude — addon will apply it to current sentence');
+  setTitle('json-import-close', 'Закрыть', 'Close');
+  setText('json-schema-ref-label', 'Ожидаемая структура JSON:', 'Expected JSON structure:');
+  setText('btn-json-copy-prompt', 'Скопировать промпт для LLM', 'Copy prompt for LLM');
+  setTitle('btn-json-copy-prompt', 'Скопировать prompt для ChatGPT/Gemini/Claude', 'Copy prompt for ChatGPT/Gemini/Claude');
+  setText('lbl-json-import-ta', 'Вставьте JSON-разбор:', 'Paste JSON parse:');
+  setText('btn-json-clear', 'Очистить', 'Clear');
+  setText('btn-json-cancel', 'Отмена', 'Cancel');
+  setText('btn-json-apply', 'Применить разбор', 'Apply parse');
+
+  // Auto 100% Config Modal
+  setText('auto-config-title', 'Авторасстановка со 100% уверенностью', 'Auto 100% Confidence Parsing');
+  setText('auto-config-sub', 'Выберите параметры для авторазметки. Включены только строгие лингвистические инварианты без догадок.', 'Select features for auto-marking. Strictly linguistically invariant patterns only.');
+  setTitle('auto-config-close', 'Закрыть', 'Close');
+  setText('auto-presets-label', 'Пресеты:', 'Presets:');
+  document.querySelectorAll('.btn-auto-preset').forEach(b => {
+    const p = b.dataset.preset;
+    if (p === 'all') b.textContent = L('Все 100% параметры', 'All 100% features');
+    else if (p === 'pos_only') b.textContent = L('Только части речи (POS)', 'Parts of speech only');
+    else if (p === 'func_only') b.textContent = L('Только служебные слова', 'Function words only');
+    else if (p === 'clear') b.textContent = L('Снять всё', 'Clear all');
+  });
+  const grpTitles = document.querySelectorAll('.auto-rule-group-title');
+  if (grpTitles[0]) grpTitles[0].textContent = L('Части речи и морфология (POS)', 'Parts of Speech & Morphology (POS)');
+  if (grpTitles[1]) grpTitles[1].textContent = L('Тип предложения и полярность (Sentence ST)', 'Sentence Characteristics & Polarity');
+  if (grpTitles[2]) grpTitles[2].textContent = L('Члены предложения и залог (Members & Voice)', 'Sentence Members & Voice');
+
+  if (typeof AUTO_100_RULES_INFO !== 'undefined') {
+    Object.keys(AUTO_100_RULES_INFO).forEach(id => {
+      const input = $(id);
+      if (!input) return;
+      const item = input.closest('.auto-rule-item');
+      if (!item) return;
+      const nameEl = item.querySelector('.auto-rule-name');
+      const descEl = item.querySelector('.auto-rule-desc');
+      const info = AUTO_100_RULES_INFO[id];
+      if (nameEl && info?.title) nameEl.textContent = L(info.title.ru, info.title.en);
+      if (descEl && info?.desc) descEl.innerHTML = L(info.desc.ru, info.desc.en);
+    });
+  }
+  setText('auto-config-stats', 'Настройки сохраняются автоматически', 'Settings are saved automatically');
+  setText('btn-auto-config-close', 'Готово', 'Done');
+  setText('btn-auto-config-apply', 'Применить к предложению', 'Apply to sentence');
+
   setupLayerFilterToolbar();
+  updateAiKeyInlineBar();
 }
 
 $('lang').onclick = e => {
@@ -2055,6 +2411,11 @@ $('lang').onclick = e => {
   chrome.storage?.local?.set({ tl: TL });
   applyStatic();
   ui();
+  render();
+  renderHistoryUI();
+  if ($('view-ai') && $('view-ai').style.display !== 'none') {
+    renderAiCanvas();
+  }
 };
 
 function cleanDockLayout(layout) {
@@ -2239,9 +2600,9 @@ function ui() {
   const isCol1 = VIEW === 'col1' || VIEW === 'scroll';
   const isMulti = isDock || isCol1;
   const colsCount = dockLayout.columns.length;
-  const viewBtnLabel = isDock ? `View: ${colsCount} cols` : isCol1 ? 'View: 1 col' : 'View: tabs';
+  const viewBtnLabel = isDock ? (TL === 'ru' ? `Вид: ${colsCount} кол.` : `View: ${colsCount} cols`) : isCol1 ? (TL === 'ru' ? 'Вид: 1 колонка' : 'View: 1 col') : (TL === 'ru' ? 'Вид: вкладки' : 'View: tabs');
 
-  $('tabs').innerHTML = TABS.map(([k, t]) => btn('t', k, `<i class="dot" style="background:${DOT[CI[k]]}"></i>${t}`, !isMulti && tab === k)).join('') + `
+  $('tabs').innerHTML = TABS.map(([k]) => btn('t', k, `<i class="dot" style="background:${DOT[CI[k]]}"></i>${getTabTitle(k)}`, !isMulti && tab === k)).join('') + `
     <div class="tabs-view-controls">
       <button type="button" class="btn-tab-layout ${isDock && colsCount === 1 && !dockLayout.topFull.length ? 'active' : ''}" data-layout="1" title="${L('1 колонка (во всю ширину)', '1 column (full width)')}">1 ${L('колонка', 'col')}</button>
       <button type="button" class="btn-tab-layout ${isDock && colsCount === 2 && !dockLayout.topFull.length ? 'active' : ''}" data-layout="2" title="${L('2 колонки (50% / 50%)', '2 columns (50% / 50%)')}">2 ${L('колонки', 'cols')}</button>
@@ -2253,8 +2614,7 @@ function ui() {
   $('pane').className = isDock ? 'dock-grid' : isCol1 ? 'scr' : 't' + CI[tab];
 
   const sec = (k, isFull = false) => {
-    const entry = TABS.find(([key]) => key === k);
-    const t = entry ? entry[1] : k;
+    const t = getTabTitle(k);
     const isSingleCol = isDock && dockLayout.columns.length === 1 && !dockLayout.topFull.length && !dockLayout.bottomFull.length;
     const effectivelyFull = isFull || isSingleCol;
     return `
@@ -2330,8 +2690,13 @@ function selChanged() {
   if (sel.length > 1 && tab === 'pos') tab = 'm';
   const e = exact('f');
   FS = e && e.f ? [...e.f] : ['', '', '', ''];
+  const clrBtn = $('clr');
+  if (clrBtn) clrBtn.disabled = (sel.length === 0);
   render();
   ui();
+  updateWordPopover();
+  updateSidebarPalette();
+  updateProgressBar();
 }
 
 /* ---------- editing ---------- */
@@ -4050,149 +4415,447 @@ function setupLayerFilterToolbar() {
 
   ensureLayerItems(aiLayers);
 
-  Object.values(LAYER_CONFIGS).forEach(cfg => {
-    const wrap = document.createElement('div');
-    wrap.className = 'ai-filter-pill-wrap';
-    wrap.setAttribute('data-layer', cfg.id);
+  const layerOrder = ['parts', 'pos', 'clauses', 'tenses', 'st'];
+  layerOrder.forEach(id => {
+    const isActive = (activeLayer === id);
+    const isVisible = (aiLayers[id] !== false);
+    const color = LAYER_COLORS[id] || '#6366f1';
+    const names = LAYER_SHORT_NAMES[id] || [id, id];
+    const name = TL === 'ru' ? names[0] : names[1];
 
-    const isLayerActive = aiLayers[cfg.id] !== false;
-    const layerTitle = TL === 'ru' ? cfg.title : (cfg.titleEn || cfg.title);
-    const layerTip = TL === 'ru' ? cfg.tip : (cfg.tipEn || cfg.tip);
-    const configTitle = L(`Настроить параметры (${layerTitle})`, `Configure filters (${layerTitle})`);
-    const ariaLabel = L(`Фильтры: ${layerTitle}`, `Filters: ${layerTitle}`);
+    const chip = document.createElement('div');
+    chip.className = 'foma-layer-chip' + (isActive ? ' active' : '') + (!isVisible ? ' is-hidden' : '');
+    chip.setAttribute('data-layer', id);
 
-    // Pill
-    const pill = document.createElement('div');
-    pill.className = 'ai-filter-pill' + (isLayerActive ? ' active' : '');
-    pill.id = 'ai-pill-' + cfg.id;
+    const eyeTitle = isVisible ? L('Скрыть слой', 'Hide layer') : L('Показать слой', 'Show layer');
+    const selectTitle = L(`Сделать «${name}» активным слоем`, `Select "${name}" as active layer`);
 
-    pill.innerHTML = `
-      <label class="ai-filter-pill-main" title="${layerTip}">
-        <input type="checkbox" id="ai-layer-${cfg.id}" ${isLayerActive ? 'checked' : ''}>
-        <span class="ai-pill-title">${layerTitle}</span>
-        <span class="ai-pill-badge" id="ai-badge-${cfg.id}"></span>
-      </label>
-      <button type="button" class="ai-filter-pill-toggle" id="ai-toggle-${cfg.id}" title="${configTitle}" aria-expanded="false" aria-label="${ariaLabel}">
-        <svg width="8" height="5" viewBox="0 0 8 5" fill="none">
-          <path d="M1 1L4 4L7 1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+    const eyeSvg = isVisible
+      ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>`
+      : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>`;
+
+    chip.innerHTML = `
+      <button type="button" class="foma-layer-select-btn" data-select-layer="${id}" title="${selectTitle}">
+        <span class="foma-layer-dot" style="background:${color};"></span>
+        <span class="foma-layer-name">${name}</span>
+      </button>
+      <button type="button" class="foma-layer-eye-btn ${!isVisible ? 'eye-closed' : ''}" data-eye-layer="${id}" title="${eyeTitle}">
+        ${eyeSvg}
       </button>
     `;
 
-    // Popover
-    const popover = document.createElement('div');
-    popover.className = 'ai-layer-popover';
-    popover.id = 'ai-popover-' + cfg.id;
-    popover.style.display = 'none';
-
-    let bodyHtml = '';
-    const itemsMap = aiLayers[cfg.itemsKey] || cfg.defaults;
-
-    cfg.groups.forEach(g => {
-      bodyHtml += `<div class="ai-popover-group">`;
-      const gTitle = TL === 'ru' ? g.title : (g.titleEn || g.title);
-      if (gTitle) {
-        bodyHtml += `<div class="ai-popover-group-title">${gTitle}</div>`;
-      }
-      g.items.forEach(it => {
-        const checked = itemsMap[it.key] !== false ? 'checked' : '';
-        const searchStr = `${it.key} ${it.name} ${it.ru || ''} ${it.abbr || ''}`.toLowerCase();
-        const primaryName = TL === 'ru' ? (it.ru || it.name) : it.name;
-        const subName = TL === 'ru' ? (it.abbr ? `${it.name} · ${it.abbr}` : it.name) : (it.ru ? `${it.ru}${it.abbr ? ' · ' + it.abbr : ''}` : (it.abbr || ''));
-        bodyHtml += `
-          <label class="ai-popover-item" data-search="${searchStr}">
-            <input type="checkbox" data-layer="${cfg.id}" data-key="${it.key}" ${checked}>
-            <div class="ai-popover-item-text">
-              <span class="ai-popover-item-name">${primaryName}</span>
-              <span class="ai-popover-item-desc">${subName}</span>
-            </div>
-          </label>
-        `;
-      });
-      bodyHtml += `</div>`;
+    chip.querySelector('.foma-layer-select-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      activeLayer = id;
+      aiLayers[id] = true;
+      tab = (id === 'parts' ? 'm' : id === 'pos' ? 'pos' : id === 'clauses' ? 'c' : id === 'tenses' ? 'f' : 's');
+      chrome.storage?.local?.set({ foma_ai_layers: aiLayers });
+      setupLayerFilterToolbar();
+      updateSidebarPalette();
+      updateWordPopover();
+      paint();
+      if (currentTopMode === 'ai' && currentAiIdeal) renderAiIdealSchema(currentAiIdeal);
+      if (VIEW !== 'tab') ui();
     });
 
-    const closeTitle = L('Закрыть (Esc)', 'Close (Esc)');
-    const allText = L('Все', 'All');
-    const noneText = L('Снять', 'None');
-    const searchPlaceholder = L('Поиск параметра…', 'Search parameter…');
+    chip.querySelector('.foma-layer-eye-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      aiLayers[id] = (aiLayers[id] === false ? true : false);
+      chrome.storage?.local?.set({ foma_ai_layers: aiLayers });
+      setupLayerFilterToolbar();
+      paint();
+      if (currentTopMode === 'ai' && currentAiIdeal) renderAiIdealSchema(currentAiIdeal);
+    });
 
-    popover.innerHTML = `
-      <div class="ai-popover-header">
-        <div class="ai-popover-title-row">
-          <span class="ai-popover-title">${layerTitle}</span>
-          <button type="button" class="ai-popover-close" data-layer="${cfg.id}" title="${closeTitle}">✕</button>
-        </div>
-        <div class="ai-popover-actions">
-          <button type="button" class="ai-popover-btn ai-popover-select-all" data-layer="${cfg.id}">${allText}</button>
-          <button type="button" class="ai-popover-btn ai-popover-clear-all" data-layer="${cfg.id}">${noneText}</button>
-          <input type="text" class="ai-popover-search" placeholder="${searchPlaceholder}" data-layer="${cfg.id}">
-        </div>
-      </div>
-      <div class="ai-popover-body">
-        ${bodyHtml}
-      </div>
+    container.appendChild(chip);
+  });
+}
+
+function updateAllLayerPillBadges() {
+  setupLayerFilterToolbar();
+}
+
+/* ── Interactive Sidebar Palette & Word Popover System ────────── */
+const SIDEBAR_PALETTES = {
+  parts: {
+    title: ['Метки: Члены предложения', 'Tags: Sentence parts'],
+    items: [
+      { id: 'Subject', name: ['Подлежащее', 'Subject'], style: 'solid', kbd: '1' },
+      { id: 'Predicate', name: ['Сказуемое', 'Predicate'], style: 'double', kbd: '2' },
+      { id: 'Predicative', name: ['Предикатив', 'Predicative'], style: 'ddash', kbd: '3' },
+      { id: 'Direct object', name: ['Прямое дополнение', 'Direct object'], style: 'dashed', kbd: '4' },
+      { id: 'Indirect object', name: ['Косвенное дополнение', 'Indirect object'], style: 'dotted', kbd: '5' },
+      { id: 'Attribute', name: ['Определение', 'Attribute'], style: 'wavy', kbd: '0' },
+      { id: 'AdvM manner', name: ['Обст. образа действия', 'AdvM manner'], style: 'dashdot', kbd: '6' },
+      { id: 'AdvM place', name: ['Обст. места', 'AdvM place'], style: 'dashdot', kbd: '7' },
+      { id: 'AdvM time', name: ['Обст. времени', 'AdvM time'], style: 'dashdot', kbd: '8' },
+      { id: 'Introductory element', name: ['Вводное слово', 'Introductory element'], style: 'dotted', kbd: '' }
+    ],
+    apply: (item) => {
+      if (!sel.length) { msg(L('Сначала выделите слово или слова.', 'Select words first.')); return; }
+      setA('m', item.id);
+      ui();
+    }
+  },
+  pos: {
+    title: ['Метки: Части речи', 'Tags: Parts of speech'],
+    items: [
+      { id: 'n', name: ['Существительное', 'Noun'], abbr: 'n.', kbd: '1' },
+      { id: 'v', name: ['Глагол', 'Verb'], abbr: 'v.', kbd: '2' },
+      { id: 'adj', name: ['Прилагательное', 'Adjective'], abbr: 'adj.', kbd: '3' },
+      { id: 'adv', name: ['Наречие', 'Adverb'], abbr: 'adv.', kbd: '4' },
+      { id: 'pron', name: ['Местоимение', 'Pronoun'], abbr: 'pron.', kbd: '5' },
+      { id: 'prep', name: ['Предлог', 'Preposition'], abbr: 'prep.', kbd: '6' },
+      { id: 'conj', name: ['Союз', 'Conjunction'], abbr: 'conj.', kbd: '7' },
+      { id: 'art', name: ['Артикль', 'Article'], abbr: 'art.', kbd: '8' },
+      { id: 'num', name: ['Числительное', 'Numeral'], abbr: 'num.', kbd: '9' },
+      { id: 'part', name: ['Частица', 'Particle'], abbr: 'part.', kbd: '' }
+    ],
+    apply: (item) => {
+      if (!sel.length) { msg(L('Сначала выделите слово.', 'Select a word first.')); return; }
+      setP(item.id);
+      ui();
+    }
+  },
+  clauses: {
+    title: ['Метки: Придаточные и обороты', 'Tags: Clauses & phrases'],
+    items: [
+      { id: 'Main clause', name: ['Главное предложение', 'Main clause'], kbd: '1' },
+      { id: 'Coordinate clause', name: ['Сочинённое предлож.', 'Coordinate clause'], kbd: '2' },
+      { id: 'Subject clause', name: ['Придаточное подлежащее', 'Subject clause'], kbd: '3' },
+      { id: 'Object clause', name: ['Придаточное дополнение', 'Object clause'], kbd: '4' },
+      { id: 'Attributive clause (defining)', name: ['Придаточное определит.', 'Attributive clause'], kbd: '5' },
+      { id: 'AdvCl time', name: ['Придаточное времени', 'AdvCl time'], kbd: '6' },
+      { id: 'AdvCl condition', name: ['Придаточное условия', 'AdvCl condition'], kbd: '7' },
+      { id: 'Prepositional phrase', name: ['Предложный оборот', 'Prepositional phrase'], kbd: '8' },
+      { id: 'Participial phrase', name: ['Причастный оборот', 'Participial phrase'], kbd: '9' }
+    ],
+    apply: (item) => {
+      if (!sel.length) { msg(L('Сначала выделите слова.', 'Select words first.')); return; }
+      setA('c', item.id);
+      ui();
+    }
+  },
+  tenses: {
+    title: ['Метки: Время и залог', 'Tags: Tense & voice'],
+    items: [
+      { id: '0|Present', name: ['Present (настоящее)', 'Present'], kbd: '1' },
+      { id: '0|Past', name: ['Past (прошедшее)', 'Past'], kbd: '2' },
+      { id: '0|Future', name: ['Future (будущее)', 'Future'], kbd: '3' },
+      { id: '1|Simple', name: ['Simple (простое)', 'Simple'], kbd: '4' },
+      { id: '1|Continuous', name: ['Continuous (длительное)', 'Continuous'], kbd: '5' },
+      { id: '1|Perfect', name: ['Perfect (совершенное)', 'Perfect'], kbd: '6' },
+      { id: '2|Active', name: ['Active (действительный)', 'Active'], kbd: '7' },
+      { id: '2|Passive', name: ['Passive (страдательный)', 'Passive'], kbd: '8' }
+    ],
+    apply: (item) => {
+      const [g, v] = item.id.split('|');
+      FS[+g] = FS[+g] === v ? '' : v;
+      const l = FS.filter(Boolean).join(' ');
+      if (!sel.length) { ui(); msg(L('Сначала выделите слова.', 'Select words first.')); return; }
+      setA('f', l, [...FS], true);
+      ui();
+    }
+  },
+  st: {
+    title: ['Метки: Тип предложения', 'Tags: Sentence type'],
+    items: [
+      { id: '0|Simple', name: ['Simple (простое)', 'Simple'], kbd: '1' },
+      { id: '0|Compound', name: ['Compound (сложносочин.)', 'Compound'], kbd: '2' },
+      { id: '0|Complex', name: ['Complex (сложноподчин.)', 'Complex'], kbd: '3' },
+      { id: '1|Declarative', name: ['Повествовательное', 'Declarative'], kbd: '4' },
+      { id: '1|Interrogative', name: ['Вопросительное', 'Interrogative'], kbd: '5' },
+      { id: '1|Imperative', name: ['Побудительное', 'Imperative'], kbd: '6' }
+    ],
+    apply: (item) => {
+      const [g, v] = item.id.split('|');
+      ST[+g] = ST[+g] === v ? '' : v;
+      if (ST[+g]) ensureLayerItemVisible('st', ST[+g]);
+      saveCurrentToHistory(false);
+      render();
+      ui();
+    }
+  }
+};
+
+function updateSidebarPalette() {
+  const titleEl = $('sidebar-legend-title');
+  const listEl = $('sidebar-legend-list');
+  if (!listEl) return;
+
+  const cfg = SIDEBAR_PALETTES[activeLayer] || SIDEBAR_PALETTES.parts;
+  if (titleEl) {
+    titleEl.textContent = TL === 'ru' ? cfg.title[0] : cfg.title[1];
+  }
+
+  listEl.innerHTML = '';
+  cfg.items.forEach(item => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'sidebar-legend-item';
+    const label = TL === 'ru' ? item.name[0] : item.name[1];
+
+    let sampleHtml = '';
+    if (item.style) {
+      sampleHtml = `<span class="legend-sample sample-${item.style}">Aa</span>`;
+    } else if (item.abbr) {
+      sampleHtml = `<span class="legend-sample" style="color:${LAYER_COLORS[activeLayer]}; font-size:11px; font-weight:700;">${item.abbr}</span>`;
+    } else {
+      sampleHtml = `<span class="foma-layer-dot" style="background:${LAYER_COLORS[activeLayer]};"></span>`;
+    }
+
+    const kbdHtml = item.kbd ? `<kbd class="legend-hotkey">${item.kbd}</kbd>` : '';
+
+    btn.innerHTML = `
+      ${sampleHtml}
+      <span class="legend-label">${label}</span>
+      ${kbdHtml}
     `;
 
-    wrap.appendChild(pill);
-    wrap.appendChild(popover);
-    container.appendChild(wrap);
-
-    // Event listeners
-    const mainCb = pill.querySelector(`#ai-layer-${cfg.id}`);
-    if (mainCb) {
-      mainCb.addEventListener('change', () => onLayerFilterChange());
-    }
-
-    const toggleBtn = pill.querySelector(`#ai-toggle-${cfg.id}`);
-    if (toggleBtn) {
-      toggleBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        toggleLayerPopover(cfg.id);
-      });
-    }
-
-    const closeBtn = popover.querySelector('.ai-popover-close');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        closeAllLayerPopovers();
-      });
-    }
-
-    const selectAllBtn = popover.querySelector('.ai-popover-select-all');
-    if (selectAllBtn) {
-      selectAllBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        setAllLayerItems(cfg.id, true);
-      });
-    }
-
-    const clearAllBtn = popover.querySelector('.ai-popover-clear-all');
-    if (clearAllBtn) {
-      clearAllBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        setAllLayerItems(cfg.id, false);
-      });
-    }
-
-    const searchInput = popover.querySelector('.ai-popover-search');
-    if (searchInput) {
-      searchInput.addEventListener('input', (e) => {
-        filterPopoverItems(cfg.id, e.target.value);
-      });
-    }
-
-    popover.querySelectorAll('input[data-key]').forEach(itemCb => {
-      itemCb.addEventListener('change', (e) => {
-        const key = e.target.getAttribute('data-key');
-        onLayerItemFilterChange(cfg.id, key, e.target.checked);
-      });
+    btn.addEventListener('click', () => {
+      cfg.apply(item);
+      updateSidebarPalette();
+      updateWordPopover();
+      updateProgressBar();
     });
+
+    listEl.appendChild(btn);
+  });
+}
+
+function updateWordPopover() {
+  const popover = $('word-popover');
+  if (!popover) return;
+
+  if (!sel || !sel.length) {
+    popover.style.display = 'none';
+    return;
+  }
+
+  const selectedToks = sel.map(i => toks[i]).filter(Boolean);
+  if (!selectedToks.length) {
+    popover.style.display = 'none';
+    return;
+  }
+
+  const minX = Math.min(...selectedToks.map(t => t.x));
+  const maxX = Math.max(...selectedToks.map(t => t.x + t.w));
+  const centerX = (minX + maxX) / 2;
+  const lineIdx = selectedToks[0].line;
+  const L = Ls[lineIdx];
+  const topY = L ? (L.b + (L.mb ? 12 + L.mb * MR : 20)) : 100;
+
+  popover.style.display = 'flex';
+  popover.style.left = Math.max(120, Math.min(centerX, ($('wrap')?.clientWidth || 800) - 140)) + 'px';
+  popover.style.top = topY + 'px';
+
+  const cfg = SIDEBAR_PALETTES[activeLayer] || SIDEBAR_PALETTES.parts;
+  popover.innerHTML = '';
+
+  const topItems = cfg.items.slice(0, 6);
+  topItems.forEach(item => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'word-popover-btn';
+    const label = TL === 'ru' ? item.name[0] : item.name[1];
+    const shortLabel = item.abbr || label.split(' ')[0];
+    const kbdHtml = item.kbd ? `<span class="kbd-badge">${item.kbd}</span>` : '';
+
+    btn.innerHTML = `<span>${shortLabel}</span>${kbdHtml}`;
+    btn.title = label;
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      cfg.apply(item);
+      updateWordPopover();
+      updateSidebarPalette();
+      updateProgressBar();
+    });
+
+    popover.appendChild(btn);
   });
 
-  updateAllLayerPillBadges();
-  setupLayerPopoversGlobalEvents();
+  const delBtn = document.createElement('button');
+  delBtn.type = 'button';
+  delBtn.className = 'word-popover-btn word-popover-del';
+  delBtn.innerHTML = `<span>✕</span><span class="kbd-badge">Del</span>`;
+  delBtn.title = L('Снять разметку (Del)', 'Remove tags (Del)');
+  delBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    del();
+    updateWordPopover();
+    updateSidebarPalette();
+    updateProgressBar();
+  });
+  popover.appendChild(delBtn);
+}
+
+function updateProgressBar() {
+  const fill = $('top-progress-fill');
+  if (!fill) return;
+
+  const wordToks = toks.filter(k => k.word);
+  const total = wordToks.length;
+  if (!total) {
+    fill.style.width = '0%';
+    return;
+  }
+
+  const tagged = toks.filter((k, i) => k.word && (k.p != null || an.some(a => a.ix.includes(i)))).length;
+  const pct = Math.min(100, Math.round((tagged / total) * 100));
+  fill.style.width = pct + '%';
+  fill.title = L(`Размечено: ${tagged} из ${total} (${pct}%)`, `Marked: ${tagged} of ${total} (${pct}%)`);
+}
+
+function setupWordHoverTooltip() {
+  const tooltip = $('word-hover-tooltip');
+  if (!cv || !tooltip) return;
+
+  cv.addEventListener('mousemove', e => {
+    const i = hitW(e);
+    if (i < 0 || !toks[i] || !toks[i].word) {
+      tooltip.style.display = 'none';
+      return;
+    }
+
+    const tok = toks[i];
+    const mList = an.filter(a => a.k === 'm' && a.ix.includes(i)).map(a => a.v);
+    const cList = an.filter(a => a.k === 'c' && a.ix.includes(i)).map(a => a.v);
+    const fList = an.filter(a => a.k === 'f' && a.ix.includes(i)).map(a => a.v);
+    const posName = tok.p ? (PO[tok.p] ? (TL === 'ru' ? PO[tok.p][0] : PO[tok.p][0]) : tok.p) : null;
+    const posSubs = tok.s && tok.s.length ? `(${tok.s.join(', ')})` : '';
+
+    if (!posName && !mList.length && !cList.length && !fList.length) {
+      tooltip.style.display = 'none';
+      return;
+    }
+
+    let rowsHtml = `<div class="word-hover-title">«${tok.t}»</div>`;
+    if (posName) {
+      rowsHtml += `<div class="word-hover-row"><span class="word-hover-key" style="color:${LAYER_COLORS.pos}">POS:</span> <span class="word-hover-val">${posName} ${posSubs}</span></div>`;
+    }
+    if (mList.length) {
+      rowsHtml += `<div class="word-hover-row"><span class="word-hover-key" style="color:${LAYER_COLORS.parts}">Part:</span> <span class="word-hover-val">${mList.join(', ')}</span></div>`;
+    }
+    if (cList.length) {
+      rowsHtml += `<div class="word-hover-row"><span class="word-hover-key" style="color:${LAYER_COLORS.clauses}">Clause:</span> <span class="word-hover-val">${cList.join(', ')}</span></div>`;
+    }
+    if (fList.length) {
+      rowsHtml += `<div class="word-hover-row"><span class="word-hover-key" style="color:${LAYER_COLORS.tenses}">Tense:</span> <span class="word-hover-val">${fList.join(', ')}</span></div>`;
+    }
+
+    tooltip.innerHTML = rowsHtml;
+    const wrapEl = $('wrap');
+    const wrapRect = wrapEl ? wrapEl.getBoundingClientRect() : { left: 0, top: 0 };
+    const x = e.clientX - wrapRect.left + 14;
+    const y = e.clientY - wrapRect.top + 14;
+    tooltip.style.left = x + 'px';
+    tooltip.style.top = y + 'px';
+    tooltip.style.display = 'block';
+  });
+
+  cv.addEventListener('mouseleave', () => {
+    tooltip.style.display = 'none';
+  });
+}
+
+function setupAuthorAvatarDropdown() {
+  const btn = $('btn-author-avatar');
+  const dd = $('author-dropdown');
+  if (!btn || !dd) return;
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isShown = dd.style.display !== 'none';
+    dd.style.display = isShown ? 'none' : 'block';
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!dd.contains(e.target) && e.target !== btn) {
+      dd.style.display = 'none';
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && dd.style.display !== 'none') {
+      dd.style.display = 'none';
+    }
+  });
+}
+
+function setRenderMode(mode) {
+  if (mode !== 'color_focus' && mode !== 'bw') return;
+  renderMode = mode;
+  try {
+    localStorage.setItem('foma_render_mode', mode);
+  } catch (_) {}
+
+  const btnColor = $('btn-render-color');
+  const btnBw = $('btn-render-bw');
+  if (btnColor) btnColor.classList.toggle('active', mode === 'color_focus');
+  if (btnBw) btnBw.classList.toggle('active', mode === 'bw');
+
+  paint();
+  if (currentTopMode === 'ai' && currentAiIdeal) {
+    renderAiIdealSchema(currentAiIdeal);
+  }
+}
+
+function copyColorScheme() {
+  if (currentTopMode === 'ai') {
+    if (!currentAiIdeal) return msg(L('Разбор от ИИ ещё не готов.', 'AI parse not ready yet.'));
+    const sc = +$('sc').value;
+    const prevMode = renderMode;
+    renderMode = 'color_focus';
+    const c = exportAiCanvas(sc);
+    renderMode = prevMode;
+    if (!c) return msg(L('Нет изображения для копирования.', 'No image to copy.'));
+    copyCanvas(c, () => {
+      msg(L('Цветная схема разбора ИИ скопирована в буфер (Ctrl+V).', 'Colored AI parse image copied to clipboard (Ctrl+V).'));
+    }, (url) => showImg(url));
+    return;
+  }
+  if (!toks.some(k => k.word)) return msg(L('Нет текста для копирования.', 'No text to copy.'));
+  const sc = +$('sc').value;
+  const prevMode = renderMode;
+  renderMode = 'color_focus';
+  const c = exportCanvas(sc);
+  renderMode = prevMode;
+  copyCanvas(c, () => {
+    msg(L('Цветная схема скопирована в буфер (Ctrl+V).', 'Colored diagram copied to clipboard (Ctrl+V).'));
+  }, (url) => showImg(url));
+}
+
+function copyBwScheme() {
+  if (currentTopMode === 'ai') {
+    if (!currentAiIdeal) return msg(L('Разбор от ИИ ещё не готов.', 'AI parse not ready yet.'));
+    const sc = +$('sc').value;
+    const prevMode = renderMode;
+    renderMode = 'bw';
+    const c = exportAiCanvas(sc);
+    renderMode = prevMode;
+    if (!c) return msg(L('Нет изображения для копирования.', 'No image to copy.'));
+    copyCanvas(c, () => {
+      msg(L('Ч/Б схема разбора ИИ скопирована в буфер (Ctrl+V).', 'B&W AI parse image copied to clipboard (Ctrl+V).'));
+    }, (url) => showImg(url));
+    return;
+  }
+  if (!toks.some(k => k.word)) return msg(L('Нет текста для копирования.', 'No text to copy.'));
+  const sc = +$('sc').value;
+  const prevMode = renderMode;
+  renderMode = 'bw';
+  const c = exportCanvas(sc);
+  renderMode = prevMode;
+  copyCanvas(c, () => {
+    msg(L('Классическая Ч/Б схема скопирована в буфер (Ctrl+V).', 'Classic B&W diagram copied to clipboard (Ctrl+V).'));
+  }, (url) => showImg(url));
+}
+
+function setupSidebarEvents() {
+  $('btn-render-color')?.addEventListener('click', () => setRenderMode('color_focus'));
+  $('btn-render-bw')?.addEventListener('click', () => setRenderMode('bw'));
+  $('btn-copy-color-scheme')?.addEventListener('click', () => copyColorScheme());
+  $('btn-copy-bw-scheme')?.addEventListener('click', () => copyBwScheme());
 }
 
 function updateAiHeaderInfo() {
@@ -4880,6 +5543,13 @@ function setupTopModeEvents() {
   setupCanvasResizer('canvas-resizer-ai', 'wrap-ai');
 
   setupLayerFilterToolbar();
+  setupSidebarEvents();
+  setupWordHoverTooltip();
+  setupAuthorAvatarDropdown();
+  updateSidebarPalette();
+  updateProgressBar();
+  $('btn-render-color')?.classList.toggle('active', renderMode === 'color_focus');
+  $('btn-render-bw')?.classList.toggle('active', renderMode === 'bw');
 
   // Model Combo Trigger & Popover
   const modelTrigger = $('model-trigger');
@@ -5029,6 +5699,7 @@ function setupTopModeEvents() {
 }
 
 $('all').onclick = () => {
+  if (!confirm(L('Стереть всю разметку текущего предложения?', 'Clear all markings for current sentence?'))) return;
   toks.forEach(k => { k.p = null; k.s = null; });
   an = [];
   ST = ['', '', '', ''];
@@ -5036,6 +5707,7 @@ $('all').onclick = () => {
   saveCurrentToHistory(false);
   render();
   ui();
+  updateProgressBar();
 };
 
 // ── 100% Invariant Auto-Tagger Rule Engine ───────────────────────────────
@@ -5503,14 +6175,22 @@ function toggleEditPanel(show) {
   if (nextState) {
     ed.classList.remove('collapsed');
     ed.style.display = '';
-    btn?.classList.add('on');
-    btn?.setAttribute('aria-expanded', 'true');
+    if (btn) {
+      btn.classList.add('on');
+      btn.setAttribute('aria-expanded', 'true');
+      btn.textContent = L('Скрыть текст', 'Hide text');
+      btn.title = L('Скрыть поле редактирования текста', 'Hide text editing field');
+    }
     ta.focus();
   } else {
     ed.classList.add('collapsed');
     ed.style.display = 'none';
-    btn?.classList.remove('on');
-    btn?.setAttribute('aria-expanded', 'false');
+    if (btn) {
+      btn.classList.remove('on');
+      btn.setAttribute('aria-expanded', 'false');
+      btn.textContent = L('Редактировать текст', 'Edit text');
+      btn.title = L('Редактировать текст предложения (показать / скрыть поле)', 'Edit sentence text (show / hide field)');
+    }
   }
 
   try {
@@ -5692,6 +6372,18 @@ document.addEventListener('keydown', e => {
   }
 
   if (e.target.matches('textarea,input:not([type=checkbox]),select') || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (sel.length > 0) {
+    const pal = SIDEBAR_PALETTES[activeLayer] || SIDEBAR_PALETTES.parts;
+    const match = pal.items.find(it => it.kbd === e.key);
+    if (match) {
+      e.preventDefault();
+      pal.apply(match);
+      updateWordPopover();
+      updateSidebarPalette();
+      updateProgressBar();
+      return;
+    }
+  }
   if (KEY[e.key]) { setA('m', KEY[e.key]); if (tab === 'pos' && sel.length > 1) tab = 'm'; ui(); }
   else if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); del(); }
   else if (e.key === 'Escape') { sel = []; selChanged(); }
@@ -6147,7 +6839,7 @@ function formatHistDate(ts) {
 
 function formatMarksCount(count) {
   if (!count) return '';
-  const isRu = (typeof currentLang !== 'undefined' ? currentLang : 'ru') === 'ru';
+  const isRu = TL === 'ru';
   if (!isRu) return `${count} ${count === 1 ? 'mark' : 'marks'}`;
   const lastTwo = count % 100;
   const last = count % 10;
