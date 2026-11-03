@@ -67,6 +67,11 @@
         <span class="foma-tips-q">?</span>
       </button>
 
+      <!-- Settings (Gear) -->
+      <button type="button" id="btn-settings" class="foma-btn-ghost foma-btn-icon" title="Настройки сайта (Ctrl+,)" aria-label="Settings">
+        <svg viewBox="0 0 24 24" class="ic"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      </button>
+
       <!-- Theme Switcher (Light / Dark) -->
       <button type="button" id="btn-theme-toggle" class="foma-btn-ghost foma-btn-icon" title="Переключить тему оформления (Светлая / Тёмная)" aria-label="Toggle theme">
         <svg viewBox="0 0 24 24" class="ic ic-sun" id="ic-theme-sun"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
@@ -135,6 +140,10 @@
             <button type="button" id="btn-manual-toggle-height" class="sidebar-row-btn" title="Развернуть на всю высоту разбора без внутреннего скролла">
               <svg viewBox="0 0 24 24" class="ic-xs"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
               <span id="lbl-manual-height">На всю высоту</span>
+            </button>
+            <button type="button" id="btn-sidebar-settings" class="sidebar-row-btn" title="Настройки отображения и сайта">
+              <svg viewBox="0 0 24 24" class="ic-xs"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+              <span id="lbl-sidebar-settings">Настройки</span>
             </button>
           </div>
 
@@ -429,6 +438,116 @@
       <div style="flex:1;"></div>
       <button type="button" id="btn-auto-config-close" class="btn-hist-sec">Готово</button>
       <button type="button" id="btn-auto-config-apply" class="btn-auto-apply pri">Применить к предложению</button>
+    </div>
+  </div>
+</div>
+
+<!-- Site & Display Settings Modal -->
+<div id="settings-overlay" class="modal-overlay" style="display: none;">
+  <div id="settings-dialog" class="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="settings-header">
+      <div class="settings-title-wrap">
+        <div class="settings-title" id="settings-title">
+          <svg viewBox="0 0 24 24" class="ic-sm"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          <span id="lbl-settings-heading">Настройки синтаксического разбора</span>
+        </div>
+        <div class="settings-subtitle" id="lbl-settings-sub">Формат подписей, режим подчёркиваний и параметры интерфейса</div>
+      </div>
+      <button type="button" id="btn-settings-close" class="foma-btn-ghost foma-btn-icon" title="Закрыть (Esc)" aria-label="Close">✕</button>
+    </div>
+
+    <div class="settings-body">
+      <!-- Section 1: Format of sentence parts -->
+      <div class="settings-group">
+        <div class="settings-group-title" id="lbl-cfg-parts-title">Отображение членов предложения</div>
+        <div class="settings-group-desc" id="lbl-cfg-parts-desc">Выберите, как оформлять грамматические роли слов на схеме предложения:</div>
+        
+        <div class="settings-options-list" role="radiogroup" aria-labelledby="lbl-cfg-parts-title">
+          <!-- Option: Combo (Default) -->
+          <label class="settings-radio-card" id="card-parts-combo">
+            <input type="radio" name="cfg-parts-format" value="combo" class="settings-radio-input" checked>
+            <div class="settings-radio-content">
+              <div class="settings-radio-header">
+                <span class="settings-radio-label" id="lbl-opt-combo-name">Комбинация: подчёркивание и сокр. имя</span>
+                <span class="settings-badge-pill" id="lbl-opt-combo-tag">Рекомендуется</span>
+              </div>
+              <div class="settings-radio-desc" id="lbl-opt-combo-desc">Школьные символы подчёркивания (═, —, ╍, 〰) вместе с кратким обозначением роли под словом (Pred, Subj, DirObj)</div>
+              <div class="settings-radio-preview">
+                <span class="preview-token">fears</span>
+                <span class="preview-ul ul-double"></span>
+                <span class="preview-tag">Pred</span>
+              </div>
+            </div>
+          </label>
+
+          <!-- Option: Full words -->
+          <label class="settings-radio-card" id="card-parts-full">
+            <input type="radio" name="cfg-parts-format" value="full" class="settings-radio-input">
+            <div class="settings-radio-content">
+              <div class="settings-radio-header">
+                <span class="settings-radio-label" id="lbl-opt-full-name">Словами (полные названия)</span>
+              </div>
+              <div class="settings-radio-desc" id="lbl-opt-full-desc">Полные текстовые наименования членов предложения (Predicate, Subject, Direct object)</div>
+              <div class="settings-radio-preview">
+                <span class="preview-token">fears</span>
+                <span class="preview-ul ul-solid"></span>
+                <span class="preview-tag">Predicate</span>
+              </div>
+            </div>
+          </label>
+
+          <!-- Option: Abbreviated words -->
+          <label class="settings-radio-card" id="card-parts-short">
+            <input type="radio" name="cfg-parts-format" value="short" class="settings-radio-input">
+            <div class="settings-radio-content">
+              <div class="settings-radio-header">
+                <span class="settings-radio-label" id="lbl-opt-short-name">Сокращёнными словами</span>
+              </div>
+              <div class="settings-radio-desc" id="lbl-opt-short-desc">Лаконичные текстовые сокращения грамматических ролей (Pred, Subj, DirObj)</div>
+              <div class="settings-radio-preview">
+                <span class="preview-token">fears</span>
+                <span class="preview-ul ul-solid"></span>
+                <span class="preview-tag">Pred</span>
+              </div>
+            </div>
+          </label>
+
+          <!-- Option: Underline symbols only -->
+          <label class="settings-radio-card" id="card-parts-symbols">
+            <input type="radio" name="cfg-parts-format" value="symbols_only" class="settings-radio-input">
+            <div class="settings-radio-content">
+              <div class="settings-radio-header">
+                <span class="settings-radio-label" id="lbl-opt-symbols-name">Только символами подчёркивания</span>
+              </div>
+              <div class="settings-radio-desc" id="lbl-opt-symbols-desc">Классическая школьная графическая схема (═ для сказуемого, — для подлежащего, ╍ для дополнения) без текстовых надписей</div>
+              <div class="settings-radio-preview">
+                <span class="preview-token">fears</span>
+                <span class="preview-ul ul-double"></span>
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Section 2: Floating Popover Toggle -->
+      <div class="settings-group">
+        <div class="settings-group-title" id="lbl-cfg-ui-title">Интерфейс и подсказки</div>
+        
+        <label class="settings-toggle-card">
+          <div class="settings-toggle-info">
+            <div class="settings-toggle-title" id="lbl-cfg-popover-title">Всплывающая панель у выделенного слова</div>
+            <div class="settings-toggle-desc" id="lbl-cfg-popover-desc">Отображать компактный поповер с быстрыми метками активного слоя и горячими клавишами прямо под выделенным словом</div>
+          </div>
+          <input type="checkbox" id="cfg-show-word-popover" class="foma-switch-input" checked>
+          <span class="foma-switch-toggle"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="settings-footer">
+      <div class="settings-status-note" id="lbl-settings-status">Настройки сохраняются автоматически</div>
+      <div style="flex: 1;"></div>
+      <button type="button" id="btn-settings-done" class="foma-btn-primary">Готово</button>
     </div>
   </div>
 </div>

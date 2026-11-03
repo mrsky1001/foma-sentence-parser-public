@@ -248,7 +248,18 @@ function getFAbbr(val) {
 function getSmartLabel(ctx, val, kind, maxW) {
   if (!val) return '';
   const abbrList = (kind === 'm' ? M_ABBR[val] : (kind === 'c' ? C_ABBR[val] : (kind === 'f' ? getFAbbr(val) : null))) || [];
-  const candidates = [val, ...abbrList];
+  let candidates;
+  if (kind === 'm') {
+    if (typeof partsFormat !== 'undefined' && partsFormat === 'full') {
+      candidates = [val, ...abbrList];
+    } else if (typeof partsFormat !== 'undefined' && (partsFormat === 'short' || partsFormat === 'combo')) {
+      candidates = abbrList.length > 1 ? abbrList.slice(1) : [val, ...abbrList];
+    } else {
+      candidates = [val, ...abbrList];
+    }
+  } else {
+    candidates = [val, ...abbrList];
+  }
   const unique = [...new Set(candidates)];
   for (const cand of unique) {
     if (ctx.measureText(cand).width <= maxW) {
@@ -895,9 +906,16 @@ let toks = [], an = [], sel = [], anc = -1, last = -1, tab = 'm', editing = fals
 
 let activeLayer = 'parts'; // 'parts' | 'pos' | 'clauses' | 'tenses' | 'st'
 let renderMode = 'color_focus'; // 'color_focus' | 'bw'
+let showWordPopover = true;
+let partsFormat = 'combo'; // 'combo' | 'full' | 'short' | 'symbols_only'
+
 try {
   const savedRMode = localStorage.getItem('foma_render_mode');
   if (savedRMode === 'bw' || savedRMode === 'color_focus') renderMode = savedRMode;
+  const savedPopover = localStorage.getItem('foma_show_word_popover');
+  if (savedPopover !== null) showWordPopover = (savedPopover !== '0' && savedPopover !== 'false');
+  const savedFormat = localStorage.getItem('foma_parts_format');
+  if (['combo', 'full', 'short', 'symbols_only'].includes(savedFormat)) partsFormat = savedFormat;
 } catch (_) {}
 
 const LAYER_COLORS = {
@@ -1457,11 +1475,27 @@ function renderSmartBelow(ctx, belowList, getSegs, getTok, getLine, hitsCollecto
       if (isColor && !isPartsActive) {
         ul(ctx, 'solid', x1 + 1, x2 - 1, rt + 3, isDark, partsColor, 1.2);
       } else {
-        ul(ctx, MS[a.v] || 'solid', x1 + 1, x2 - 1, rt + 5, isDark, partsColor, 1.5);
-        ctx.font = FS_;
-        ctx.fillStyle = isColor ? LAYER_COLORS.parts : (isDark ? '#a1a1aa' : '#666');
-        const labelText = safeLabels.get(item) || a.v;
-        ctx.fillText(labelText, cx, rt + 19);
+        if (partsFormat === 'symbols_only') {
+          ul(ctx, MS[a.v] || 'solid', x1 + 1, x2 - 1, rt + 5, isDark, partsColor, 1.5);
+        } else if (partsFormat === 'short') {
+          ul(ctx, 'solid', x1 + 1, x2 - 1, rt + 4, isDark, partsColor, 1.2);
+          ctx.font = FS_;
+          ctx.fillStyle = isColor ? LAYER_COLORS.parts : (isDark ? '#a1a1aa' : '#666');
+          const shortText = (M_ABBR[a.v] && M_ABBR[a.v][1]) ? M_ABBR[a.v][1] : (safeLabels.get(item) || a.v);
+          ctx.fillText(shortText, cx, rt + 18);
+        } else if (partsFormat === 'full') {
+          ul(ctx, 'solid', x1 + 1, x2 - 1, rt + 4, isDark, partsColor, 1.2);
+          ctx.font = FS_;
+          ctx.fillStyle = isColor ? LAYER_COLORS.parts : (isDark ? '#a1a1aa' : '#666');
+          ctx.fillText(a.v, cx, rt + 18);
+        } else {
+          // 'combo' (Default): school underline + short name
+          ul(ctx, MS[a.v] || 'solid', x1 + 1, x2 - 1, rt + 5, isDark, partsColor, 1.5);
+          ctx.font = FS_;
+          ctx.fillStyle = isColor ? LAYER_COLORS.parts : (isDark ? '#a1a1aa' : '#666');
+          const labelText = safeLabels.get(item) || a.v;
+          ctx.fillText(labelText, cx, rt + 19);
+        }
       }
     } else if (a.k === 'f') {
       const tensesColor = isColor ? LAYER_COLORS.tenses : (isDark ? '#a5b4fc' : '#4338ca');
@@ -2399,6 +2433,30 @@ function applyStatic() {
   setText('auto-config-stats', 'Настройки сохраняются автоматически', 'Settings are saved automatically');
   setText('btn-auto-config-close', 'Готово', 'Done');
   setText('btn-auto-config-apply', 'Применить к предложению', 'Apply to sentence');
+
+  // Settings Modal
+  setText('lbl-settings-heading', 'Настройки синтаксического разбора', 'Sentence Parser Settings');
+  setText('lbl-settings-sub', 'Формат подписей, режим подчёркиваний и параметры интерфейса', 'Label formatting, underline styles and UI preferences');
+  setTitle('btn-settings-close', 'Закрыть (Esc)', 'Close (Esc)');
+  setText('lbl-cfg-parts-title', 'Отображение членов предложения', 'Sentence Parts Display');
+  setText('lbl-cfg-parts-desc', 'Выберите, как оформлять грамматические роли слов на схеме предложения:', 'Select formatting style for grammatical roles below words:');
+  setText('lbl-opt-combo-name', 'Комбинация: подчёркивание и сокр. имя', 'Combination: underline & short name');
+  setText('lbl-opt-combo-tag', 'Рекомендуется', 'Recommended');
+  setText('lbl-opt-combo-desc', 'Школьные символы подчёркивания (═, —, ╍, 〰) вместе с кратким обозначением роли под словом (Pred, Subj, DirObj)', 'School underline symbols (═, —, ╍, 〰) with short grammatical tags (Pred, Subj, DirObj)');
+  setText('lbl-opt-full-name', 'Словами (полные названия)', 'Full words (complete names)');
+  setText('lbl-opt-full-desc', 'Полные текстовые наименования членов предложения (Predicate, Subject, Direct object)', 'Complete word names for sentence members (Predicate, Subject, Direct object)');
+  setText('lbl-opt-short-name', 'Сокращёнными словами', 'Abbreviated words');
+  setText('lbl-opt-short-desc', 'Лаконичные текстовые сокращения грамматических ролей (Pred, Subj, DirObj)', 'Concise grammatical role abbreviations (Pred, Subj, DirObj)');
+  setText('lbl-opt-symbols-name', 'Только символами подчёркивания', 'Underlines only (no text labels)');
+  setText('lbl-opt-symbols-desc', 'Классическая школьная графическая схема (═ для сказуемого, — для подлежащего, ╍ для дополнения) без текстовых надписей', 'Classic graphic underlines (═, —, ╍, 〰) without text labels');
+  setText('lbl-cfg-ui-title', 'Интерфейс и подсказки', 'Interface & Controls');
+  setText('lbl-cfg-popover-title', 'Всплывающая панель у выделенного слова', 'Floating word selection popover');
+  setText('lbl-cfg-popover-desc', 'Отображать компактный поповер с быстрыми метками активного слоя и горячими клавишами прямо под выделенным словом', 'Show quick tag popover with shortcut badges directly at selected word');
+  setText('lbl-settings-status', 'Настройки сохраняются автоматически', 'Settings are saved automatically');
+  setText('btn-settings-done', 'Готово', 'Done');
+  setTitle('btn-settings', 'Настройки сайта (Ctrl+,)', 'Site Settings (Ctrl+,)');
+  setText('lbl-sidebar-settings', 'Настройки', 'Settings');
+  setTitle('btn-sidebar-settings', 'Настройки отображения и сайта', 'Display and site settings');
 
   setupLayerFilterToolbar();
   updateAiKeyInlineBar();
@@ -4627,7 +4685,7 @@ function updateWordPopover() {
   const popover = $('word-popover');
   if (!popover) return;
 
-  if (!sel || !sel.length) {
+  if (!showWordPopover || !sel || !sel.length) {
     popover.style.display = 'none';
     return;
   }
@@ -6121,6 +6179,78 @@ function setupAuto100ConfigModal() {
   });
 }
 
+function setShowWordPopover(val) {
+  showWordPopover = Boolean(val);
+  try {
+    localStorage.setItem('foma_show_word_popover', showWordPopover ? '1' : '0');
+    chrome.storage?.local?.set({ foma_show_word_popover: showWordPopover });
+  } catch (_) {}
+  updateWordPopover();
+}
+
+function setPartsFormat(format) {
+  if (!['combo', 'full', 'short', 'symbols_only'].includes(format)) return;
+  partsFormat = format;
+  try {
+    localStorage.setItem('foma_parts_format', partsFormat);
+    chrome.storage?.local?.set({ foma_parts_format: partsFormat });
+  } catch (_) {}
+  render();
+  if (currentTopMode === 'ai') renderAiCanvas();
+}
+
+function setupSettingsModal() {
+  const overlay = $('settings-overlay');
+  if (!overlay) return;
+
+  function syncControlsFromState() {
+    const radio = document.querySelector(`input[name="cfg-parts-format"][value="${partsFormat}"]`);
+    if (radio) radio.checked = true;
+    const popToggle = $('cfg-show-word-popover');
+    if (popToggle) popToggle.checked = Boolean(showWordPopover);
+  }
+
+  function openModal() {
+    syncControlsFromState();
+    overlay.style.display = 'flex';
+  }
+
+  function closeModal() {
+    overlay.style.display = 'none';
+  }
+
+  $('btn-settings')?.addEventListener('click', openModal);
+  $('btn-sidebar-settings')?.addEventListener('click', openModal);
+  $('btn-settings-close')?.addEventListener('click', closeModal);
+  $('btn-settings-done')?.addEventListener('click', closeModal);
+
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) closeModal();
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && overlay.style.display !== 'none') {
+      closeModal();
+    } else if ((e.ctrlKey || e.metaKey) && e.key === ',') {
+      e.preventDefault();
+      if (overlay.style.display !== 'none') closeModal();
+      else openModal();
+    }
+  });
+
+  document.querySelectorAll('input[name="cfg-parts-format"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      if (radio.checked) {
+        setPartsFormat(radio.value);
+      }
+    });
+  });
+
+  $('cfg-show-word-popover')?.addEventListener('change', e => {
+    setShowWordPopover(e.target.checked);
+  });
+}
+
 $('auto').onclick = () => {
   const count = runAuto100Tagger(auto100Rules);
   if (count > 0) saveCurrentToHistory(false);
@@ -7165,6 +7295,7 @@ async function init() {
   setupTopModeEvents();
   setupJsonImportModal();
   setupAuto100ConfigModal();
+  setupSettingsModal();
 
   const isPublicWeb = document.documentElement.getAttribute('data-env') === 'public';
   if (isPublicWeb) {
@@ -7191,12 +7322,20 @@ async function init() {
       'foma_dock_layout', 'foma_inner_dock_layout', 'foma_ai_layers', 'foma_is_full_height', 'foma_canvas_height',
       'foma_edit_panel_open',
       'foma_auto_100_rules',
+      'foma_show_word_popover',
+      'foma_parts_format',
       HIST_KEY
     ], res => {
       if (res.foma_theme) {
         setTheme(res.foma_theme, false);
       } else {
         setTheme('light', false);
+      }
+      if (res.foma_show_word_popover !== undefined) {
+        showWordPopover = Boolean(res.foma_show_word_popover);
+      }
+      if (res.foma_parts_format && ['combo', 'full', 'short', 'symbols_only'].includes(res.foma_parts_format)) {
+        partsFormat = res.foma_parts_format;
       }
       if (res.foma_auto_100_rules) {
         auto100Rules = { ...DEFAULT_AUTO_100_RULES, ...res.foma_auto_100_rules };
@@ -7299,6 +7438,10 @@ async function init() {
       } else {
         setTheme('light', false);
       }
+      const savedPopover = localStorage.getItem('foma_show_word_popover');
+      if (savedPopover !== null) showWordPopover = (savedPopover !== '0' && savedPopover !== 'false');
+      const savedFormat = localStorage.getItem('foma_parts_format');
+      if (['combo', 'full', 'short', 'symbols_only'].includes(savedFormat)) partsFormat = savedFormat;
     } catch (_) {}
     loadHistory();
     setupSentence(initialText);
