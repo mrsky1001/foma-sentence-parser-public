@@ -566,6 +566,56 @@ button:disabled:hover {
   color: var(--accink);
 }
 
+/* ─── Scheme Bottom Bar (Under Diagram, Aligned Left) ─── */
+.scheme-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 5px 12px;
+  background: var(--bg-card, #ffffff);
+  border-bottom: 1px solid var(--line, #e2e8f0);
+}
+
+.btn-scheme-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.btn-scheme-edit svg {
+  width: 13px;
+  height: 13px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.btn-scheme-edit:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.btn-scheme-edit.on {
+  background: rgba(204, 106, 71, 0.12) !important;
+  border-color: rgba(204, 106, 71, 0.4) !important;
+  color: #cc6a47 !important;
+  font-weight: 600;
+}
+
 .btn-close-edit {
   background: transparent;
   border: 1px solid transparent;
@@ -583,7 +633,7 @@ button:disabled:hover {
 
 .edit {
   padding: 10px 12px 12px;
-  border-top: 1px solid var(--line);
+  border-top: none;
   transition: background 0.2s ease;
 }
 
@@ -5077,6 +5127,29 @@ h2.sec {
 
 [data-theme="dark"] .word-hover-val {
   color: #f4f4f5 !important;
+}
+
+[data-theme="dark"] .scheme-bottom-bar {
+  background: #141416 !important;
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="dark"] .btn-scheme-edit {
+  background: #202024 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #d4d4d8 !important;
+}
+
+[data-theme="dark"] .btn-scheme-edit:hover {
+  background: #2a2a2f !important;
+  border-color: #3f3f46 !important;
+  color: #f4f4f5 !important;
+}
+
+[data-theme="dark"] .btn-scheme-edit.on {
+  background: rgba(204, 106, 71, 0.22) !important;
+  border-color: rgba(204, 106, 71, 0.45) !important;
+  color: #f08967 !important;
 }
 
 [data-theme="dark"] .btn-inner-tool {

@@ -2318,9 +2318,15 @@ function applyStatic() {
   // Sidebar Controls
   const ed = $('ed');
   const isEditOpen = ed && !ed.classList.contains('collapsed') && ed.style.display !== 'none';
-  setText('btn-toggle-edit', isEditOpen ? 'Скрыть текст' : 'Изменить текст', isEditOpen ? 'Hide text' : 'Edit text');
-  setTitle('btn-toggle-edit', isEditOpen ? 'Скрыть поле редактирования текста' : 'Редактировать текст предложения (показать / скрыть поле)', isEditOpen ? 'Hide text editing field' : 'Edit sentence text (show / hide field)');
-  setText('lbl-btn-edit-text', isEditOpen ? 'Скрыть текст' : 'Изменить текст', isEditOpen ? 'Hide text' : 'Edit text');
+  const btn = $('btn-toggle-edit');
+  if (btn) {
+    btn.classList.toggle('on', !!isEditOpen);
+    btn.setAttribute('aria-expanded', isEditOpen ? 'true' : 'false');
+    btn.title = isEditOpen
+      ? L('Скрыть поле редактирования текста', 'Hide text editing field')
+      : L('Редактировать текст предложения (показать / скрыть поле)', 'Edit sentence text (show / hide field)');
+  }
+  setText('lbl-btn-edit-text', isEditOpen ? 'Скрыть текст' : 'Редактировать текст', isEditOpen ? 'Hide text' : 'Edit text');
   setText('auto', 'Авто (100%)', 'Auto (100%)');
   setTitle('auto', 'Автоматически расставить выбранные параметры со 100% уверенностью', 'Automatically set selected features with 100% confidence');
   setTitle('btn-auto-config', 'Настроить параметры авторасстановки (100% уверенность)', 'Configure auto 100% parameters');
@@ -2340,7 +2346,7 @@ function applyStatic() {
   setText('lbl-sec-view', 'Вид', 'View');
   setText('btn-render-color', 'Цветной', 'Color focus');
   setText('btn-render-bw', 'Ч/Б', 'B&W');
-  setText('lbl-sec-text', 'Текст', 'Text');
+  setText('lbl-sec-text', 'Авторасстановка', 'Auto markup');
   setText('lbl-btn-import-json', 'Импорт JSON', 'Import JSON');
   setText('btn-json-import', 'Импорт JSON', 'Import JSON');
   setTitle('btn-json-import', 'Вставить готовый JSON-разбор от ChatGPT / Gemini / Claude', 'Paste pre-made JSON parse from ChatGPT / Gemini / Claude');
@@ -6661,7 +6667,8 @@ function toggleEditPanel(show) {
     if (btn) {
       btn.classList.add('on');
       btn.setAttribute('aria-expanded', 'true');
-      btn.textContent = L('Скрыть текст', 'Hide text');
+      const lbl = btn.querySelector('#lbl-btn-edit-text') || btn;
+      lbl.textContent = L('Скрыть текст', 'Hide text');
       btn.title = L('Скрыть поле редактирования текста', 'Hide text editing field');
     }
     ta.focus();
@@ -6671,7 +6678,8 @@ function toggleEditPanel(show) {
     if (btn) {
       btn.classList.remove('on');
       btn.setAttribute('aria-expanded', 'false');
-      btn.textContent = L('Редактировать текст', 'Edit text');
+      const lbl = btn.querySelector('#lbl-btn-edit-text') || btn;
+      lbl.textContent = L('Редактировать текст', 'Edit text');
       btn.title = L('Редактировать текст предложения (показать / скрыть поле)', 'Edit sentence text (show / hide field)');
     }
   }

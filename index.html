@@ -149,13 +149,9 @@
 
           <div class="sidebar-sep"></div>
 
-          <!-- 4. Text Group -->
+          <!-- 4. Automation Group -->
           <div class="sidebar-section">
-            <div class="sidebar-sec-title" id="lbl-sec-text">Текст</div>
-            <button type="button" id="btn-toggle-edit" class="sidebar-row-btn" title="Редактировать текст предложения" aria-expanded="false">
-              <svg viewBox="0 0 24 24" class="ic-xs"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-              <span id="lbl-btn-edit-text">Изменить текст</span>
-            </button>
+            <div class="sidebar-sec-title" id="lbl-sec-text">Авторасстановка</div>
             
             <div class="auto-btn-group" id="auto-btn-group" style="width: 100%;">
               <button type="button" id="auto" class="sidebar-row-btn" title="Автоматически расставить выбранные параметры со 100% уверенностью" style="flex:1;">Авто (100%)</button>
@@ -189,6 +185,14 @@
       </div>
       <div class="canvas-resizer" id="canvas-resizer" title="Потяните вверх или вниз, чтобы изменить высоту области схемы (двойной клик — сброс)">
         <div class="canvas-resizer-handle"></div>
+      </div>
+
+      <!-- Bottom toolbar under scheme, aligned left -->
+      <div class="scheme-bottom-bar" id="scheme-bottom-bar">
+        <button type="button" id="btn-toggle-edit" class="btn-toggle-edit btn-scheme-edit" title="Редактировать текст предложения" aria-expanded="false">
+          <svg viewBox="0 0 24 24" class="ic-xs"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+          <span id="lbl-btn-edit-text">Редактировать текст</span>
+        </button>
       </div>
 
       <div class="edit collapsed" id="ed" style="display: none;">
