@@ -2802,6 +2802,86 @@ footer button.pri:active,
   color: #dc2626;
 }
 
+/* ─── Column Mode for Word Popover ─── */
+.word-popover.layout-column {
+  min-width: 230px;
+  max-width: min(320px, calc(100% - 24px));
+}
+
+.word-popover.layout-column .word-popover-body {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 3px;
+  max-height: 290px;
+  overflow-y: auto;
+}
+
+.word-popover.layout-column .word-popover-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 5px 9px;
+  font-size: 12px;
+  box-sizing: border-box;
+}
+
+.word-popover.layout-column .word-popover-btn .kbd-badge {
+  margin-left: auto;
+}
+
+.word-popover.layout-column .pop-sym {
+  min-width: 36px;
+  display: inline-block;
+  margin-right: 6px;
+}
+
+.word-popover.layout-column .word-sub-group {
+  margin-top: 6px;
+}
+
+.word-popover.layout-column .word-sub-chips {
+  flex-direction: column;
+  gap: 3px;
+}
+
+.word-popover.layout-column .word-sub-btn {
+  width: 100%;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  padding: 0 9px;
+}
+
+.word-popover.layout-column .word-sub-btn .check-mark {
+  margin-left: auto;
+}
+
+.word-nav-btn-layout {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  padding: 2px 5px;
+}
+
+.word-nav-btn-layout:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+[data-theme="dark"] .word-nav-btn-layout {
+  background: #202024 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #d4d4d8 !important;
+}
+
+[data-theme="dark"] .word-nav-btn-layout:hover {
+  background: #27272a !important;
+  color: #f4f4f5 !important;
+}
+
 /* ── Word Hover Tooltip (Details on Hover) ───────────────────── */
 .word-hover-tooltip {
   position: absolute;

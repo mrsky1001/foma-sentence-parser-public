@@ -907,6 +907,7 @@ let toks = [], an = [], sel = [], anc = -1, last = -1, tab = 'm', editing = fals
 let activeLayer = 'parts'; // 'parts' | 'pos' | 'clauses' | 'tenses' | 'st'
 let renderMode = 'color_focus'; // 'color_focus' | 'bw'
 let showWordPopover = true;
+let wordPopoverLayout = 'row'; // 'row' | 'column'
 let partsFormat = 'combo'; // 'combo' | 'full' | 'short' | 'symbols_only'
 
 try {
@@ -914,6 +915,8 @@ try {
   if (savedRMode === 'bw' || savedRMode === 'color_focus') renderMode = savedRMode;
   const savedPopover = localStorage.getItem('foma_show_word_popover');
   if (savedPopover !== null) showWordPopover = (savedPopover !== '0' && savedPopover !== 'false');
+  const savedLayout = localStorage.getItem('foma_word_popover_layout');
+  if (savedLayout === 'column' || savedLayout === 'row') wordPopoverLayout = savedLayout;
   const savedFormat = localStorage.getItem('foma_parts_format');
   if (['combo', 'full', 'short', 'symbols_only'].includes(savedFormat)) partsFormat = savedFormat;
 } catch (_) {}
@@ -2458,6 +2461,12 @@ function applyStatic() {
   setText('lbl-cfg-ui-title', 'Интерфейс и подсказки', 'Interface & Controls');
   setText('lbl-cfg-popover-title', 'Всплывающая панель у выделенного слова', 'Floating word selection popover');
   setText('lbl-cfg-popover-desc', 'Отображать компактный поповер с быстрыми метками активного слоя и горячими клавишами прямо под выделенным словом', 'Show quick tag popover with shortcut badges directly at selected word');
+  setText('lbl-cfg-popover-layout-title', 'Ориентация всплывающей панели', 'Popover layout orientation');
+  setText('lbl-cfg-popover-layout-desc', 'Отображать метки под словом компактными строками (чипами) или вертикальным списком в столбец', 'Display tags below word in wrapping rows (chips) or as a vertical column');
+  setText('btn-layout-row', 'Строка', 'Row');
+  setText('btn-layout-col', 'Столбец', 'Column');
+  setTitle('btn-layout-row', 'Горизонтальные чипы в несколько строк', 'Horizontal chips wrapping in rows');
+  setTitle('btn-layout-col', 'Вертикальный список в один столбец', 'Vertical list in a single column');
   setText('lbl-settings-status', 'Настройки сохраняются автоматически', 'Settings are saved automatically');
   setText('btn-settings-done', 'Готово', 'Done');
   setTitle('btn-settings', 'Настройки сайта (Ctrl+,)', 'Site Settings (Ctrl+,)');
@@ -4890,6 +4899,7 @@ function updateWordPopover() {
   const topY = L ? (L.b + (L.mb ? 12 + L.mb * MR : 20)) : 100;
 
   popover.style.display = 'flex';
+  popover.classList.toggle('layout-column', wordPopoverLayout === 'column');
   popover.innerHTML = '';
 
   const primaryTok = selectedToks[0];
@@ -4943,7 +4953,7 @@ function updateWordPopover() {
 
   navEl.appendChild(stepsEl);
 
-  // Nav Actions: Back, Done, Clear
+  // Nav Actions: Back, Layout toggle, Done, Clear
   const navActions = document.createElement('div');
   navActions.className = 'word-nav-actions';
 
@@ -4961,6 +4971,23 @@ function updateWordPopover() {
     });
     navActions.appendChild(backBtn);
   }
+
+  // Quick 1-click Layout Switcher (Row vs Column)
+  const layoutBtn = document.createElement('button');
+  layoutBtn.type = 'button';
+  layoutBtn.className = 'word-nav-btn word-nav-btn-layout';
+  const isCol = wordPopoverLayout === 'column';
+  layoutBtn.innerHTML = isCol
+    ? `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>`
+    : `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="4" y="4" width="6" height="16" rx="1.5"/><rect x="14" y="4" width="6" height="16" rx="1.5"/></svg>`;
+  layoutBtn.title = isCol
+    ? (TL === 'ru' ? 'Переключить в строку (чипы)' : 'Switch to row layout')
+    : (TL === 'ru' ? 'Переключить в столбец' : 'Switch to column layout');
+  layoutBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    setWordPopoverLayout(wordPopoverLayout === 'column' ? 'row' : 'column');
+  });
+  navActions.appendChild(layoutBtn);
 
   const doneBtn = document.createElement('button');
   doneBtn.type = 'button';
@@ -6609,6 +6636,20 @@ function setShowWordPopover(val) {
   updateWordPopover();
 }
 
+function setWordPopoverLayout(layout) {
+  if (layout !== 'column' && layout !== 'row') return;
+  wordPopoverLayout = layout;
+  try {
+    localStorage.setItem('foma_word_popover_layout', wordPopoverLayout);
+    chrome.storage?.local?.set({ foma_word_popover_layout: wordPopoverLayout });
+  } catch (_) {}
+  const popover = $('word-selection-popover');
+  if (popover) {
+    popover.classList.toggle('layout-column', wordPopoverLayout === 'column');
+  }
+  updateWordPopover();
+}
+
 function setPartsFormat(format) {
   if (!['combo', 'full', 'short', 'symbols_only'].includes(format)) return;
   partsFormat = format;
@@ -6629,6 +6670,9 @@ function setupSettingsModal() {
     if (radio) radio.checked = true;
     const popToggle = $('cfg-show-word-popover');
     if (popToggle) popToggle.checked = Boolean(showWordPopover);
+    const isCol = wordPopoverLayout === 'column';
+    $('btn-layout-row')?.classList.toggle('active', !isCol);
+    $('btn-layout-col')?.classList.toggle('active', isCol);
   }
 
   function openModal() {
@@ -6669,6 +6713,16 @@ function setupSettingsModal() {
 
   $('cfg-show-word-popover')?.addEventListener('change', e => {
     setShowWordPopover(e.target.checked);
+  });
+
+  $('btn-layout-row')?.addEventListener('click', () => {
+    setWordPopoverLayout('row');
+    syncControlsFromState();
+  });
+
+  $('btn-layout-col')?.addEventListener('click', () => {
+    setWordPopoverLayout('column');
+    syncControlsFromState();
   });
 }
 
@@ -7791,6 +7845,7 @@ async function init() {
       'foma_edit_panel_open',
       'foma_auto_100_rules',
       'foma_show_word_popover',
+      'foma_word_popover_layout',
       'foma_parts_format',
       HIST_KEY
     ], res => {
@@ -7801,6 +7856,9 @@ async function init() {
       }
       if (res.foma_show_word_popover !== undefined) {
         showWordPopover = Boolean(res.foma_show_word_popover);
+      }
+      if (res.foma_word_popover_layout && (res.foma_word_popover_layout === 'row' || res.foma_word_popover_layout === 'column')) {
+        wordPopoverLayout = res.foma_word_popover_layout;
       }
       if (res.foma_parts_format && ['combo', 'full', 'short', 'symbols_only'].includes(res.foma_parts_format)) {
         partsFormat = res.foma_parts_format;
@@ -7908,6 +7966,8 @@ async function init() {
       }
       const savedPopover = localStorage.getItem('foma_show_word_popover');
       if (savedPopover !== null) showWordPopover = (savedPopover !== '0' && savedPopover !== 'false');
+      const savedLayout = localStorage.getItem('foma_word_popover_layout');
+      if (savedLayout === 'column' || savedLayout === 'row') wordPopoverLayout = savedLayout;
       const savedFormat = localStorage.getItem('foma_parts_format');
       if (['combo', 'full', 'short', 'symbols_only'].includes(savedFormat)) partsFormat = savedFormat;
     } catch (_) {}

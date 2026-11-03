@@ -545,6 +545,18 @@
           <input type="checkbox" id="cfg-show-word-popover" class="foma-switch-input" checked>
           <span class="foma-switch-toggle"></span>
         </label>
+
+        <!-- Popover Layout: Row vs Column -->
+        <div class="settings-toggle-card" style="margin-top: 8px; align-items: center;">
+          <div class="settings-toggle-info">
+            <div class="settings-toggle-title" id="lbl-cfg-popover-layout-title">Ориентация всплывающей панели</div>
+            <div class="settings-toggle-desc" id="lbl-cfg-popover-layout-desc">Отображать метки под словом компактными строками (чипами) или вертикальным списком в столбец</div>
+          </div>
+          <div class="foma-seg-sm" id="seg-popover-layout" role="radiogroup" aria-label="Ориентация всплывающей панели">
+            <button type="button" class="btn-popover-layout active" data-layout="row" id="btn-layout-row" title="Горизонтальные чипы в несколько строк">Строка</button>
+            <button type="button" class="btn-popover-layout" data-layout="column" id="btn-layout-col" title="Вертикальный список в один столбец">Столбец</button>
+          </div>
+        </div>
       </div>
     </div>
 
