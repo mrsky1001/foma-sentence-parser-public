@@ -4681,6 +4681,180 @@ function updateSidebarPalette() {
   });
 }
 
+let popoverStep = 'parts'; // 'parts' | 'pos' | 'sub'
+let popoverLastSelWord = null;
+
+const POP_PARTS_ITEMS = [
+  { id: 'Subject', name: ['Подлежащее', 'Subject'], sym: '——', kbd: '1' },
+  { id: 'Predicate', name: ['Сказуемое', 'Predicate'], sym: '══', kbd: '2' },
+  { id: 'Predicative', name: ['Предикатив', 'Predicative'], sym: '====', kbd: '3' },
+  { id: 'Direct object', name: ['Прямое дополн.', 'Direct object'], sym: '----', kbd: '4' },
+  { id: 'Indirect object', name: ['Косвенное дополн.', 'Indirect object'], sym: '····', kbd: '5' },
+  { id: 'Attribute', name: ['Определение', 'Attribute'], sym: '~~~~', kbd: '0' },
+  { id: 'AdvM manner', name: ['Обст. образа дейст.', 'AdvM manner'], sym: '-·-·', kbd: '6' },
+  { id: 'AdvM place', name: ['Обст. места', 'AdvM place'], sym: '-·-·', kbd: '7' },
+  { id: 'AdvM time', name: ['Обст. времени', 'AdvM time'], sym: '-·-·', kbd: '8' },
+  { id: 'AdvM frequency', name: ['Обст. частоты', 'AdvM frequency'], sym: '-·-·', kbd: '9' },
+  { id: 'Prepositional object', name: ['Предложное дополн.', 'Prep. object'], sym: '----', kbd: '' },
+  { id: 'Apposition', name: ['Приложение', 'Apposition'], sym: '~~~~', kbd: '' },
+  { id: 'Introductory element', name: ['Вводное слово', 'Intro element'], sym: '····', kbd: '' },
+  { id: 'Address', name: ['Обращение', 'Address'], sym: '····', kbd: '' }
+];
+
+const POP_POS_ITEMS = [
+  { id: 'n', name: ['Существительное', 'Noun'], abbr: 'n.', kbd: '1' },
+  { id: 'v', name: ['Глагол', 'Verb'], abbr: 'v.', kbd: '2' },
+  { id: 'adj', name: ['Прилагательное', 'Adjective'], abbr: 'adj.', kbd: '3' },
+  { id: 'adv', name: ['Наречие', 'Adverb'], abbr: 'adv.', kbd: '4' },
+  { id: 'pron', name: ['Местоимение', 'Pronoun'], abbr: 'pron.', kbd: '5' },
+  { id: 'prep', name: ['Предлог', 'Preposition'], abbr: 'prep.', kbd: '6' },
+  { id: 'conj', name: ['Союз', 'Conjunction'], abbr: 'conj.', kbd: '7' },
+  { id: 'art', name: ['Артикль', 'Article'], abbr: 'art.', kbd: '8' },
+  { id: 'num', name: ['Числительное', 'Numeral'], abbr: 'num.', kbd: '9' },
+  { id: 'part', name: ['Частица', 'Particle'], abbr: 'part.', kbd: '0' },
+  { id: 'det', name: ['Детерминатив', 'Determiner'], abbr: 'det.', kbd: '' },
+  { id: 'int', name: ['Междометие', 'Interjection'], abbr: 'int.', kbd: '' }
+];
+
+const POS_GROUP_TITLES = {
+  n: [
+    ['Тип', 'Type'],
+    ['Исчисляемость', 'Countability'],
+    ['Категория', 'Category'],
+    ['Число', 'Number'],
+    ['Падеж', 'Case']
+  ],
+  pron: [
+    ['Разряд', 'Type'],
+    ['Падеж', 'Case'],
+    ['Форма', 'Form']
+  ],
+  adj: [
+    ['Разряд', 'Type'],
+    ['Степень', 'Degree']
+  ],
+  num: [
+    ['Тип', 'Type']
+  ],
+  v: [
+    ['Функция', 'Function'],
+    ['Форма', 'Form'],
+    ['Спряжение', 'Conjugation'],
+    ['Переходность', 'Transitivity']
+  ],
+  adv: [
+    ['Значение', 'Meaning'],
+    ['Степень', 'Degree']
+  ],
+  art: [
+    ['Тип', 'Type']
+  ],
+  prep: [
+    ['Состав', 'Structure'],
+    ['Значение', 'Meaning']
+  ],
+  conj: [
+    ['Разряд', 'Type']
+  ],
+  part: [
+    ['Значение', 'Meaning']
+  ],
+  det: [
+    ['Тип', 'Type']
+  ]
+};
+
+const SUB_LOCALES = {
+  // Noun
+  'common': ['нарицательное', 'common'],
+  'proper': ['собственное', 'proper'],
+  'countable': ['исчисляемое', 'countable'],
+  'uncountable': ['неисчисляемое', 'uncountable'],
+  'concrete': ['конкретное', 'concrete'],
+  'abstract': ['абстрактное', 'abstract'],
+  'collective': ['собирательное', 'collective'],
+  'material': ['вещественное', 'material'],
+  'singular': ['ед. число', 'singular'],
+  'plural': ['мн. число', 'plural'],
+  'common case': ['общий падеж', 'common case'],
+  'possessive case': ['притяжательный', 'possessive case'],
+
+  // Pronoun
+  'personal': ['личное', 'personal'],
+  'possessive': ['притяжательное', 'possessive'],
+  'reflexive': ['возвратное', 'reflexive'],
+  'demonstrative': ['указательное', 'demonstrative'],
+  'interrogative': ['вопросительное', 'interrogative'],
+  'relative': ['относительное', 'relative'],
+  'indefinite': ['неопределенное', 'indefinite'],
+  'negative': ['отрицательное', 'negative'],
+  'reciprocal': ['взаимное', 'reciprocal'],
+  'defining': ['определительное', 'defining'],
+  'nominative': ['именительный (nom)', 'nominative'],
+  'objective': ['объектный (obj)', 'objective'],
+  'conjoint': ['присоединенная (my)', 'conjoint'],
+  'absolute': ['абсолютная (mine)', 'absolute'],
+
+  // Verb
+  'notional': ['смысловой', 'notional'],
+  'auxiliary': ['вспомогательный', 'auxiliary'],
+  'modal': ['модальный', 'modal'],
+  'link': ['связка', 'link'],
+  'finite': ['личная форма', 'finite'],
+  'infinitive': ['инфинитив', 'infinitive'],
+  'gerund': ['герундий', 'gerund'],
+  'participle I': ['причастие I (-ing)', 'participle I'],
+  'participle II': ['причастие II (-ed)', 'participle II'],
+  'regular': ['правильный', 'regular'],
+  'irregular': ['неправильный', 'irregular'],
+  'transitive': ['переходный', 'transitive'],
+  'intransitive': ['непереходный', 'intransitive'],
+
+  // Adjective
+  'qualitative': ['качественное', 'qualitative'],
+  'relative': ['относительное', 'relative'],
+  'positive': ['положительная', 'positive'],
+  'comparative': ['сравнительная', 'comparative'],
+  'superlative': ['превосходная', 'superlative'],
+
+  // Adverb
+  'manner': ['образа действия', 'manner'],
+  'place': ['места', 'place'],
+  'time': ['времени', 'time'],
+  'frequency': ['частотности', 'frequency'],
+  'degree': ['степени', 'degree'],
+  'interrogative': ['вопросительное', 'interrogative'],
+
+  // Numeral
+  'cardinal': ['количественное', 'cardinal'],
+  'ordinal': ['порядковое', 'ordinal'],
+
+  // Article
+  'definite': ['определенный (the)', 'definite'],
+  'indefinite': ['неопределенный (a/an)', 'indefinite'],
+
+  // Preposition
+  'simple': ['простой', 'simple'],
+  'compound': ['составной', 'compound'],
+  'phrasal': ['фразовый', 'phrasal'],
+  'direction': ['направления', 'direction'],
+  'cause': ['причины', 'cause'],
+  'other': ['другое', 'other'],
+
+  // Conjunction
+  'coordinating': ['сочинительный', 'coordinating'],
+  'subordinating': ['подчинительный', 'subordinating'],
+  'correlative': ['двойной/парный', 'correlative'],
+
+  // Particle
+  'infinitive to': ['частица to', 'infinitive to'],
+  'emphatic': ['усилительная', 'emphatic'],
+
+  // Determiner
+  'quantifier': ['количественный', 'quantifier'],
+  'distributive': ['разделительный', 'distributive']
+};
+
 function updateWordPopover() {
   const popover = $('word-popover');
   if (!popover) return;
@@ -4696,6 +4870,12 @@ function updateWordPopover() {
     return;
   }
 
+  const selKey = sel.join(',');
+  if (selKey !== popoverLastSelWord) {
+    popoverLastSelWord = selKey;
+    popoverStep = 'parts';
+  }
+
   const minX = Math.min(...selectedToks.map(t => t.x));
   const maxX = Math.max(...selectedToks.map(t => t.x + t.w));
   const centerX = (minX + maxX) / 2;
@@ -4704,40 +4884,98 @@ function updateWordPopover() {
   const topY = L ? (L.b + (L.mb ? 12 + L.mb * MR : 20)) : 100;
 
   popover.style.display = 'flex';
-  popover.style.left = Math.max(120, Math.min(centerX, ($('wrap')?.clientWidth || 800) - 140)) + 'px';
+  const wrapW = $('wrap')?.clientWidth || 800;
+  popover.style.left = Math.max(160, Math.min(centerX, wrapW - 180)) + 'px';
   popover.style.top = topY + 'px';
 
-  const cfg = SIDEBAR_PALETTES[activeLayer] || SIDEBAR_PALETTES.parts;
   popover.innerHTML = '';
 
-  const topItems = cfg.items.slice(0, 6);
-  topItems.forEach(item => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'word-popover-btn';
-    const label = TL === 'ru' ? item.name[0] : item.name[1];
-    const shortLabel = item.abbr || label.split(' ')[0];
-    const kbdHtml = item.kbd ? `<span class="kbd-badge">${item.kbd}</span>` : '';
+  const primaryTok = selectedToks[0];
+  const curPos = primaryTok?.p;
 
-    btn.innerHTML = `<span>${shortLabel}</span>${kbdHtml}`;
-    btn.title = label;
+  // 1. Navigation / Step Header
+  const navEl = document.createElement('div');
+  navEl.className = 'word-popover-nav';
 
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      cfg.apply(item);
-      updateWordPopover();
-      updateSidebarPalette();
-      updateProgressBar();
-    });
+  const stepsEl = document.createElement('div');
+  stepsEl.className = 'word-popover-steps';
 
-    popover.appendChild(btn);
+  // Step 1: Члены
+  const step1Btn = document.createElement('button');
+  step1Btn.type = 'button';
+  step1Btn.className = 'word-step-btn' + (popoverStep === 'parts' ? ' active' : '');
+  step1Btn.textContent = TL === 'ru' ? '1. Член' : '1. Part';
+  step1Btn.title = TL === 'ru' ? 'Шаг 1: Выбрать член предложения' : 'Step 1: Choose sentence part';
+  step1Btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    popoverStep = 'parts';
+    updateWordPopover();
   });
+  stepsEl.appendChild(step1Btn);
+
+  // Step 2: POS
+  const step2Btn = document.createElement('button');
+  step2Btn.type = 'button';
+  step2Btn.className = 'word-step-btn' + (popoverStep === 'pos' ? ' active' : '');
+  step2Btn.textContent = TL === 'ru' ? '2. POS' : '2. POS';
+  step2Btn.title = TL === 'ru' ? 'Шаг 2: Выбрать часть речи' : 'Step 2: Choose part of speech';
+  step2Btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    popoverStep = 'pos';
+    updateWordPopover();
+  });
+  stepsEl.appendChild(step2Btn);
+
+  // Step 3: Доп.
+  const step3Btn = document.createElement('button');
+  step3Btn.type = 'button';
+  step3Btn.className = 'word-step-btn' + (popoverStep === 'sub' ? ' active' : '');
+  step3Btn.textContent = TL === 'ru' ? '3. Доп.' : '3. Sub';
+  step3Btn.title = TL === 'ru' ? 'Шаг 3: Дополнительные параметры части речи' : 'Step 3: Sub-parameters';
+  step3Btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    popoverStep = 'sub';
+    updateWordPopover();
+  });
+  stepsEl.appendChild(step3Btn);
+
+  navEl.appendChild(stepsEl);
+
+  // Nav Actions: Back, Done, Clear
+  const navActions = document.createElement('div');
+  navActions.className = 'word-nav-actions';
+
+  if (popoverStep !== 'parts') {
+    const backBtn = document.createElement('button');
+    backBtn.type = 'button';
+    backBtn.className = 'word-nav-btn word-nav-btn-back';
+    backBtn.textContent = '←';
+    backBtn.title = TL === 'ru' ? 'Назад' : 'Back';
+    backBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (popoverStep === 'sub') popoverStep = 'pos';
+      else if (popoverStep === 'pos') popoverStep = 'parts';
+      updateWordPopover();
+    });
+    navActions.appendChild(backBtn);
+  }
+
+  const doneBtn = document.createElement('button');
+  doneBtn.type = 'button';
+  doneBtn.className = 'word-nav-btn word-nav-btn-done';
+  doneBtn.innerHTML = `<span>✓</span><span>${TL === 'ru' ? 'Готово' : 'Done'}</span>`;
+  doneBtn.title = TL === 'ru' ? 'Завершить выбор' : 'Done';
+  doneBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    popover.style.display = 'none';
+  });
+  navActions.appendChild(doneBtn);
 
   const delBtn = document.createElement('button');
   delBtn.type = 'button';
-  delBtn.className = 'word-popover-btn word-popover-del';
-  delBtn.innerHTML = `<span>✕</span><span class="kbd-badge">Del</span>`;
-  delBtn.title = L('Снять разметку (Del)', 'Remove tags (Del)');
+  delBtn.className = 'word-nav-btn word-nav-btn-del';
+  delBtn.innerHTML = `<span>✕</span>`;
+  delBtn.title = TL === 'ru' ? 'Снять метки (Del)' : 'Remove marks (Del)';
   delBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     del();
@@ -4745,7 +4983,145 @@ function updateWordPopover() {
     updateSidebarPalette();
     updateProgressBar();
   });
-  popover.appendChild(delBtn);
+  navActions.appendChild(delBtn);
+
+  navEl.appendChild(navActions);
+  popover.appendChild(navEl);
+
+  // 2. Body Container
+  const bodyEl = document.createElement('div');
+  bodyEl.className = 'word-popover-body';
+
+  if (popoverStep === 'parts') {
+    // ── STEP 1: SENTENCE PARTS with graphic underline symbol in front ──
+    POP_PARTS_ITEMS.forEach(item => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'word-popover-btn';
+      const label = TL === 'ru' ? item.name[0] : item.name[1];
+      const kbdHtml = item.kbd ? `<span class="kbd-badge">${item.kbd}</span>` : '';
+      const symHtml = `<span class="pop-sym">${item.sym}</span>`;
+
+      const isPartActive = an.some(a => a.k === 'm' && a.v === item.id && sel.every(si => a.ix.includes(si)));
+      if (isPartActive) btn.classList.add('active');
+
+      btn.innerHTML = `${symHtml}<span>${label}</span>${kbdHtml}`;
+      btn.title = label;
+
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setA('m', item.id);
+        popoverStep = 'pos'; // Auto-advance to Step 2
+        updateWordPopover();
+        updateSidebarPalette();
+        updateProgressBar();
+      });
+
+      bodyEl.appendChild(btn);
+    });
+  } else if (popoverStep === 'pos') {
+    // ── STEP 2: PARTS OF SPEECH ──
+    POP_POS_ITEMS.forEach(item => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'word-popover-btn';
+      const label = TL === 'ru' ? item.name[0] : item.name[1];
+      const kbdHtml = item.kbd ? `<span class="kbd-badge">${item.kbd}</span>` : '';
+
+      const isPosActive = (primaryTok?.p === item.id);
+      if (isPosActive) btn.classList.add('active');
+
+      btn.innerHTML = `<span>${label}</span><span style="color:#10b981;font-weight:600;font-size:11px;">(${item.abbr})</span>${kbdHtml}`;
+      btn.title = `${label} (${item.abbr})`;
+
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setP(item.id);
+        if (PO[item.id]?.[2]?.length > 0) {
+          popoverStep = 'sub'; // Auto-advance to Step 3
+        }
+        updateWordPopover();
+        updateSidebarPalette();
+        updateProgressBar();
+      });
+
+      bodyEl.appendChild(btn);
+    });
+  } else if (popoverStep === 'sub') {
+    // ── STEP 3: SUB-PARAMETERS ──
+    if (!curPos || !PO[curPos]) {
+      const hint = document.createElement('div');
+      hint.style.padding = '8px 12px';
+      hint.style.fontSize = '12px';
+      hint.style.color = '#64748b';
+      hint.textContent = TL === 'ru'
+        ? 'Сначала выберите часть речи на Шаге 2.'
+        : 'Please select a part of speech in Step 2 first.';
+      bodyEl.appendChild(hint);
+    } else {
+      const posName = TL === 'ru' ? (PO[curPos][0] || curPos) : (PO[curPos][0] || curPos);
+      const groups = PO[curPos][2] || [];
+      const titles = POS_GROUP_TITLES[curPos] || [];
+
+      if (!groups.length) {
+        const noSubs = document.createElement('div');
+        noSubs.style.padding = '8px 12px';
+        noSubs.style.fontSize = '12px';
+        noSubs.style.color = '#64748b';
+        noSubs.textContent = TL === 'ru'
+          ? `У части речи «${posName}» нет дополнительных параметров.`
+          : `"${posName}" has no additional parameters.`;
+        bodyEl.appendChild(noSubs);
+      } else {
+        const currentSubs = primaryTok.s || [];
+
+        groups.forEach((group, gIdx) => {
+          const groupTitlePair = titles[gIdx] || [L('Группа', 'Group') + ' ' + (gIdx + 1), 'Group ' + (gIdx + 1)];
+          const gTitle = TL === 'ru' ? groupTitlePair[0] : groupTitlePair[1];
+
+          const groupEl = document.createElement('div');
+          groupEl.className = 'word-sub-group';
+
+          const titleEl = document.createElement('div');
+          titleEl.className = 'word-sub-title';
+          titleEl.textContent = gTitle;
+          groupEl.appendChild(titleEl);
+
+          const chipsEl = document.createElement('div');
+          chipsEl.className = 'word-sub-chips';
+
+          group.forEach(val => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'word-sub-btn';
+
+            const locPair = SUB_LOCALES[val] || [val, val];
+            const locName = TL === 'ru' ? locPair[0] : locPair[1];
+            const isSubActive = currentSubs.includes(val);
+
+            if (isSubActive) btn.classList.add('active');
+
+            btn.innerHTML = `<span>${locName}</span>${isSubActive ? '<span class="check-mark">✓</span>' : ''}`;
+            btn.title = `${val} (${locName})`;
+
+            btn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              togSub(val);
+              updateWordPopover();
+              updateProgressBar();
+            });
+
+            chipsEl.appendChild(btn);
+          });
+
+          groupEl.appendChild(chipsEl);
+          bodyEl.appendChild(groupEl);
+        });
+      }
+    }
+  }
+
+  popover.appendChild(bodyEl);
 }
 
 function updateProgressBar() {
@@ -6480,6 +6856,51 @@ document.addEventListener('keydown', e => {
 
   if (e.target.matches('textarea,input:not([type=checkbox]),select') || e.ctrlKey || e.metaKey || e.altKey) return;
   if (sel.length > 0) {
+    const isPopoverVisible = showWordPopover && $('word-popover')?.style.display !== 'none';
+    if (isPopoverVisible) {
+      if (popoverStep === 'parts') {
+        const match = POP_PARTS_ITEMS.find(it => it.kbd && it.kbd === e.key);
+        if (match) {
+          e.preventDefault();
+          setA('m', match.id);
+          popoverStep = 'pos';
+          updateWordPopover();
+          updateSidebarPalette();
+          updateProgressBar();
+          return;
+        }
+      } else if (popoverStep === 'pos') {
+        const match = POP_POS_ITEMS.find(it => it.kbd && it.kbd === e.key);
+        if (match) {
+          e.preventDefault();
+          setP(match.id);
+          if (PO[match.id]?.[2]?.length > 0) {
+            popoverStep = 'sub';
+          }
+          updateWordPopover();
+          updateSidebarPalette();
+          updateProgressBar();
+          return;
+        } else if (e.key === 'Backspace') {
+          e.preventDefault();
+          popoverStep = 'parts';
+          updateWordPopover();
+          return;
+        }
+      } else if (popoverStep === 'sub') {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          $('word-popover').style.display = 'none';
+          return;
+        } else if (e.key === 'Backspace') {
+          e.preventDefault();
+          popoverStep = 'pos';
+          updateWordPopover();
+          return;
+        }
+      }
+    }
+
     const pal = SIDEBAR_PALETTES[activeLayer] || SIDEBAR_PALETTES.parts;
     const match = pal.items.find(it => it.kbd === e.key);
     if (match) {
