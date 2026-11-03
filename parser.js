@@ -1,11 +1,11 @@
 /**
- * FOMA Sentence Parser — Visual English Sentence Syntax Analyzer
+ * FOMA Sentence Parser (Beta) — Visual English Sentence Syntax Analyzer
  * Author & Developer: Nikita Kolyada (https://foma-creative.com)
  * Company / Organization: foma-creative.com
  *
  * 100% Client-Side Privacy:
  * - No external server tracking or telemetry.
- * - User API keys (Groq, PositionAPI, Custom) are stored solely in local browser storage.
+ * - Autonomous in-browser grammar parsing.
  */
 (function() {
   if (typeof window === 'undefined') return;
@@ -765,6 +765,38 @@ let AI = {
 
 let AIR = '', AII = [];
 let currentTopMode = 'manual'; // 'manual' | 'ai'
+let currentTheme = 'light'; // 'light' | 'dark'
+
+function setTheme(theme, save = true) {
+  currentTheme = theme === 'dark' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  const sun = $('ic-theme-sun');
+  const moon = $('ic-theme-moon');
+  if (sun && moon) {
+    sun.style.display = currentTheme === 'dark' ? 'none' : 'block';
+    moon.style.display = currentTheme === 'dark' ? 'block' : 'none';
+  }
+  const btn = $('btn-theme-toggle');
+  if (btn) {
+    btn.setAttribute('title', currentTheme === 'dark'
+      ? L('Тема: Тёмная (нажмите для переключения на светлую)', 'Theme: Dark (click for light)')
+      : L('Тема: Светлая (нажмите для переключения на тёмную)', 'Theme: Light (click for dark)'));
+  }
+  if (save) {
+    if (typeof chrome !== 'undefined' && chrome.storage?.local) {
+      chrome.storage.local.set({ foma_theme: currentTheme });
+    }
+  }
+  render();
+  if (currentAiIdeal) {
+    const aiCv = $('ai-cv');
+    if (aiCv) renderCustomSchema(aiCv, currentAiIdeal.toks, currentAiIdeal.an, currentAiIdeal.st, +$('sc')?.value || 70);
+  }
+}
+
+function toggleTheme() {
+  setTheme(currentTheme === 'dark' ? 'light' : 'dark', true);
+}
 let lastAiFilledText = '';
 let lastAiFilledModel = '';
 let lastAiFilledLatency = '';
@@ -1143,8 +1175,8 @@ function layout(ctx, W) {
 }
 
 /* ---------- painting ---------- */
-function ul(ctx, s, a, b, y) {
-  ctx.strokeStyle = '#111';
+function ul(ctx, s, a, b, y, isDark = false) {
+  ctx.strokeStyle = isDark ? '#e4e4e7' : '#111';
   ctx.lineWidth = 1.5;
   ctx.lineCap = 'butt';
   ctx.setLineDash([]);
@@ -1173,7 +1205,7 @@ function ul(ctx, s, a, b, y) {
   ctx.lineCap = 'butt';
 }
 
-function renderSmartAbove(ctx, aboveList, getSegs, getTok, getLine, hitsCollector = null) {
+function renderSmartAbove(ctx, aboveList, getSegs, getTok, getLine, hitsCollector = null, isDark = false) {
   const items = [];
   for (const a of aboveList) {
     for (const s of getSegs(a)) {
@@ -1213,7 +1245,7 @@ function renderSmartAbove(ctx, aboveList, getSegs, getTok, getLine, hitsCollecto
 
   for (const item of items) {
     const { a, x1, x2, cx, rt } = item;
-    ctx.strokeStyle = '#888';
+    ctx.strokeStyle = isDark ? '#71717a' : '#888';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(x1 + 1, rt + 20);
@@ -1222,14 +1254,14 @@ function renderSmartAbove(ctx, aboveList, getSegs, getTok, getLine, hitsCollecto
     ctx.lineTo(x2 - 1, rt + 20);
     ctx.stroke();
     ctx.font = FL;
-    ctx.fillStyle = '#333';
+    ctx.fillStyle = isDark ? '#d4d4d8' : '#333';
     const labelText = safeLabels.get(item) || a.v;
     ctx.fillText(labelText, cx, rt + 11);
     if (hitsCollector) hitsCollector.push({ a, x1, x2, y1: rt, y2: rt + CR });
   }
 }
 
-function renderSmartBelow(ctx, belowList, getSegs, getTok, getLine, hitsCollector = null) {
+function renderSmartBelow(ctx, belowList, getSegs, getTok, getLine, hitsCollector = null, isDark = false) {
   const items = [];
   for (const a of belowList) {
     for (const s of getSegs(a)) {
@@ -1270,19 +1302,19 @@ function renderSmartBelow(ctx, belowList, getSegs, getTok, getLine, hitsCollecto
   for (const item of items) {
     const { a, x1, x2, cx, rt } = item;
     if (a.k === 'm') {
-      ul(ctx, MS[a.v] || 'solid', x1 + 1, x2 - 1, rt + 5);
+      ul(ctx, MS[a.v] || 'solid', x1 + 1, x2 - 1, rt + 5, isDark);
       ctx.font = FS_;
-      ctx.fillStyle = '#666';
+      ctx.fillStyle = isDark ? '#a1a1aa' : '#666';
       const labelText = safeLabels.get(item) || a.v;
       ctx.fillText(labelText, cx, rt + 19);
     } else if (a.k === 'f') {
       ctx.font = FS_;
-      ctx.fillStyle = '#4338ca'; // Calm indigo for verb tense/aspect
+      ctx.fillStyle = isDark ? '#a5b4fc' : '#4338ca'; // Bright calm indigo for verb tense/aspect
       const labelText = safeLabels.get(item) || a.v;
       ctx.fillText(labelText, cx, rt + 18);
     } else {
       ctx.font = FB;
-      ctx.fillStyle = '#222';
+      ctx.fillStyle = isDark ? '#e4e4e7' : '#222';
       const labelText = safeLabels.get(item) || a.v;
       ctx.fillText(labelText, cx, rt + 19);
     }
@@ -1291,12 +1323,13 @@ function renderSmartBelow(ctx, belowList, getSegs, getTok, getLine, hitsCollecto
 }
 
 function paint(ctx, W, H, exp) {
-  ctx.fillStyle = '#fff';
+  const isDark = !exp && currentTheme === 'dark';
+  ctx.fillStyle = isDark ? '#141416' : '#fff';
   ctx.fillRect(0, 0, W, H);
   hits = [];
 
   if (!toks.length && !exp) {
-    ctx.fillStyle = '#9aa0b0';
+    ctx.fillStyle = isDark ? '#71717a' : '#9aa0b0';
     ctx.font = FL;
     ctx.textAlign = 'left';
     ctx.fillText('Type or paste a sentence below under “Edit sentence text”.', PX, TOP + 40);
@@ -1326,12 +1359,12 @@ function paint(ctx, W, H, exp) {
 
   if (lab) {
     ctx.font = FB;
-    ctx.fillStyle = '#444';
+    ctx.fillStyle = isDark ? '#d4d4d8' : '#444';
     ctx.fillText(lab, PX, TOP + 14);
   }
 
   if (!exp) {
-    ctx.fillStyle = 'rgba(255, 122, 69, 0.16)';
+    ctx.fillStyle = isDark ? 'rgba(204, 106, 71, 0.32)' : 'rgba(255, 122, 69, 0.16)';
     for (const i of sel) {
       const k = toks[i], L = Ls[k.line];
       ctx.fillRect(k.x - 3, L.y + L.ca, k.w + 6, L.p + 44);
@@ -1339,7 +1372,7 @@ function paint(ctx, W, H, exp) {
   }
 
   ctx.font = F;
-  ctx.fillStyle = '#111';
+  ctx.fillStyle = isDark ? '#f4f4f5' : '#111';
   for (const k of toks) ctx.fillText(k.t, k.tx, Ls[k.line].b);
 
   if (showPos) {
@@ -1348,12 +1381,12 @@ function paint(ctx, W, H, exp) {
       if (k.p && isPosVisible(k.p)) {
         const L = Ls[k.line], cx = k.x + k.w / 2, s = showSubs ? subs(k) : null, t = L.y + L.ca;
         ctx.font = FL;
-        ctx.fillStyle = '#444';
+        ctx.fillStyle = isDark ? '#a1a1aa' : '#444';
         const pLabel = PO[k.p] ? PO[k.p][1] : String(k.p);
         ctx.fillText(pLabel, cx, t + (s ? 13 : 14));
         if (s) {
           ctx.font = FS_;
-          ctx.fillStyle = '#777';
+          ctx.fillStyle = isDark ? '#71717a' : '#777';
           const displaySub = getSmartSubLabel(ctx, k, Math.max(k.w + 14, 52));
           ctx.fillText(displaySub, cx, t + 28);
         }
@@ -1362,10 +1395,10 @@ function paint(ctx, W, H, exp) {
   }
 
   if (showClauses) {
-    renderSmartAbove(ctx, above, segs, i => toks[i], l => Ls[l], hits);
+    renderSmartAbove(ctx, above, segs, i => toks[i], l => Ls[l], hits, isDark);
   }
   if (showParts || showTenses) {
-    renderSmartBelow(ctx, below, segs, i => toks[i], l => Ls[l], hits);
+    renderSmartBelow(ctx, below, segs, i => toks[i], l => Ls[l], hits, isDark);
   }
 }
 
@@ -2580,7 +2613,8 @@ function renderCustomSchema(targetCv, cToks, cAn, cST, scale = 70, customPixelRa
   targetCv.style.height = H + 'px';
   ctx.setTransform(d, 0, 0, d, 0, 0);
 
-  ctx.fillStyle = '#fff';
+  const isDark = (customPixelRatio == null || customPixelRatio <= 1) && currentTheme === 'dark';
+  ctx.fillStyle = isDark ? '#141416' : '#fff';
   ctx.fillRect(0, 0, actualW, H);
 
   ctx.textBaseline = 'alphabetic';
@@ -2588,12 +2622,12 @@ function renderCustomSchema(targetCv, cToks, cAn, cST, scale = 70, customPixelRa
 
   if (stLab) {
     ctx.font = FB;
-    ctx.fillStyle = '#444';
+    ctx.fillStyle = isDark ? '#d4d4d8' : '#444';
     ctx.fillText(stLab, PX, TOP + 14);
   }
 
   ctx.font = F;
-  ctx.fillStyle = '#111';
+  ctx.fillStyle = isDark ? '#f4f4f5' : '#111';
   for (const k of cToks) {
     if (cLs[k.line]) ctx.fillText(k.t, k.tx, cLs[k.line].b);
   }
@@ -2604,11 +2638,11 @@ function renderCustomSchema(targetCv, cToks, cAn, cST, scale = 70, customPixelRa
       if (k.p && isPosVisible(k.p) && cLs[k.line]) {
         const L = cLs[k.line], cx = k.x + k.w / 2, s = showSubs && subs(k), t = L.y + L.ca;
         ctx.font = FL;
-        ctx.fillStyle = '#444';
+        ctx.fillStyle = isDark ? '#a1a1aa' : '#444';
         ctx.fillText(PO[k.p] ? PO[k.p][1] : k.p, cx, t + (s ? 13 : 14));
         if (s) {
           ctx.font = FS_;
-          ctx.fillStyle = '#777';
+          ctx.fillStyle = isDark ? '#71717a' : '#777';
           const displaySub = getSmartSubLabel(ctx, k, Math.max(k.w + 14, 52));
           ctx.fillText(displaySub, cx, t + 28);
         }
@@ -2617,10 +2651,10 @@ function renderCustomSchema(targetCv, cToks, cAn, cST, scale = 70, customPixelRa
   }
 
   if (showClauses && cAbove.length) {
-    renderSmartAbove(ctx, cAbove, cSegs, i => cToks[i], l => cLs[l], null);
+    renderSmartAbove(ctx, cAbove, cSegs, i => cToks[i], l => cLs[l], null, isDark);
   }
   if ((showParts || showTenses) && cBelow.length) {
-    renderSmartBelow(ctx, cBelow, cSegs, i => cToks[i], l => cLs[l], null);
+    renderSmartBelow(ctx, cBelow, cSegs, i => cToks[i], l => cLs[l], null, isDark);
   }
 }
 
@@ -4934,6 +4968,11 @@ function setupTopModeEvents() {
     msg(L('Горячие клавиши: 1-5 — слои разбора, F4 / Alt+S — открыть парсер, Del — сбросить отметки', 'Shortcuts: 1-5 — parse layers, F4 / Alt+S — open parser, Del — remove marks'));
   });
 
+  // Theme Toggle button
+  $('btn-theme-toggle')?.addEventListener('click', () => {
+    toggleTheme();
+  });
+
   $('sel-ai-provider')?.addEventListener('change', () => {
     const prov = $('sel-ai-provider').value;
     AI.provider = prov;
@@ -6453,13 +6492,26 @@ async function init() {
   setupJsonImportModal();
   setupAuto100ConfigModal();
 
+  const isPublicWeb = document.documentElement.getAttribute('data-env') === 'public';
+  if (isPublicWeb) {
+    currentTopMode = 'manual';
+    const modeTabs = $('mode-tabs');
+    if (modeTabs) modeTabs.style.display = 'none';
+    const aiControls = $('ai-top-controls');
+    if (aiControls) aiControls.style.display = 'none';
+    const aiActions = $('ai-top-actions');
+    if (aiActions) aiActions.style.display = 'none';
+    const viewAi = $('view-ai');
+    if (viewAi) viewAi.style.display = 'none';
+  }
+
   const params = new URLSearchParams(window.location.search);
   const initialText = params.get('text') || '';
 
   // Load user settings from Chrome storage
   if (typeof chrome !== 'undefined' && chrome.storage?.local) {
     chrome.storage.local.get([
-      'tl', 'view', 'scale', 'replace',
+      'tl', 'view', 'scale', 'replace', 'foma_theme',
       'aiprovider', 'aikeys', 'aicustomurl', 'aiactivemodels', 'aimodels', 'ailang',
       'aikey', 'aimodel', 'foma_ai_granularity',
       'foma_dock_layout', 'foma_inner_dock_layout', 'foma_ai_layers', 'foma_is_full_height', 'foma_canvas_height',
@@ -6467,6 +6519,11 @@ async function init() {
       'foma_auto_100_rules',
       HIST_KEY
     ], res => {
+      if (res.foma_theme) {
+        setTheme(res.foma_theme, false);
+      } else {
+        setTheme('light', false);
+      }
       if (res.foma_auto_100_rules) {
         auto100Rules = { ...DEFAULT_AUTO_100_RULES, ...res.foma_auto_100_rules };
       }
@@ -6562,6 +6619,12 @@ async function init() {
       }
       const savedEditOpen = localStorage.getItem('foma_edit_panel_open') === '1';
       toggleEditPanel(savedEditOpen);
+      const savedTheme = localStorage.getItem('foma_theme');
+      if (savedTheme) {
+        try { setTheme(JSON.parse(savedTheme), false); } catch (_) { setTheme(savedTheme, false); }
+      } else {
+        setTheme('light', false);
+      }
     } catch (_) {}
     loadHistory();
     setupSentence(initialText);

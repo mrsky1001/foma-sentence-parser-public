@@ -3313,7 +3313,53 @@ h2.sec {
 
 
 
-/* --- Author & Company Badge (Nikita Kolyada / foma-creative.com) --- */
+/* ==========================================================================
+   Brand & Beta Badge
+   ========================================================================== */
+.foma-brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px 0 0;
+  margin-right: 2px;
+  user-select: none;
+}
+.foma-brand-badge .brand-name {
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.foma-brand-badge .beta-badge {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #cc6a47;
+  background: var(--accbg);
+  border: 1px solid rgba(204, 106, 71, 0.28);
+  padding: 1px 5px;
+  border-radius: 4px;
+  line-height: 1.2;
+}
+
+/* ==========================================================================
+   Theme Toggle Button & Author Badge
+   ========================================================================== */
+.foma-btn-icon {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.foma-btn-icon .ic {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.2;
+}
+
 .foma-author-badge {
   display: inline-flex;
   align-items: center;
@@ -3322,7 +3368,7 @@ h2.sec {
   padding: 0 8px;
   border: 1px solid var(--line);
   border-radius: 6px;
-  background: #ffffff;
+  background: var(--card);
   color: var(--mute);
   font-size: 11px;
   text-decoration: none;
@@ -3333,7 +3379,7 @@ h2.sec {
 .foma-author-badge:hover {
   color: var(--ink);
   border-color: #cbd5e1;
-  background: #f8fafc;
+  background: var(--hov);
 }
 .foma-author-badge .foma-author-name {
   font-weight: 600;
@@ -3342,4 +3388,290 @@ h2.sec {
 .foma-author-badge .foma-author-company {
   color: #cc6a47;
   font-weight: 600;
+}
+
+/* ==========================================================================
+   Antigravity Neutral Dark Theme Engine
+   100% Contrast Parity with FOMA Calm Light
+   ========================================================================== */
+[data-theme="dark"] {
+  --bg: #101010;
+  --card: #18181b;
+  --line: #27272a;
+  --ink: #f4f4f5;
+  --mute: #a1a1aa;
+  --acc: #cc6a47;
+  --accbg: rgba(204, 106, 71, 0.18);
+  --accink: #f08967;
+  --hov: #222226;
+  --paper-bg: #141416;
+}
+
+[data-theme="dark"] body {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+[data-theme="dark"] #top {
+  background: var(--bg);
+}
+
+[data-theme="dark"] #card {
+  background: var(--card);
+  border-color: var(--line);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .paper {
+  background: var(--paper-bg);
+}
+
+[data-theme="dark"] .canvas-resizer {
+  background: #18181b;
+  border-color: var(--line);
+}
+[data-theme="dark"] .canvas-resizer-handle {
+  background: #3f3f46;
+}
+
+[data-theme="dark"] textarea,
+[data-theme="dark"] input:not([type="checkbox"]),
+[data-theme="dark"] select {
+  background: #141416;
+  color: var(--ink);
+  border-color: var(--line);
+}
+[data-theme="dark"] input:focus,
+[data-theme="dark"] textarea:focus,
+[data-theme="dark"] select:focus {
+  border-color: var(--acc);
+  outline: 2px solid rgba(204, 106, 71, 0.25);
+}
+
+[data-theme="dark"] button {
+  background: #1c1c1f;
+  border-color: var(--line);
+  color: var(--ink);
+}
+[data-theme="dark"] button:hover {
+  background: var(--hov);
+  border-color: #3f3f46;
+}
+[data-theme="dark"] button.on {
+  background: var(--accbg);
+  border-color: var(--acc);
+  color: var(--accink);
+}
+[data-theme="dark"] button.pri {
+  background: #241b18;
+  border-color: rgba(204, 106, 71, 0.45);
+  color: #f08967;
+}
+[data-theme="dark"] button.pri:hover {
+  background: rgba(204, 106, 71, 0.28);
+  border-color: var(--acc);
+  color: #ff9b7a;
+}
+
+[data-theme="dark"] .footer-floating {
+  background: transparent;
+}
+[data-theme="dark"] .btn-copy-close {
+  background: #cc6a47;
+  color: #101010 !important;
+  border-color: #cc6a47;
+  font-weight: 700;
+}
+[data-theme="dark"] .btn-copy-close:hover {
+  background: #d87652;
+  color: #101010 !important;
+}
+
+[data-theme="dark"] .foma-toolbar-main,
+[data-theme="dark"] .foma-toolbar-sub {
+  background: #18181b;
+  border-color: var(--line);
+}
+
+[data-theme="dark"] .foma-tabs {
+  background: #101010;
+  border-color: var(--line);
+}
+[data-theme="dark"] .foma-tab {
+  color: var(--mute);
+}
+[data-theme="dark"] .foma-tab.active {
+  background: #222226;
+  color: var(--ink);
+}
+
+[data-theme="dark"] .foma-model-btn {
+  background: #1c1c1f;
+  border-color: var(--line);
+  color: var(--ink);
+}
+[data-theme="dark"] .foma-model-btn:hover {
+  background: var(--hov);
+}
+[data-theme="dark"] .foma-popover {
+  background: #1c1c1f;
+  border-color: #3f3f46;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+  color: var(--ink);
+}
+[data-theme="dark"] .pop-key-bar {
+  background: #141416;
+  border-color: var(--line);
+}
+
+[data-theme="dark"] .foma-lang {
+  background: #1c1c1f;
+  border-color: var(--line);
+}
+[data-theme="dark"] .foma-lang button {
+  color: var(--mute);
+}
+[data-theme="dark"] .foma-lang button.active,
+[data-theme="dark"] .foma-lang button.on {
+  background: #f4f4f5;
+  color: #101010;
+}
+
+[data-theme="dark"] .foma-author-badge {
+  background: #1c1c1f;
+  border-color: var(--line);
+  color: var(--mute);
+}
+[data-theme="dark"] .foma-author-badge:hover {
+  background: var(--hov);
+  border-color: #3f3f46;
+  color: var(--ink);
+}
+[data-theme="dark"] .foma-author-badge .foma-author-name {
+  color: var(--ink);
+}
+[data-theme="dark"] .foma-brand-badge .brand-name {
+  color: var(--ink);
+}
+
+[data-theme="dark"] #hist-dialog,
+[data-theme="dark"] #json-import-dialog,
+[data-theme="dark"] #auto-config-dialog {
+  background: #18181b;
+  border-color: #2e2e33;
+  color: var(--ink);
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.7);
+}
+[data-theme="dark"] .hist-header,
+[data-theme="dark"] .hist-footer,
+[data-theme="dark"] .json-import-header,
+[data-theme="dark"] .json-import-footer,
+[data-theme="dark"] .auto-config-header,
+[data-theme="dark"] .auto-config-footer {
+  background: #18181b;
+  border-color: var(--line);
+}
+[data-theme="dark"] .hist-item {
+  background: #141416;
+  border-color: var(--line);
+}
+[data-theme="dark"] .hist-item:hover {
+  background: #1f1f23;
+  border-color: #3f3f46;
+}
+[data-theme="dark"] .hist-item-text {
+  color: var(--ink);
+}
+[data-theme="dark"] .hist-search-input {
+  background: #141416;
+  border-color: var(--line);
+  color: var(--ink);
+}
+[data-theme="dark"] .auto-rule-item {
+  background: #141416;
+  border-color: var(--line);
+}
+[data-theme="dark"] .auto-rule-item:hover {
+  background: #1f1f23;
+}
+[data-theme="dark"] .auto-rule-group-title {
+  color: #a1a1aa;
+}
+
+[data-theme="dark"] .bar--sidebar {
+  background: #18181b;
+  border-color: var(--line);
+}
+[data-theme="dark"] .dock-card,
+[data-theme="dark"] .dock-col {
+  background: #18181b;
+  border-color: var(--line);
+}
+[data-theme="dark"] .dock-header {
+  background: #1c1c1f;
+  border-color: var(--line);
+  color: var(--ink);
+}
+[data-theme="dark"] .foma-seg-sm {
+  background: #101010;
+}
+[data-theme="dark"] .btn-granularity {
+  color: var(--mute);
+}
+[data-theme="dark"] .btn-granularity.active {
+  background: #27272a;
+  color: var(--ink);
+}
+[data-theme="dark"] .ai-layer-popover {
+  background: #1c1c1f;
+  border-color: #3f3f46;
+  color: var(--ink);
+}
+[data-theme="dark"] .ai-popover-header,
+[data-theme="dark"] .ai-popover-footer {
+  background: #18181b;
+  border-color: var(--line);
+}
+[data-theme="dark"] .ai-popover-item:hover {
+  background: #27272a;
+}
+[data-theme="dark"] .ai-scheme-box,
+[data-theme="dark"] .ai-verdict-card {
+  background: #18181b !important;
+  border-color: var(--line) !important;
+  color: var(--ink);
+}
+[data-theme="dark"] #ai-wrap {
+  background: var(--paper-bg) !important;
+  border-color: var(--line) !important;
+}
+[data-theme="dark"] #msg {
+  background: #1c1c1f;
+  border-color: var(--line);
+  color: var(--ink);
+}
+[data-theme="dark"] .note {
+  background: #1f1a18 !important;
+  border-color: rgba(204, 106, 71, 0.3) !important;
+  color: #f4f4f5 !important;
+}
+
+/* ==========================================================================
+   Environment Scopes: Public Web vs Chrome Extension
+   ========================================================================== */
+[data-env="public"] .ai-only,
+[data-env="public"] #tab-nav-ai,
+[data-env="public"] #top-mode-ai-lock,
+[data-env="public"] #top-mode-ai-tag,
+[data-env="public"] #ai-top-controls,
+[data-env="public"] #view-ai,
+[data-env="public"] #ai-top-actions,
+[data-env="public"] #btn-json-import,
+[data-env="public"] #btn-json-import-ai,
+[data-env="public"] #json-import-overlay {
+  display: none !important;
+}
+
+[data-env="public"] #mode-tabs {
+  display: none !important;
 }
