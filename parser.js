@@ -939,6 +939,84 @@ const LAYER_SHORT_NAMES = {
   st: ['Тип', 'Sentence type']
 };
 
+/* Semantic grammatical colors for Color focus mode (Full Light/Dark parity) */
+const PART_COLORS = {
+  'Subject': { light: '#2563eb', dark: '#60a5fa' },              // Blue (Подлежащее)
+  'Predicate': { light: '#dc2626', dark: '#f87171' },            // Red (Сказуемое)
+  'Predicative': { light: '#e11d48', dark: '#fb7185' },          // Rose (Предикатив)
+  'Direct object': { light: '#7c3aed', dark: '#a78bfa' },        // Violet (Прямое дополнение)
+  'Indirect object': { light: '#9333ea', dark: '#c084fc' },      // Purple (Косвенное дополнение)
+  'Prepositional object': { light: '#4f46e5', dark: '#818cf8' }, // Indigo (Предложное дополнение)
+  'Attribute': { light: '#059669', dark: '#34d399' },            // Emerald Green (Определение)
+  'Apposition': { light: '#0d9488', dark: '#2dd4bf' },           // Teal (Приложение)
+  'AdvM manner': { light: '#b45309', dark: '#fbbf24' },          // Amber (Обст. образа действия)
+  'AdvM place': { light: '#d97706', dark: '#fbbf24' },           // Amber (Обст. места)
+  'AdvM time': { light: '#b45309', dark: '#f59e0b' },            // Amber (Обст. времени)
+  'AdvM frequency': { light: '#d97706', dark: '#fbbf24' },       // Amber (Обст. частоты)
+  'AdvM degree': { light: '#b45309', dark: '#f59e0b' },          // Amber (Обст. степени)
+  'AdvM cause': { light: '#d97706', dark: '#fbbf24' },           // Amber (Обст. причины)
+  'AdvM purpose': { light: '#b45309', dark: '#f59e0b' },         // Amber (Обст. цели)
+  'AdvM condition': { light: '#d97706', dark: '#fbbf24' },       // Amber (Обст. условия)
+  'AdvM concession': { light: '#b45309', dark: '#f59e0b' },      // Amber (Обст. уступки)
+  'Introductory element': { light: '#0891b2', dark: '#38bdf8' }, // Cyan (Вводный элемент)
+  'Address': { light: '#0284c7', dark: '#38bdf8' }               // Sky (Обращение)
+};
+
+function getPartColor(partName, isDark = false) {
+  if (PART_COLORS[partName]) {
+    return isDark ? PART_COLORS[partName].dark : PART_COLORS[partName].light;
+  }
+  if (typeof partName === 'string' && partName.startsWith('AdvM')) {
+    return isDark ? '#fbbf24' : '#b45309';
+  }
+  return isDark ? '#a78bfa' : '#7c3aed';
+}
+
+const CLAUSE_COLORS = {
+  'Main clause': { light: '#2563eb', dark: '#60a5fa' },
+  'Coordinate clause': { light: '#4f46e5', dark: '#818cf8' },
+  'Subject clause': { light: '#0284c7', dark: '#38bdf8' },
+  'Predicative clause': { light: '#e11d48', dark: '#fb7185' },
+  'Object clause': { light: '#7c3aed', dark: '#a78bfa' },
+  'Attributive clause (defining)': { light: '#059669', dark: '#34d399' },
+  'Attributive clause (non-defining)': { light: '#0d9488', dark: '#2dd4bf' }
+};
+
+function getClauseColor(clauseName, isDark = false) {
+  if (CLAUSE_COLORS[clauseName]) {
+    return isDark ? CLAUSE_COLORS[clauseName].dark : CLAUSE_COLORS[clauseName].light;
+  }
+  if (typeof clauseName === 'string') {
+    if (clauseName.startsWith('AdvCl')) return isDark ? '#fbbf24' : '#b45309';
+    if (clauseName.includes('phrase') || clauseName.includes('construction') || clauseName.includes('Complex')) {
+      return isDark ? '#c084fc' : '#9333ea';
+    }
+  }
+  return isDark ? '#fbbf24' : '#d97706';
+}
+
+const POS_COLORS = {
+  n: { light: '#0284c7', dark: '#38bdf8' },    // Noun: Sky
+  v: { light: '#dc2626', dark: '#f87171' },    // Verb: Red
+  adj: { light: '#059669', dark: '#34d399' },  // Adjective: Emerald
+  adv: { light: '#b45309', dark: '#fbbf24' },  // Adverb: Amber
+  pron: { light: '#4f46e5', dark: '#818cf8' }, // Pronoun: Indigo
+  prep: { light: '#7c3aed', dark: '#a78bfa' }, // Preposition: Violet
+  conj: { light: '#475569', dark: '#94a3b8' }, // Conjunction: Slate
+  art: { light: '#64748b', dark: '#a1a1aa' },  // Article: Slate
+  num: { light: '#ea580c', dark: '#fb923c' },  // Numeral: Orange
+  part: { light: '#db2777', dark: '#f472b6' }, // Particle: Pink
+  det: { light: '#0d9488', dark: '#2dd4bf' },   // Determiner: Teal
+  int: { light: '#c026d3', dark: '#e879f9' }   // Interjection: Magenta
+};
+
+function getPosColor(posKey, isDark = false) {
+  if (POS_COLORS[posKey]) {
+    return isDark ? POS_COLORS[posKey].dark : POS_COLORS[posKey].light;
+  }
+  return isDark ? '#34d399' : '#059669';
+}
+
 const same = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
 const ss = () => [...sel].sort((a, b) => a - b);
 const sorted = a => [...a.ix].sort((x, y) => x - y);
@@ -1407,13 +1485,12 @@ function renderSmartAbove(ctx, aboveList, getSegs, getTok, getLine, hitsCollecto
   ctx.restore();
 
   const isColor = renderMode === 'color_focus' && !isBw;
-  const isClausesActive = activeLayer === 'clauses';
 
   for (const item of items) {
     const { a, x1, x2, cx, rt } = item;
-    const clauseColor = isColor ? LAYER_COLORS.clauses : (isDark ? '#71717a' : '#888');
+    const clauseColor = isColor ? getClauseColor(a.v, isDark) : (isDark ? '#71717a' : '#888');
     ctx.strokeStyle = clauseColor;
-    ctx.lineWidth = isColor && !isClausesActive ? 0.9 : 1.2;
+    ctx.lineWidth = 1.2;
     ctx.beginPath();
     ctx.moveTo(x1 + 1, rt + 20);
     ctx.lineTo(x1 + 1, rt + 15);
@@ -1421,12 +1498,10 @@ function renderSmartAbove(ctx, aboveList, getSegs, getTok, getLine, hitsCollecto
     ctx.lineTo(x2 - 1, rt + 20);
     ctx.stroke();
 
-    if (!isColor || isClausesActive) {
-      ctx.font = FL;
-      ctx.fillStyle = isColor ? LAYER_COLORS.clauses : (isDark ? '#d4d4d8' : '#333');
-      const labelText = safeLabels.get(item) || a.v;
-      ctx.fillText(labelText, cx, rt + 11);
-    }
+    ctx.font = FL;
+    ctx.fillStyle = isColor ? clauseColor : (isDark ? '#d4d4d8' : '#333');
+    const labelText = safeLabels.get(item) || a.v;
+    ctx.fillText(labelText, cx, rt + 11);
     if (hitsCollector) hitsCollector.push({ a, x1, x2, y1: rt, y2: rt + CR });
   }
 }
@@ -1470,48 +1545,38 @@ function renderSmartBelow(ctx, belowList, getSegs, getTok, getLine, hitsCollecto
   ctx.restore();
 
   const isColor = renderMode === 'color_focus' && !isBw;
-  const isPartsActive = activeLayer === 'parts';
-  const isTensesActive = activeLayer === 'tenses';
 
   for (const item of items) {
     const { a, x1, x2, cx, rt } = item;
     if (a.k === 'm') {
-      const partsColor = isColor ? LAYER_COLORS.parts : null;
-      if (isColor && !isPartsActive) {
-        ul(ctx, 'solid', x1 + 1, x2 - 1, rt + 3, isDark, partsColor, 1.2);
+      const partsColor = isColor ? getPartColor(a.v, isDark) : null;
+      if (partsFormat === 'symbols_only') {
+        ul(ctx, MS[a.v] || 'solid', x1 + 1, x2 - 1, rt + 5, isDark, partsColor, 1.5);
+      } else if (partsFormat === 'short') {
+        ul(ctx, 'solid', x1 + 1, x2 - 1, rt + 4, isDark, partsColor, 1.2);
+        ctx.font = FS_;
+        ctx.fillStyle = isColor ? partsColor : (isDark ? '#a1a1aa' : '#666');
+        const shortText = (M_ABBR[a.v] && M_ABBR[a.v][1]) ? M_ABBR[a.v][1] : (safeLabels.get(item) || a.v);
+        ctx.fillText(shortText, cx, rt + 18);
+      } else if (partsFormat === 'full') {
+        ul(ctx, 'solid', x1 + 1, x2 - 1, rt + 4, isDark, partsColor, 1.2);
+        ctx.font = FS_;
+        ctx.fillStyle = isColor ? partsColor : (isDark ? '#a1a1aa' : '#666');
+        ctx.fillText(a.v, cx, rt + 18);
       } else {
-        if (partsFormat === 'symbols_only') {
-          ul(ctx, MS[a.v] || 'solid', x1 + 1, x2 - 1, rt + 5, isDark, partsColor, 1.5);
-        } else if (partsFormat === 'short') {
-          ul(ctx, 'solid', x1 + 1, x2 - 1, rt + 4, isDark, partsColor, 1.2);
-          ctx.font = FS_;
-          ctx.fillStyle = isColor ? LAYER_COLORS.parts : (isDark ? '#a1a1aa' : '#666');
-          const shortText = (M_ABBR[a.v] && M_ABBR[a.v][1]) ? M_ABBR[a.v][1] : (safeLabels.get(item) || a.v);
-          ctx.fillText(shortText, cx, rt + 18);
-        } else if (partsFormat === 'full') {
-          ul(ctx, 'solid', x1 + 1, x2 - 1, rt + 4, isDark, partsColor, 1.2);
-          ctx.font = FS_;
-          ctx.fillStyle = isColor ? LAYER_COLORS.parts : (isDark ? '#a1a1aa' : '#666');
-          ctx.fillText(a.v, cx, rt + 18);
-        } else {
-          // 'combo' (Default): school underline + short name
-          ul(ctx, MS[a.v] || 'solid', x1 + 1, x2 - 1, rt + 5, isDark, partsColor, 1.5);
-          ctx.font = FS_;
-          ctx.fillStyle = isColor ? LAYER_COLORS.parts : (isDark ? '#a1a1aa' : '#666');
-          const labelText = safeLabels.get(item) || a.v;
-          ctx.fillText(labelText, cx, rt + 19);
-        }
+        // 'combo' (Default): school underline + short name
+        ul(ctx, MS[a.v] || 'solid', x1 + 1, x2 - 1, rt + 5, isDark, partsColor, 1.5);
+        ctx.font = FS_;
+        ctx.fillStyle = isColor ? partsColor : (isDark ? '#a1a1aa' : '#666');
+        const labelText = safeLabels.get(item) || a.v;
+        ctx.fillText(labelText, cx, rt + 19);
       }
     } else if (a.k === 'f') {
-      const tensesColor = isColor ? LAYER_COLORS.tenses : (isDark ? '#a5b4fc' : '#4338ca');
-      if (isColor && !isTensesActive) {
-        ul(ctx, 'solid', x1 + 1, x2 - 1, rt + 3, isDark, tensesColor, 1.0);
-      } else {
-        ctx.font = FS_;
-        ctx.fillStyle = tensesColor;
-        const labelText = safeLabels.get(item) || a.v;
-        ctx.fillText(labelText, cx, rt + 18);
-      }
+      const tensesColor = isColor ? (isDark ? '#fbbf24' : '#b45309') : (isDark ? '#a5b4fc' : '#4338ca');
+      ctx.font = FS_;
+      ctx.fillStyle = tensesColor;
+      const labelText = safeLabels.get(item) || a.v;
+      ctx.fillText(labelText, cx, rt + 18);
     } else {
       ctx.font = FB;
       ctx.fillStyle = isDark ? '#e4e4e7' : '#222';
@@ -1610,27 +1675,21 @@ function paint(ctx, W, H, exp, expBw = false) {
   for (const k of toks) ctx.fillText(k.t, k.tx, Ls[k.line].b);
 
   // POS Rendering
-  const isPosActive = activeLayer === 'pos';
   if (showPos) {
     ctx.textAlign = 'center';
     for (const k of toks) {
       if (k.p && isPosVisible(k.p)) {
         const L = Ls[k.line], cx = k.x + k.w / 2, s = showSubs ? subs(k) : null, t = L.y + L.ca;
-        if (!isBw && !isPosActive) {
-          // Muted POS indicator: subtle hairline in POS color above word
-          ctx.fillStyle = LAYER_COLORS.pos;
-          ctx.fillRect(k.x + 2, t + 14, Math.max(k.w - 4, 6), 1.5);
-        } else {
-          ctx.font = FL;
-          ctx.fillStyle = (!isBw && isPosActive) ? LAYER_COLORS.pos : (isDark ? '#a1a1aa' : '#444');
-          const pLabel = PO[k.p] ? PO[k.p][1] : String(k.p);
-          ctx.fillText(pLabel, cx, t + (s ? 13 : 14));
-          if (s) {
-            ctx.font = FS_;
-            ctx.fillStyle = (!isBw && isPosActive) ? LAYER_COLORS.pos : (isDark ? '#71717a' : '#777');
-            const displaySub = getSmartSubLabel(ctx, k, Math.max(k.w + 14, 52));
-            ctx.fillText(displaySub, cx, t + 28);
-          }
+        const posColor = !isBw ? getPosColor(k.p, isDark) : (isDark ? '#a1a1aa' : '#444');
+        ctx.font = FL;
+        ctx.fillStyle = posColor;
+        const pLabel = PO[k.p] ? PO[k.p][1] : String(k.p);
+        ctx.fillText(pLabel, cx, t + (s ? 13 : 14));
+        if (s) {
+          ctx.font = FS_;
+          ctx.fillStyle = !isBw ? posColor : (isDark ? '#71717a' : '#777');
+          const displaySub = getSmartSubLabel(ctx, k, Math.max(k.w + 14, 52));
+          ctx.fillText(displaySub, cx, t + 28);
         }
       }
     }
@@ -3077,17 +3136,21 @@ function renderCustomSchema(targetCv, cToks, cAn, cST, scale = 70, customPixelRa
     if (cLs[k.line]) ctx.fillText(k.t, k.tx, cLs[k.line].b);
   }
 
+  const isBw = (renderMode === 'bw');
+  const isColor = renderMode === 'color_focus' && !isBw;
+
   if (showPos) {
     ctx.textAlign = 'center';
     for (const k of cToks) {
       if (k.p && isPosVisible(k.p) && cLs[k.line]) {
         const L = cLs[k.line], cx = k.x + k.w / 2, s = showSubs && subs(k), t = L.y + L.ca;
+        const posColor = isColor ? getPosColor(k.p, isDark) : (isDark ? '#a1a1aa' : '#444');
         ctx.font = FL;
-        ctx.fillStyle = isDark ? '#a1a1aa' : '#444';
+        ctx.fillStyle = posColor;
         ctx.fillText(PO[k.p] ? PO[k.p][1] : k.p, cx, t + (s ? 13 : 14));
         if (s) {
           ctx.font = FS_;
-          ctx.fillStyle = isDark ? '#71717a' : '#777';
+          ctx.fillStyle = isColor ? posColor : (isDark ? '#71717a' : '#777');
           const displaySub = getSmartSubLabel(ctx, k, Math.max(k.w + 14, 52));
           ctx.fillText(displaySub, cx, t + 28);
         }
@@ -3096,10 +3159,10 @@ function renderCustomSchema(targetCv, cToks, cAn, cST, scale = 70, customPixelRa
   }
 
   if (showClauses && cAbove.length) {
-    renderSmartAbove(ctx, cAbove, cSegs, i => cToks[i], l => cLs[l], null, isDark);
+    renderSmartAbove(ctx, cAbove, cSegs, i => cToks[i], l => cLs[l], null, isDark, isBw);
   }
   if ((showParts || showTenses) && cBelow.length) {
-    renderSmartBelow(ctx, cBelow, cSegs, i => cToks[i], l => cLs[l], null, isDark);
+    renderSmartBelow(ctx, cBelow, cSegs, i => cToks[i], l => cLs[l], null, isDark, isBw);
   }
 }
 
@@ -4528,8 +4591,8 @@ function setupLayerFilterToolbar() {
       setupLayerFilterToolbar();
       updateSidebarPalette();
       updateWordPopover();
-      paint();
-      if (currentTopMode === 'ai' && currentAiIdeal) renderAiIdealSchema(currentAiIdeal);
+      render();
+      if (currentTopMode === 'ai' || currentAiIdeal) renderAiCanvas();
       if (VIEW !== 'tab') ui();
     });
 
@@ -4538,8 +4601,8 @@ function setupLayerFilterToolbar() {
       aiLayers[id] = (aiLayers[id] === false ? true : false);
       chrome.storage?.local?.set({ foma_ai_layers: aiLayers });
       setupLayerFilterToolbar();
-      paint();
-      if (currentTopMode === 'ai' && currentAiIdeal) renderAiIdealSchema(currentAiIdeal);
+      render();
+      if (currentTopMode === 'ai' || currentAiIdeal) renderAiCanvas();
     });
 
     container.appendChild(chip);
@@ -5025,13 +5088,15 @@ function updateWordPopover() {
 
   if (popoverStep === 'parts') {
     // ── STEP 1: SENTENCE PARTS with graphic underline symbol in front ──
+    const isDarkTheme = currentTheme === 'dark';
     POP_PARTS_ITEMS.forEach(item => {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'word-popover-btn';
       const label = TL === 'ru' ? item.name[0] : item.name[1];
       const kbdHtml = item.kbd ? `<span class="kbd-badge">${item.kbd}</span>` : '';
-      const symHtml = `<span class="pop-sym">${item.sym}</span>`;
+      const partColor = getPartColor(item.id, isDarkTheme);
+      const symHtml = `<span class="pop-sym" style="color:${partColor};font-weight:700;">${item.sym}</span>`;
 
       const isPartActive = an.some(a => a.k === 'm' && a.v === item.id && sel.every(si => a.ix.includes(si)));
       if (isPartActive) btn.classList.add('active');
@@ -5052,17 +5117,19 @@ function updateWordPopover() {
     });
   } else if (popoverStep === 'pos') {
     // ── STEP 2: PARTS OF SPEECH ──
+    const isDarkTheme = currentTheme === 'dark';
     POP_POS_ITEMS.forEach(item => {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'word-popover-btn';
       const label = TL === 'ru' ? item.name[0] : item.name[1];
       const kbdHtml = item.kbd ? `<span class="kbd-badge">${item.kbd}</span>` : '';
+      const posColor = getPosColor(item.id, isDarkTheme);
 
       const isPosActive = (primaryTok?.p === item.id);
       if (isPosActive) btn.classList.add('active');
 
-      btn.innerHTML = `<span>${label}</span><span style="color:#10b981;font-weight:600;font-size:11px;">(${item.abbr})</span>${kbdHtml}`;
+      btn.innerHTML = `<span>${label}</span><span style="color:${posColor};font-weight:600;font-size:11px;">(${item.abbr})</span>${kbdHtml}`;
       btn.title = `${label} (${item.abbr})`;
 
       btn.addEventListener('click', (e) => {
@@ -5269,6 +5336,11 @@ function setupWordHoverTooltip() {
 
 
 
+function renderAiIdealSchema(ideal) {
+  if (ideal) currentAiIdeal = ideal;
+  renderAiCanvas();
+}
+
 function setRenderMode(mode) {
   if (mode !== 'color_focus' && mode !== 'bw') return;
   renderMode = mode;
@@ -5281,9 +5353,9 @@ function setRenderMode(mode) {
   if (btnColor) btnColor.classList.toggle('active', mode === 'color_focus');
   if (btnBw) btnBw.classList.toggle('active', mode === 'bw');
 
-  paint();
-  if (currentTopMode === 'ai' && currentAiIdeal) {
-    renderAiIdealSchema(currentAiIdeal);
+  render();
+  if (currentTopMode === 'ai' || currentAiIdeal) {
+    renderAiCanvas();
   }
 }
 
