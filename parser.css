@@ -2784,6 +2784,21 @@ footer button.pri:active,
   font-weight: 600;
 }
 
+.word-popover-btn:disabled,
+.word-popover-btn.disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  background: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: #94a3b8 !important;
+  transform: none !important;
+}
+
+.word-popover-btn:disabled .kbd-badge,
+.word-popover-btn.disabled .kbd-badge {
+  opacity: 0.5;
+}
+
 .word-popover-btn .kbd-badge {
   font-size: 10px;
   font-weight: 700;
@@ -5223,6 +5238,16 @@ h2.sec {
   background: #312e81 !important;
   border-color: #6366f1 !important;
   color: #ffffff !important;
+}
+
+[data-theme="dark"] .word-popover-btn:disabled,
+[data-theme="dark"] .word-popover-btn.disabled {
+  opacity: 0.35 !important;
+  background: #18181b !important;
+  border-color: rgba(255, 255, 255, 0.04) !important;
+  color: #71717a !important;
+  cursor: not-allowed !important;
+  transform: none !important;
 }
 
 [data-theme="dark"] .word-popover-btn .kbd-badge {

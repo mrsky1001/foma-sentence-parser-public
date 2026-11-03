@@ -5151,6 +5151,22 @@ function updateWordPopover() {
   } else if (popoverStep === 'pos') {
     // ── STEP 2: PARTS OF SPEECH ──
     const isDarkTheme = currentTheme === 'dark';
+    const curM = an.find(a => a.k === 'm' && sel.some(si => a.ix.includes(si)))?.v;
+    const allowedPos = curM ? getSpPos(curM) : ALL_POS_KEYS;
+
+    if (curM) {
+      const infoBanner = document.createElement('div');
+      infoBanner.style.width = '100%';
+      infoBanner.style.padding = '2px 4px 6px';
+      infoBanner.style.fontSize = '11px';
+      infoBanner.style.color = isDarkTheme ? '#a1a1aa' : '#64748b';
+      infoBanner.style.display = 'flex';
+      infoBanner.style.alignItems = 'center';
+      infoBanner.style.gap = '6px';
+      infoBanner.innerHTML = `<span>${TL === 'ru' ? 'Для роли:' : 'For role:'}</span><strong style="color:${getPartColor(curM, isDarkTheme)};">${getRuMNom(curM)}</strong>`;
+      bodyEl.appendChild(infoBanner);
+    }
+
     POP_POS_ITEMS.forEach(item => {
       const btn = document.createElement('button');
       btn.type = 'button';
@@ -5162,19 +5178,28 @@ function updateWordPopover() {
       const isPosActive = (primaryTok?.p === item.id);
       if (isPosActive) btn.classList.add('active');
 
-      btn.innerHTML = `<span>${label}</span><span style="color:${posColor};font-weight:600;font-size:11px;">(${item.abbr})</span>${kbdHtml}`;
-      btn.title = `${label} (${item.abbr})`;
+      const isAllowed = allowedPos.includes(item.id);
+      if (!isAllowed) {
+        btn.disabled = true;
+        btn.classList.add('disabled');
+        btn.title = TL === 'ru'
+          ? `${getRuMNom(curM)} не может быть выражено ${RU_P_INSTR[item.id] || item.name[0]}.`
+          : `“${curM}” cannot be expressed by ${item.name[1].toLowerCase()}.`;
+      } else {
+        btn.title = `${label} (${item.abbr})`;
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          setP(item.id, true, false);
+          if (PO[item.id]?.[2]?.length > 0) {
+            popoverStep = 'sub'; // Auto-advance to Step 3
+          }
+          updateWordPopover();
+          updateSidebarPalette();
+          updateProgressBar();
+        });
+      }
 
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        setP(item.id, true, false);
-        if (PO[item.id]?.[2]?.length > 0) {
-          popoverStep = 'sub'; // Auto-advance to Step 3
-        }
-        updateWordPopover();
-        updateSidebarPalette();
-        updateProgressBar();
-      });
+      btn.innerHTML = `<span>${label}</span><span style="color:${isAllowed ? posColor : (isDarkTheme ? '#52525b' : '#94a3b8')};font-weight:600;font-size:11px;">(${item.abbr})</span>${kbdHtml}`;
 
       bodyEl.appendChild(btn);
     });
