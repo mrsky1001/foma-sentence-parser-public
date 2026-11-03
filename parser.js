@@ -325,36 +325,92 @@ const SUB_ABBR = {
   'infinitive to': 'to',
   'emphatic': 'emph.',
   'quantifier': 'quant.',
-  'distributive': 'distr.'
+  'distributive': 'distr.',
+  'manner': 'mann.',
+  'place': 'place',
+  'time': 'time',
+  'frequency': 'freq.',
+  'degree': 'deg.',
+  'direction': 'dir.',
+  'cause': 'cause',
+  'other': 'oth.'
 };
 
-/** Smart abbreviation of token subtypes (subs) to fit available space without pushing words apart. */
-function getSmartSubLabel(ctx, k, maxW = Infinity) {
-  if (!k || !k.s || !k.s.length) return '';
+/** Smart abbreviation & line wrapping of token subtypes (subs) to fit available space without losing selected items. */
+function getSmartSubLines(ctx, k, maxW = Infinity) {
+  if (!k || !k.s || !k.s.length) return [];
   ctx.save();
   ctx.font = FS_;
-  const full = k.s.join(', ');
-  if (ctx.measureText(full).width <= maxW) {
+
+  // 1. If only 1 item: prefer full name if it fits, else abbreviation
+  if (k.s.length === 1) {
+    const full = k.s[0];
+    if (ctx.measureText(full).width <= maxW) {
+      ctx.restore();
+      return [full];
+    }
+    const abbr = SUB_ABBR[full] || full;
     ctx.restore();
-    return full;
+    return [abbr];
   }
 
   const abbrList = k.s.map(x => SUB_ABBR[x] || x);
-  const abbr = abbrList.join(', ');
-  if (ctx.measureText(abbr).width <= maxW) {
+
+  // 2. Can all full names fit on 1 line?
+  const fullJoined = k.s.join(', ');
+  if (ctx.measureText(fullJoined).width <= maxW) {
     ctx.restore();
-    return abbr;
+    return [fullJoined];
   }
 
+  // 3. Can comma-separated abbreviations fit on 1 line?
+  const abbrComma = abbrList.join(', ');
+  if (ctx.measureText(abbrComma).width <= maxW) {
+    ctx.restore();
+    return [abbrComma];
+  }
+
+  // 4. Can compact space-separated abbreviations fit on 1 line?
   const compact = abbrList.join(' ');
   if (ctx.measureText(compact).width <= maxW) {
     ctx.restore();
-    return compact;
+    return [compact];
   }
 
-  const first = abbrList[0];
+  // 5. Multi-line wrapping: balanced distribution so no items are ever dropped
+  const lineLimit = Math.max(maxW, 80);
+  const targetPerLine = (abbrList.length === 4 && lineLimit < 115) ? 2 : (abbrList.length > 4 ? 3 : Infinity);
+
+  const lines = [];
+  let cur = [];
+  let curW = 0;
+  const spaceW = ctx.measureText(' ').width;
+
+  for (const abbr of abbrList) {
+    const w = ctx.measureText(abbr).width;
+    if (cur.length === 0) {
+      cur.push(abbr);
+      curW = w;
+    } else if (cur.length < targetPerLine && (curW + spaceW + w <= lineLimit)) {
+      cur.push(abbr);
+      curW += spaceW + w;
+    } else {
+      lines.push(cur.join(' '));
+      cur = [abbr];
+      curW = w;
+    }
+  }
+  if (cur.length) {
+    lines.push(cur.join(' '));
+  }
+
   ctx.restore();
-  return first;
+  return lines;
+}
+
+function getSmartSubLabel(ctx, k, maxW = Infinity) {
+  const lines = getSmartSubLines(ctx, k, maxW);
+  return lines.join(' ');
 }
 
 const F = '28px "Times New Roman",Georgia,serif',
@@ -1275,10 +1331,16 @@ function lw(ctx, k, showSubs = true) {
   const pLabel = PO[k.p] ? PO[k.p][1] : String(k.p);
   const pw = ctx.measureText(pLabel).width;
   ctx.font = FS_;
-  const subAbbr = (showSubs && k.s && k.s.length) ? (SUB_ABBR[k.s[0]] || k.s[0]) : '';
-  const sw = subAbbr ? ctx.measureText(subAbbr).width : 0;
+  let sw = 0;
+  if (showSubs && k.s && k.s.length) {
+    const lines = getSmartSubLines(ctx, k, 75);
+    for (const line of lines) {
+      const lineW = ctx.measureText(line).width;
+      if (lineW > sw) sw = lineW;
+    }
+  }
   const w = Math.max(pw, sw);
-  return Math.min(w + 4, 52);
+  return Math.min(w + 6, 92);
 }
 
 function segs(a) {
@@ -1394,7 +1456,9 @@ function layout(ctx, W) {
   if (showPos) {
     toks.forEach(k => {
       if (k.p && isPosVisible(k.p)) {
-        ph[k.line] = Math.max(ph[k.line], (showSubs && subs(k)) ? 34 : 18);
+        const subLines = (showSubs && k.s && k.s.length) ? getSmartSubLines(ctx, k, Math.max(k.w + 14, 52)) : [];
+        const reqH = subLines.length > 1 ? (34 + (subLines.length - 1) * 14) : (subLines.length === 1 ? 34 : 18);
+        ph[k.line] = Math.max(ph[k.line], reqH);
       }
     });
   }
@@ -1688,8 +1752,10 @@ function paint(ctx, W, H, exp, expBw = false) {
         if (s) {
           ctx.font = FS_;
           ctx.fillStyle = !isBw ? posColor : (isDark ? '#71717a' : '#777');
-          const displaySub = getSmartSubLabel(ctx, k, Math.max(k.w + 14, 52));
-          ctx.fillText(displaySub, cx, t + 28);
+          const subLines = getSmartSubLines(ctx, k, Math.max(k.w + 14, 52));
+          for (let li = 0; li < subLines.length; li++) {
+            ctx.fillText(subLines[li], cx, t + 27 + li * 13);
+          }
         }
       }
     }
@@ -3114,7 +3180,9 @@ function renderCustomSchema(targetCv, cToks, cAn, cST, scale = 70, customPixelRa
   if (showPos) {
     cToks.forEach(k => {
       if (k.p && isPosVisible(k.p)) {
-        ph[k.line] = Math.max(ph[k.line], (showSubs && subs(k)) ? 34 : 18);
+        const subLines = (showSubs && k.s && k.s.length) ? getSmartSubLines(ctx, k, Math.max(k.w + 14, 52)) : [];
+        const reqH = subLines.length > 1 ? (34 + (subLines.length - 1) * 14) : (subLines.length === 1 ? 34 : 18);
+        ph[k.line] = Math.max(ph[k.line], reqH);
       }
     });
   }
@@ -3176,8 +3244,10 @@ function renderCustomSchema(targetCv, cToks, cAn, cST, scale = 70, customPixelRa
         if (s) {
           ctx.font = FS_;
           ctx.fillStyle = isColor ? posColor : (isDark ? '#71717a' : '#777');
-          const displaySub = getSmartSubLabel(ctx, k, Math.max(k.w + 14, 52));
-          ctx.fillText(displaySub, cx, t + 28);
+          const subLines = getSmartSubLines(ctx, k, Math.max(k.w + 14, 52));
+          for (let li = 0; li < subLines.length; li++) {
+            ctx.fillText(subLines[li], cx, t + 27 + li * 13);
+          }
         }
       }
     }
@@ -5216,7 +5286,7 @@ function updateWordPopover() {
       hint.style.color = '#64748b';
       hint.innerHTML = `
         <span>${TL === 'ru' ? 'Сначала выберите часть речи на Шаге 2.' : 'Please select a part of speech in Step 2 first.'}</span>
-        <button type="button" class="word-nav-btn word-nav-btn-done" style="background:#cc6a47;color:#fff;border:none;padding:5px 12px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;">
+        <button type="button" class="word-nav-btn word-nav-btn-done" style="background:#3B83BD;color:#fff;border:none;padding:5px 12px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;">
           ${TL === 'ru' ? '← Перейти к Шагу 2 (POS)' : '← Go to Step 2 (POS)'}
         </button>
       `;
