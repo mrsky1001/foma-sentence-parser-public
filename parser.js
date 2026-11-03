@@ -4759,29 +4759,7 @@ function setupWordHoverTooltip() {
   });
 }
 
-function setupAuthorAvatarDropdown() {
-  const btn = $('btn-author-avatar');
-  const dd = $('author-dropdown');
-  if (!btn || !dd) return;
 
-  btn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const isShown = dd.style.display !== 'none';
-    dd.style.display = isShown ? 'none' : 'block';
-  });
-
-  document.addEventListener('click', (e) => {
-    if (!dd.contains(e.target) && e.target !== btn) {
-      dd.style.display = 'none';
-    }
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && dd.style.display !== 'none') {
-      dd.style.display = 'none';
-    }
-  });
-}
 
 function setRenderMode(mode) {
   if (mode !== 'color_focus' && mode !== 'bw') return;
@@ -5545,7 +5523,6 @@ function setupTopModeEvents() {
   setupLayerFilterToolbar();
   setupSidebarEvents();
   setupWordHoverTooltip();
-  setupAuthorAvatarDropdown();
   updateSidebarPalette();
   updateProgressBar();
   $('btn-render-color')?.classList.toggle('active', renderMode === 'color_focus');
