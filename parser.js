@@ -886,9 +886,11 @@ function setTheme(theme, save = true) {
     }
   }
   render();
-  if (currentAiIdeal) {
-    const aiCv = $('ai-cv');
-    if (aiCv) renderCustomSchema(aiCv, currentAiIdeal.toks, currentAiIdeal.an, currentAiIdeal.st, +$('sc')?.value || 70);
+  if (currentTopMode === 'ai' || currentAiIdeal) {
+    const loading = $('ai-loading-state');
+    if (!loading || loading.style.display === 'none') {
+      if (typeof renderAiCanvas === 'function') renderAiCanvas();
+    }
   }
 }
 
