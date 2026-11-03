@@ -3314,8 +3314,85 @@ h2.sec {
 
 
 /* ==========================================================================
-   Brand & Beta Badge
+   Brand & Signature Link (Under Name on the Left)
    ========================================================================== */
+.foma-brand-block {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 0 4px 0 0;
+  margin-right: 4px;
+  user-select: none;
+}
+
+.foma-brand-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.15;
+}
+
+.foma-brand-title .brand-name {
+  font-weight: 700;
+  font-size: 12.5px;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.foma-brand-title .beta-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #cc6a47;
+  background: var(--accbg);
+  border: 1px solid rgba(204, 106, 71, 0.28);
+  padding: 1px 4.5px;
+  border-radius: 4px;
+  line-height: 1.1;
+}
+
+.foma-brand-author {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  line-height: 1.15;
+  color: var(--mute);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.15s ease;
+  width: fit-content;
+}
+
+.foma-brand-author:hover {
+  color: var(--ink);
+}
+
+.foma-brand-author .author-label {
+  font-weight: 450;
+  letter-spacing: 0.01em;
+}
+
+.foma-brand-author .author-dot {
+  opacity: 0.6;
+}
+
+.foma-brand-author .author-link {
+  font-weight: 500;
+  color: var(--mute);
+  transition: color 0.15s ease;
+}
+
+.foma-brand-author:hover .author-link {
+  color: #cc6a47;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Legacy fallback if needed */
 .foma-brand-badge {
   display: inline-flex;
   align-items: center;
@@ -3344,7 +3421,7 @@ h2.sec {
 }
 
 /* ==========================================================================
-   Theme Toggle Button & Author Badge
+   Theme Toggle Button
    ========================================================================== */
 .foma-btn-icon {
   width: 28px;
@@ -3358,36 +3435,6 @@ h2.sec {
   width: 14px;
   height: 14px;
   stroke-width: 2.2;
-}
-
-.foma-author-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  height: 26px;
-  padding: 0 8px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: var(--card);
-  color: var(--mute);
-  font-size: 11px;
-  text-decoration: none;
-  font-weight: 500;
-  transition: all 0.15s ease;
-  white-space: nowrap;
-}
-.foma-author-badge:hover {
-  color: var(--ink);
-  border-color: #cbd5e1;
-  background: var(--hov);
-}
-.foma-author-badge .foma-author-name {
-  font-weight: 600;
-  color: var(--ink);
-}
-.foma-author-badge .foma-author-company {
-  color: #cc6a47;
-  font-weight: 600;
 }
 
 /* ==========================================================================
@@ -3537,18 +3584,20 @@ h2.sec {
   color: #101010;
 }
 
-[data-theme="dark"] .foma-author-badge {
-  background: #1c1c1f;
-  border-color: var(--line);
-  color: var(--mute);
-}
-[data-theme="dark"] .foma-author-badge:hover {
-  background: var(--hov);
-  border-color: #3f3f46;
+[data-theme="dark"] .foma-brand-title .brand-name {
   color: var(--ink);
 }
-[data-theme="dark"] .foma-author-badge .foma-author-name {
-  color: var(--ink);
+[data-theme="dark"] .foma-brand-author {
+  color: #82828c;
+}
+[data-theme="dark"] .foma-brand-author:hover {
+  color: #e4e4e7;
+}
+[data-theme="dark"] .foma-brand-author .author-link {
+  color: #82828c;
+}
+[data-theme="dark"] .foma-brand-author:hover .author-link {
+  color: #f08967;
 }
 [data-theme="dark"] .foma-brand-badge .brand-name {
   color: var(--ink);

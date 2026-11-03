@@ -705,7 +705,7 @@ let dockLayout = {
   topFull: [],
   columns: [
     ['m', 'c', 's'],
-    ['pos', 'f', 'ai']
+    ['pos', 'f']
   ],
   bottomFull: []
 };
@@ -1407,7 +1407,7 @@ const wExp = sc => Math.round(600 / (sc / 100));
 function render() {
   sanitizeSentenceParts();
   const ctx = cv.getContext('2d');
-  const baseW = Math.max(300, Math.min(wrap.clientWidth - 2, wExp(+$('sc').value)));
+  const baseW = Math.max(300, (wrap && wrap.clientWidth) ? (wrap.clientWidth - 4) : 800);
   const H = Math.max(layout(ctx, baseW), 70);
   const maxWordRight = toks.length ? Math.max(...toks.map(k => k.x + k.w)) : 0;
   const W = Math.ceil(Math.max(baseW, maxWordRight + PX));
@@ -1648,16 +1648,15 @@ function why(k, v, s = ss()) {
   return ru ? 'Недоступно для текущего выделения.' : 'Unavailable for current selection.';
 }
 
-const DOT = ['#6d9fe0', '#5fbb86', '#e3a95a', '#a487d4', '#52b3b3', '#d98f8f'];
+const DOT = ['#6d9fe0', '#5fbb86', '#e3a95a', '#a487d4', '#52b3b3'];
 const TABS = [
   ['m', 'Sentence parts'],
   ['pos', 'Part of speech'],
   ['c', 'Clauses & phrases'],
   ['f', 'Tense · voice · mood'],
-  ['s', 'Sentence type'],
-  ['ai', 'AI check']
+  ['s', 'Sentence type']
 ];
-const CI = { pos: 0, m: 1, c: 2, f: 3, s: 4, ai: 5 };
+const CI = { pos: 0, m: 1, c: 2, f: 3, s: 4 };
 
 /* ─── Inner Docking System (Reorder / Move Group Panels Inside Parent) ─── */
 const DEFAULT_INNER_DOCK_LAYOUT = {
@@ -2062,18 +2061,23 @@ function cleanDockLayout(layout) {
   if (!layout) layout = {};
   if (!Array.isArray(layout.topFull)) layout.topFull = [];
   if (!Array.isArray(layout.bottomFull)) layout.bottomFull = [];
-  if (!Array.isArray(layout.columns)) layout.columns = [['m', 'c', 's'], ['pos', 'f', 'ai']];
+  if (!Array.isArray(layout.columns)) layout.columns = [['m', 'c', 's'], ['pos', 'f']];
+
+  // Strip ai unconditionally
+  layout.topFull = layout.topFull.filter(p => p !== 'ai');
+  layout.bottomFull = layout.bottomFull.filter(p => p !== 'ai');
+  layout.columns = layout.columns.map(col => (Array.isArray(col) ? col.filter(p => p !== 'ai') : []));
 
   layout.columns = layout.columns.filter(col => Array.isArray(col) && col.length > 0);
   if (!layout.columns.length && !layout.topFull.length && !layout.bottomFull.length) {
-    layout.columns = [['m', 'c', 's'], ['pos', 'f', 'ai']];
+    layout.columns = [['m', 'c', 's'], ['pos', 'f']];
   }
   while (layout.columns.length > 3) {
     const last = layout.columns.pop();
     layout.columns[2].push(...last);
   }
 
-  const allPanels = ['m', 'pos', 'c', 'f', 's', 'ai'];
+  const allPanels = ['m', 'pos', 'c', 'f', 's'];
   const present = new Set([...layout.topFull, ...layout.bottomFull, ...layout.columns.flat()]);
   allPanels.forEach(p => {
     if (!present.has(p)) {
@@ -2082,6 +2086,7 @@ function cleanDockLayout(layout) {
     }
   });
 
+  if (tab === 'ai') tab = 'm';
   return layout;
 }
 
@@ -2428,13 +2433,13 @@ $('tabs').onclick = e => {
   if (b.dataset.layout) {
     const l = b.dataset.layout;
     if (l === '1') {
-      dockLayout = { topFull: [], columns: [['m', 'pos', 'c', 'f', 's', 'ai']], bottomFull: [] };
+      dockLayout = { topFull: [], columns: [['m', 'pos', 'c', 'f', 's']], bottomFull: [] };
     } else if (l === '2') {
-      dockLayout = { topFull: [], columns: [['m', 'c', 's'], ['pos', 'f', 'ai']], bottomFull: [] };
+      dockLayout = { topFull: [], columns: [['m', 'c', 's'], ['pos', 'f']], bottomFull: [] };
     } else if (l === '3') {
-      dockLayout = { topFull: [], columns: [['m', 's'], ['pos', 'f'], ['c', 'ai']], bottomFull: [] };
+      dockLayout = { topFull: [], columns: [['m'], ['pos', 'f'], ['c', 's']], bottomFull: [] };
     } else if (l === 'reset') {
-      dockLayout = { topFull: [], columns: [['m', 'c', 's'], ['pos', 'f', 'ai']], bottomFull: [] };
+      dockLayout = { topFull: [], columns: [['m', 'c', 's'], ['pos', 'f']], bottomFull: [] };
       innerDockLayout = JSON.parse(JSON.stringify(DEFAULT_INNER_DOCK_LAYOUT));
       saveInnerDockLayout();
     }
