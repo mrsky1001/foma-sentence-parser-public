@@ -2884,28 +2884,53 @@ function setA(k, v, f, force) {
   ui();
 }
 
-function setP(p) {
-  if (sel.length !== 1) return msg(TL === 'ru' ? 'Часть речи можно задать только для одного слова.' : 'Part of speech can be set on a single word only.');
-  if ($('restr').checked && !okSel('p', p, [sel[0]])) {
-    return msg('“' + (PO[p] ? PO[p][0] : p) + '” — ' + why('p', p, [sel[0]]) + (TL === 'ru' ? ' (Снимите галочку «Ограничивать…», чтобы обойти)' : ' (Untick “restrict…” to override.)'));
+function setP(p, force = false, toggle = true) {
+  if (!sel || !sel.length) return msg(TL === 'ru' ? 'Сначала выберите слова.' : 'Select words first.');
+  const targets = sel.map(i => toks[i]).filter(Boolean);
+  if (!targets.length) return;
+
+  if ($('restr')?.checked && !force && !okSel('p', p, ss())) {
+    return msg('“' + (PO[p] ? PO[p][0] : p) + '” — ' + why('p', p, ss()) + (TL === 'ru' ? ' (Снимите галочку «Ограничивать…», чтобы обойти)' : ' (Untick “restrict…” to override.)'));
   }
-  const k = toks[sel[0]];
-  if (k.p === p) { k.p = null; k.s = null; }
-  else { k.p = p; k.s = []; ensureLayerItemVisible('pos', p); }
+
+  targets.forEach(k => {
+    if (toggle && k.p === p) {
+      k.p = null;
+      k.s = null;
+    } else {
+      k.p = p;
+      k.s = Array.isArray(k.s) ? k.s : [];
+      ensureLayerItemVisible('pos', p);
+    }
+  });
+
   saveCurrentToHistory(false);
   render();
   ui();
 }
 
 function togSub(v) {
-  const k = toks[sel[0]];
-  if (!k || !k.p || !PO[k.p] || !PO[k.p][2]) return;
-  const gs = PO[k.p][2], g = gs.find(x => x.includes(v));
-  k.s = k.s || [];
-  if (k.s.includes(v)) k.s = k.s.filter(x => x !== v);
-  else { k.s = [...k.s.filter(x => !g.includes(x)), v]; ensureLayerItemVisible('pos', 'subs'); }
-  const flat = gs.flat();
-  k.s.sort((a, b) => flat.indexOf(a) - flat.indexOf(b));
+  if (!sel || !sel.length) return;
+  const targets = sel.map(i => toks[i]).filter(Boolean);
+  if (!targets.length) return;
+  const primary = targets[0];
+  if (!primary || !primary.p || !PO[primary.p] || !PO[primary.p][2]) return;
+  const gs = PO[primary.p][2], g = gs.find(x => x.includes(v));
+  if (!g) return;
+
+  targets.forEach(k => {
+    if (!k.p || k.p !== primary.p) return;
+    k.s = Array.isArray(k.s) ? k.s : [];
+    if (k.s.includes(v)) {
+      k.s = k.s.filter(x => x !== v);
+    } else {
+      k.s = [...k.s.filter(x => !g.includes(x)), v];
+      ensureLayerItemVisible('pos', 'subs');
+    }
+    const flat = gs.flat();
+    k.s.sort((a, b) => flat.indexOf(a) - flat.indexOf(b));
+  });
+
   saveCurrentToHistory(false);
   render();
   ui();
@@ -5006,14 +5031,22 @@ function updateWordPopover() {
   // Step 3: Доп.
   const step3Btn = document.createElement('button');
   step3Btn.type = 'button';
-  step3Btn.className = 'word-step-btn' + (popoverStep === 'sub' ? ' active' : '');
+  step3Btn.className = 'word-step-btn' + (popoverStep === 'sub' ? ' active' : '') + (!curPos ? ' disabled' : '');
   step3Btn.textContent = TL === 'ru' ? '3. Доп.' : '3. Sub';
-  step3Btn.title = TL === 'ru' ? 'Шаг 3: Дополнительные параметры части речи' : 'Step 3: Sub-parameters';
-  step3Btn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    popoverStep = 'sub';
-    updateWordPopover();
-  });
+  step3Btn.title = !curPos
+    ? (TL === 'ru' ? 'Сначала выберите часть речи на Шаге 2' : 'Select part of speech on Step 2 first')
+    : (TL === 'ru' ? 'Шаг 3: Дополнительные параметры части речи' : 'Step 3: Sub-parameters');
+  if (!curPos) {
+    step3Btn.disabled = true;
+    step3Btn.style.opacity = '0.45';
+    step3Btn.style.cursor = 'not-allowed';
+  } else {
+    step3Btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      popoverStep = 'sub';
+      updateWordPopover();
+    });
+  }
   stepsEl.appendChild(step3Btn);
 
   navEl.appendChild(stepsEl);
@@ -5134,7 +5167,7 @@ function updateWordPopover() {
 
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        setP(item.id);
+        setP(item.id, true, false);
         if (PO[item.id]?.[2]?.length > 0) {
           popoverStep = 'sub'; // Auto-advance to Step 3
         }
@@ -5149,12 +5182,24 @@ function updateWordPopover() {
     // ── STEP 3: SUB-PARAMETERS ──
     if (!curPos || !PO[curPos]) {
       const hint = document.createElement('div');
-      hint.style.padding = '8px 12px';
+      hint.style.padding = '12px 14px';
       hint.style.fontSize = '12px';
+      hint.style.display = 'flex';
+      hint.style.flexDirection = 'column';
+      hint.style.gap = '8px';
+      hint.style.alignItems = 'flex-start';
       hint.style.color = '#64748b';
-      hint.textContent = TL === 'ru'
-        ? 'Сначала выберите часть речи на Шаге 2.'
-        : 'Please select a part of speech in Step 2 first.';
+      hint.innerHTML = `
+        <span>${TL === 'ru' ? 'Сначала выберите часть речи на Шаге 2.' : 'Please select a part of speech in Step 2 first.'}</span>
+        <button type="button" class="word-nav-btn word-nav-btn-done" style="background:#cc6a47;color:#fff;border:none;padding:5px 12px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;">
+          ${TL === 'ru' ? '← Перейти к Шагу 2 (POS)' : '← Go to Step 2 (POS)'}
+        </button>
+      `;
+      hint.querySelector('button').addEventListener('click', (e) => {
+        e.stopPropagation();
+        popoverStep = 'pos';
+        updateWordPopover();
+      });
       bodyEl.appendChild(hint);
     } else {
       const posName = TL === 'ru' ? (PO[curPos][0] || curPos) : (PO[curPos][0] || curPos);
@@ -5215,6 +5260,24 @@ function updateWordPopover() {
           groupEl.appendChild(chipsEl);
           bodyEl.appendChild(groupEl);
         });
+
+        const footerEl = document.createElement('div');
+        footerEl.style.display = 'flex';
+        footerEl.style.justifyContent = 'flex-end';
+        footerEl.style.padding = '8px 10px 4px';
+        footerEl.style.borderTop = '1px solid var(--foma-border, #e2e8f0)';
+        footerEl.style.marginTop = '6px';
+        footerEl.style.width = '100%';
+        const doneSubBtn = document.createElement('button');
+        doneSubBtn.type = 'button';
+        doneSubBtn.className = 'word-nav-btn word-nav-btn-done';
+        doneSubBtn.innerHTML = `<span>✓</span><span>${TL === 'ru' ? 'Готово' : 'Done'}</span>`;
+        doneSubBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          popover.style.display = 'none';
+        });
+        footerEl.appendChild(doneSubBtn);
+        bodyEl.appendChild(footerEl);
       }
     }
   }

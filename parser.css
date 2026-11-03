@@ -2616,6 +2616,13 @@ footer button.pri:active,
   font-weight: 700;
 }
 
+.word-step-btn:disabled,
+.word-step-btn.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .word-nav-actions {
   display: flex;
   align-items: center;
@@ -5249,6 +5256,13 @@ h2.sec {
   background: rgba(204, 106, 71, 0.22) !important;
   color: #f08967 !important;
   border-color: rgba(204, 106, 71, 0.4) !important;
+}
+
+[data-theme="dark"] .word-step-btn:disabled,
+[data-theme="dark"] .word-step-btn.disabled {
+  opacity: 0.35 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
 }
 
 [data-theme="dark"] .word-nav-btn-back {
