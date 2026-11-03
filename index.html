@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>FOMA Sentence Parser — Интерактивный синтаксический разбор предложений</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Интерактивный синтаксический разбор предложений английского языка: части речи, члены предложения, типы придаточных, видовременные формы глаголов и ИИ-анализ. Автор и разработчик: Nikita Kolyada (foma-creative.com)">
+  <meta name="author" content="Nikita Kolyada, foma-creative.com">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon16.png">
+  <link rel="apple-touch-icon" sizes="128x128" href="icons/icon128.png">
+  <link rel="stylesheet" href="parser.css">
+</head>
+<body>
+<div id="top">
+  <!-- ROW 1: NAVIGATION + AI MODEL/TRIGGER + ACTIONS -->
+  <div class="top-nav-tabs foma-toolbar-main" id="top-nav-tabs">
+    <!-- Left: Modes Switcher -->
+    <div class="foma-group">
+      <div class="foma-tabs" id="mode-tabs">
+        <button type="button" class="foma-tab active" id="tab-nav-manual" title="Мой собственный интерактивный синтаксический разбор">
+          <svg viewBox="0 0 24 24" class="ic"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+          <span class="nav-tab-label">Мой разбор</span>
+        </button>
+        <button type="button" class="foma-tab" id="tab-nav-ai" title="Разбор, сгенерированный языковой моделью ИИ">
+          <svg viewBox="0 0 24 24" class="ic"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+          <span class="nav-tab-label">Разбор ИИ</span>
+          <span class="lock-tag" id="top-mode-ai-lock" title="Только чтение">
+            <svg viewBox="0 0 24 24" class="ic-xs"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </span>
+          <span class="nav-tab-badge" id="top-mode-ai-tag" style="display:none;"></span>
+        </button>
+      </div>
+
+      <!-- Center Contextual AI Controls (shown only when in AI mode) -->
+      <div class="foma-ai-context-group" id="ai-top-controls" style="display: none;">
+        <div class="foma-sep"></div>
+
+        <!-- Compact Combo-Selector with Popover -->
+        <div class="foma-dropdown-wrap">
+          <button type="button" class="foma-model-btn" id="model-trigger" title="Настройки провайдера и модели ИИ">
+            <span class="dot-online" id="ai-combo-status-dot"></span>
+            <span class="prov-label" id="ai-combo-prov">Groq</span>
+            <span class="slash">·</span>
+            <span class="mod-label" id="ai-combo-model">gpt-oss-120b</span>
+            <svg viewBox="0 0 24 24" class="ic-xs"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+
+          <!-- Popover for Provider & Model & API Key -->
+          <div class="foma-popover" id="model-popover" hidden>
+            <div class="pop-row">
+              <label for="sel-ai-provider">Сервис</label>
+              <select id="sel-ai-provider">
+                <option value="groq">Groq Cloud (Ultra-fast)</option>
+                <option value="positionapi">PositionAPI (positionapi.top)</option>
+                <option value="custom">Custom (OpenAI-compatible)</option>
+              </select>
+            </div>
+            <div class="pop-row">
+              <label for="sel-ai-model">Модель</label>
+              <select id="sel-ai-model"></select>
+            </div>
+
+            <!-- Expandable Inline Key Box inside Popover -->
+            <div id="ai-key-inline-bar" class="pop-key-bar" style="display: none;">
+              <span id="ai-key-prompt-label" class="pop-key-label">API-ключ:</span>
+              <div class="pop-key-input-row">
+                <input type="password" id="ai-key-inline-input" class="ai-key-input" placeholder="sk-…" autocomplete="off" />
+                <button type="button" id="btn-ai-save-inline-key" class="foma-btn-primary foma-btn-xs">Сохранить</button>
+              </div>
+            </div>
+
+            <div class="pop-footer">
+              <div id="ai-key-badge-status" class="key-ok">
+                <span class="dot-online"></span>
+                <span>Ключ настроен</span>
+              </div>
+              <button type="button" class="link-btn" id="btn-api-key">Настроить ключ</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Primary Generation Button -->
+        <button type="button" class="foma-btn-primary" id="btn-ai-run" title="Заполнить синтаксический разбор этой языковой моделью">
+          <svg viewBox="0 0 24 24" class="ic"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <span>Заполнить</span>
+        </button>
+
+        <!-- Response Latency Badge -->
+        <span class="foma-time-badge" id="ai-model-latency" style="display: none;"></span>
+
+        <!-- Import JSON Button -->
+        <button type="button" class="foma-btn-ghost" id="btn-json-import-ai" title="Вставить готовый JSON-разбор от ChatGPT / Gemini / Claude">
+          <svg viewBox="0 0 24 24" class="ic"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+          <span>JSON</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Center: Layer Filters & Display Toggles (Shared across Manual & AI) -->
+    <div class="foma-group foma-layers-top" id="top-layer-filters">
+      <span class="foma-sub-label" id="top-filter-label">Слои:</span>
+      <div id="ai-layer-pills" class="ai-layer-pills"></div>
+    </div>
+
+    <!-- Right: Global Actions & System Controls -->
+    <div class="foma-group top-nav-actions">
+      <!-- AI Contextual Action Buttons (visible only in AI mode) -->
+      <div class="foma-ai-actions-group" id="ai-top-actions" style="display: none;">
+        <button type="button" class="foma-btn-accent-outline" id="btn-ai-apply-manual" title="Скопировать результат ИИ в «Мой разбор» для правки">
+          <svg viewBox="0 0 24 24" class="ic"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>В мой разбор</span>
+        </button>
+
+        <button type="button" class="foma-btn-ghost" id="btn-ai-copy-img" title="Скопировать изображение разбора ИИ">
+          <svg viewBox="0 0 24 24" class="ic"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+          <span>Картинка</span>
+        </button>
+
+        <div class="foma-sep"></div>
+      </div>
+
+      <!-- History -->
+      <button type="button" id="btn-history" class="foma-btn-ghost btn-top-hist" title="Открыть историю предложений">
+        <svg viewBox="0 0 24 24" class="ic"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+        <span>История</span>
+        <span class="foma-counter" id="hist-cnt">0</span>
+      </button>
+
+      <!-- TIPS -->
+      <button type="button" id="btn-tips" class="foma-btn-ghost foma-btn-xs" title="Горячие клавиши и справка">TIPS</button>
+
+      <!-- Author & Company Badge -->
+      <a href="https://foma-creative.com" target="_blank" rel="noopener noreferrer" class="foma-author-badge" title="Автор и разработчик: Nikita Kolyada (foma-creative.com)">
+        <span class="foma-author-dev">by</span>
+        <span class="foma-author-name">Nikita Kolyada</span>
+        <span class="foma-author-sep">·</span>
+        <span class="foma-author-company">foma-creative.com</span>
+      </a>
+
+      <!-- Language Switcher -->
+      <div class="foma-lang" id="lang">
+        <button type="button" data-l="ru" class="active">RU</button>
+        <button type="button" data-l="en">EN</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="card">
+    <!-- VIEW 1: MANUAL (STUDENT EDITABLE) -->
+    <div id="view-manual" class="view-panel active">
+      <div class="canvas-with-sidebar" id="canvas-with-sidebar">
+        <div class="canvas-main-col">
+          <div class="paper" id="wrap">
+            <canvas id="cv"></canvas>
+          </div>
+        </div>
+
+        <div class="bar bar--sidebar">
+          <button type="button" id="btn-toggle-edit" class="btn-toggle-edit" title="Edit sentence text (show / hide text box)" aria-expanded="false">Edit text</button>
+          <div class="auto-btn-group" id="auto-btn-group">
+            <button type="button" id="auto" title="Автоматически расставить выбранные параметры со 100% уверенностью">Auto (100%)</button>
+            <button type="button" id="btn-auto-config" class="btn-auto-config" title="Настроить параметры авторасстановки (100% уверенность)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></button>
+          </div>
+          <button id="clr" title="Remove marks from the selected words">Remove marks <kbd>Del</kbd></button>
+          <button id="all">Clear all</button>
+          <div class="bar-sep-h"></div>
+          <button type="button" id="btn-manual-toggle-height" class="btn-top-hist" style="padding: 4px 9px;" title="Развернуть на всю высоту разбора без внутреннего скролла">На всю высоту</button>
+          <label class="ck"><input type="checkbox" id="multi"> multi-select</label>
+          <label class="ck" title="Labels can only be set on suitable parts of speech and sentence parts"><input type="checkbox" id="restr" checked> restrict by part of speech / sentence part</label>
+          <button type="button" id="btn-json-import" class="pri btn-manual-import-json" title="Вставить готовый JSON-разбор от ChatGPT / Gemini / Claude">Импорт JSON</button>
+        </div>
+      </div>
+      <div class="canvas-resizer" id="canvas-resizer" title="Потяните вверх или вниз, чтобы изменить высоту области схемы (двойной клик — сброс)">
+        <div class="canvas-resizer-handle"></div>
+      </div>
+
+      <div class="edit collapsed" id="ed" style="display: none;">
+        <div class="lbl">
+          <span>Edit sentence text</span>
+          <div style="display: inline-flex; gap: 6px; align-items: center;">
+            <button id="trb">Translate</button>
+            <button type="button" id="btn-close-edit" class="btn-close-edit" title="Close text editor" style="padding: 2px 7px; color: var(--mute);">&times;</button>
+          </div>
+        </div>
+        <textarea id="ta" rows="2" spellcheck="false" aria-label="Sentence text"></textarea>
+        <div id="tr" class="tr" hidden></div>
+      </div>
+    </div>
+
+    <!-- VIEW 2: AI FILLED (READ-ONLY) -->
+    <div id="view-ai" class="view-panel" style="display: none;">
+      <!-- ROW 2: View Bar (Depth Granularity + Layer Filters + Full Height) -->
+      <div class="foma-toolbar-sub" id="ai-view-subbar">
+        <div class="foma-group">
+          <!-- Segmented Depth Granularity Switcher -->
+          <div class="foma-seg-sm" id="ai-granularity-switch" role="group" aria-label="Детализация разбора">
+            <button type="button" class="btn-granularity active" id="btn-gran-detailed" title="Подробный аналитический разбор: атрибуты отдельно, ядерное подлежащее отдельно">Детальный</button>
+            <button type="button" class="btn-granularity" id="btn-gran-macro" title="Составной разбор: цельное подлежащее со всеми определениями">Составной</button>
+          </div>
+        </div>
+
+        <div class="foma-group">
+          <button type="button" class="foma-btn-ghost foma-btn-sm" id="btn-ai-toggle-height" title="Развернуть на всю высоту разбора без внутреннего скролла">
+            <svg viewBox="0 0 24 24" class="ic"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+            <span>На всю высоту</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div id="ai-loading-state" class="ai-loading-box" style="display: none;">
+        <div class="ai-spinner"></div>
+        <div class="ai-loading-text">
+          <div style="font-weight: 600; font-size: 14px;">ИИ выполняет синтаксический разбор предложения…</div>
+          <div style="font-size: 12px; color: var(--mute); margin-top: 4px;" id="ai-loading-model-info">Отправка запроса к языковой модели…</div>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div id="ai-error-state" class="ai-error-box" style="display: none;">
+        <div id="ai-error-message" style="color: #ef4444; font-size: 13px; font-weight: 500;"></div>
+        <div class="ai-quick-config" style="margin-top: 10px; display: flex; gap: 8px;">
+          <button type="button" id="btn-ai-retry" class="btn-hist-sec">Повторить попытку</button>
+          <button type="button" id="btn-ai-open-settings" class="btn-hist-sec">Настройки API и модели</button>
+        </div>
+      </div>
+
+      <!-- AI Canvas Area (The exact same form!) -->
+      <div class="paper" id="wrap-ai">
+        <canvas id="cv-ai"></canvas>
+      </div>
+
+      <div class="canvas-resizer" id="canvas-resizer-ai" title="Потяните вверх или вниз, чтобы изменить высоту области схемы (двойной клик — сброс)">
+        <div class="canvas-resizer-handle"></div>
+      </div>
+
+      <!-- Linguistic Analysis Summary Card (Cleaned up, no duplicate raw sentence preview) -->
+      <div id="ai-verdict-card" class="ai-verdict-card" style="display: none;">
+        <div class="ai-verdict-header">
+          <div class="ai-verdict-status-line">
+            <div id="ai-verdict-badge" class="ai-verdict-badge">
+              <span class="status-ready">✓ Разбор от ИИ готов</span>
+            </div>
+            <div id="ai-parsed-stats" class="ai-parsed-stats" style="font-size: 12px; color: var(--mute);"></div>
+          </div>
+          <button type="button" class="foma-btn-ghost foma-btn-xs" id="btn-ai-copy-text" title="Скопировать исходный текст предложения в буфер обмена">
+            <svg viewBox="0 0 24 24" class="ic-xs"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+            <span>Скопировать текст</span>
+          </button>
+        </div>
+        <div id="ai-verdict-summary" class="ai-verdict-summary"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="msg" role="status"></div>
+  <div class="tabs" id="tabs"></div>
+</div>
+
+<main>
+  <div id="pane"></div>
+  <div id="dock-drop-indicator" class="dock-drop-indicator" style="display: none;"></div>
+</main>
+
+<footer class="footer-floating">
+  <div style="display: none;" aria-hidden="true">
+    <select id="sc">
+      <option>45</option>
+      <option>55</option>
+      <option selected>70</option>
+      <option>85</option>
+      <option>100</option>
+    </select>
+    <label id="rpw"><input type="checkbox" id="rp"></label>
+    <span class="sp" id="mode"></span>
+    <button id="cp" type="button"></button>
+  </div>
+  <button id="ins" class="pri btn-copy-close">Copy and close <kbd>Ctrl+Enter</kbd></button>
+</footer>
+
+<div id="hist-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="hist-title">
+  <div id="hist-dialog">
+    <div class="hist-header">
+      <div class="hist-header-info">
+        <div class="hist-header-title-row">
+          <svg class="hist-header-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <h3 id="hist-title">История разборов</h3>
+          <span id="hist-header-count" class="hist-count-badge">0</span>
+        </div>
+        <div class="hist-header-sub">Сохранённые предложения с быстрым восстановлением на холст</div>
+      </div>
+      <button id="hist-close" class="hist-close-btn" title="Закрыть (Esc)" aria-label="Закрыть">&times;</button>
+    </div>
+
+    <div class="hist-filter-bar">
+      <div class="hist-search-wrap">
+        <svg class="hist-search-ico" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="hist-search" class="hist-search-input" placeholder="Поиск по тексту предложения…">
+        <button type="button" id="hist-search-clear" class="hist-search-clear" title="Очистить поиск" style="display: none;">&times;</button>
+      </div>
+      <div class="hist-filter-group" role="tablist">
+        <button type="button" id="hist-filter-all" class="hist-filter-tab active" role="tab" aria-selected="true">Все</button>
+        <button type="button" id="hist-filter-inserted" class="hist-filter-tab" role="tab" aria-selected="false">Вставленные</button>
+      </div>
+    </div>
+
+    <div class="hist-list" id="hist-list">
+      <!-- Items dynamically populated by JS -->
+    </div>
+
+    <div class="hist-footer">
+      <div class="hist-footer-status">
+        <span id="hist-status">Всего: 0</span>
+      </div>
+      <div class="hist-footer-actions">
+        <button id="hist-clear" class="btn-hist-subtle-danger" title="Полностью очистить сохранённую историю">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          Очистить всё
+        </button>
+        <button id="hist-export" class="btn-hist-sec" title="Экспортировать историю в файл JSON">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Экспорт JSON
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ JSON Import Modal ══════════════════════════════════════════════ -->
+<div id="json-import-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="json-import-title">
+  <div id="json-import-dialog">
+    <div class="json-import-header">
+      <div>
+        <div id="json-import-title" class="json-import-title">Импорт JSON-разбора от внешнего LLM</div>
+        <div class="json-import-subtitle">Вставьте JSON от ChatGPT / Gemini / Claude — аддон применит его к текущему предложению</div>
+      </div>
+      <button id="json-import-close" class="btn-hist-sec" title="Закрыть">&times;</button>
+    </div>
+
+    <div class="json-import-body">
+      <!-- Schema reference strip -->
+      <div class="json-schema-ref">
+        <div class="json-schema-ref-label">Ожидаемая структура JSON:</div>
+        <pre class="json-schema-pre">{
+  "sentence_type": ["Simple", "Declarative", "Affirmative"],
+  "sentence_parts": [{"words": ["is","passing","by"], "tag": "Predicate"}],
+  "clauses_and_phrases": [{"words": ["without","taking","off"], "tag": "Gerund phrase"}],
+  "tense_voice_mood": [{"words": ["is","passing"], "tags": ["Present","Continuous","Active","Indicative"]}],
+  "part_of_speech": [{"words": ["lad"], "tag": "Noun"}]
+}</pre>
+        <button type="button" id="btn-json-copy-prompt" class="btn-hist-sec json-copy-prompt-btn" title="Скопировать prompt для ChatGPT/Gemini/Claude">
+          Скопировать промпт для LLM
+        </button>
+      </div>
+
+      <!-- Paste area -->
+      <label class="json-import-label" for="json-import-ta">Вставьте JSON-разбор:</label>
+      <textarea id="json-import-ta" class="json-import-textarea" rows="10"
+        spellcheck="false"
+        placeholder='{"sentence_type": [...], "sentence_parts": [...], ...}'></textarea>
+
+      <div id="json-import-error" class="json-import-error" style="display:none;"></div>
+      <div id="json-import-stats" class="json-import-stats" style="display:none;"></div>
+    </div>
+
+    <div class="json-import-footer">
+      <button type="button" id="btn-json-clear" class="btn-hist-sec">Очистить</button>
+      <div style="flex:1;"></div>
+      <button type="button" id="btn-json-cancel" class="btn-hist-sec">Отмена</button>
+      <button type="button" id="btn-json-apply" class="btn-json-apply pri">Применить разбор</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Auto 100% Config Modal ══════════════════════════════════════════════ -->
+<div id="auto-config-overlay" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="auto-config-title">
+  <div id="auto-config-dialog" class="auto-config-dialog">
+    <div class="auto-config-header">
+      <div>
+        <div id="auto-config-title" class="auto-config-title">Авторасстановка со 100% уверенностью</div>
+        <div class="auto-config-subtitle">Выберите параметры для авторазметки. Включены только строгие лингвистические инварианты без догадок.</div>
+      </div>
+      <button type="button" id="auto-config-close" class="btn-hist-sec" title="Закрыть">&times;</button>
+    </div>
+
+    <div class="auto-config-body">
+      <!-- Presets bar -->
+      <div class="auto-config-presets">
+        <span class="auto-presets-label">Пресеты:</span>
+        <button type="button" class="btn-auto-preset" data-preset="all">Все 100% параметры</button>
+        <button type="button" class="btn-auto-preset" data-preset="pos_only">Только части речи (POS)</button>
+        <button type="button" class="btn-auto-preset" data-preset="func_only">Только служебные слова</button>
+        <button type="button" class="btn-auto-preset" data-preset="clear">Снять всё</button>
+      </div>
+
+      <div class="auto-config-groups">
+        <!-- Group 1: Parts of Speech (POS) -->
+        <div class="auto-rule-group">
+          <div class="auto-rule-group-title">Части речи и морфология (POS)</div>
+          
+          <label class="auto-rule-item">
+            <input type="checkbox" id="auto-cfg-articles">
+            <div class="auto-rule-info">
+              <div class="auto-rule-name">Артикли (Articles)</div>
+              <div class="auto-rule-desc"><code>a, an</code> (indefinite) и <code>the</code> (definite)</div>
+            </div>
+          </label>
+
+          <label class="auto-rule-item">
+            <input type="checkbox" id="auto-cfg-pronouns_cases">
+            <div class="auto-rule-info">
+              <div class="auto-rule-name">Однозначные местоимения и падежи (Pronouns)</div>
+              <div class="auto-rule-desc">Именительный: <code>I, he, she, we, they</code>; Объектный: <code>me, him, us, them</code>; Возвратные: <code>myself...</code>; Абсолютные: <code>mine, yours, theirs</code>; Неопределенные/Отрицательные: <code>someone, nobody...</code></div>
+            </div>
+          </label>
+
+          <label class="auto-rule-item">
+            <input type="checkbox" id="auto-cfg-numerals">
+            <div class="auto-rule-info">
+              <div class="auto-rule-name">Числительные (Numerals)</div>
+              <div class="auto-rule-desc">Цифры (<code>42, 2026</code> → cardinal), порядковые с суффиксом (<code>1st, 2nd, 3rd</code> → ordinal) и числа словами (<code>two, three... tenth, hundredth</code>)</div>
+            </div>
+          </label>
+
+          <label class="auto-rule-item">
+            <input type="checkbox" id="auto-cfg-calendar_proper">
+            <div class="auto-rule-info">
+              <div class="auto-rule-name">Календарные имена собственные (Proper Nouns)</div>
+              <div class="auto-rule-desc">Дни недели (<code>Monday...Sunday</code>) и месяцы (<code>January...December</code>, кроме омонимов May/March)</div>
+            </div>
+          </label>
+
+          <label class="auto-rule-item">
+            <input type="checkbox" id="auto-cfg-particles_conj">
+            <div class="auto-rule-info">
+              <div class="auto-rule-name">Однозначные союзы и отрицание (Conjunctions & Particles)</div>
+              <div class="auto-rule-desc">Частица <code>not, n't</code> (negative); союзы <code>and, nor</code> (coordinating); <code>because, although, whereas, unless</code> (subordinating)</div>
+            </div>
+          </label>
+
+          <label class="auto-rule-item">
+            <input type="checkbox" id="auto-cfg-pure_prepositions">
+            <div class="auto-rule-info">
+              <div class="auto-rule-name">Безусловные предлоги (Pure Prepositions)</div>
+              <div class="auto-rule-desc">Только слова, которые в английском никогда не бывают наречиями: <code>of, into, onto, upon, among, between, during, toward, throughout, against</code></div>
+            </div>
+          </label>
+
+          <label class="auto-rule-item">
+            <input type="checkbox" id="auto-cfg-modals">
+            <div class="auto-rule-info">
+              <div class="auto-rule-name">Модальные глаголы без омонимов (Modal Verbs)</div>
+              <div class="auto-rule-desc">Строгие модальные глаголы: <code>must, should, would, could</code> (исключая омонимы can/will/may)</div>
+            </div>
+          </label>
+        </div>
+
+        <!-- Group 2: Sentence Characteristics (ST) -->
+        <div class="auto-rule-group">
+          <div class="auto-rule-group-title">Тип предложения и полярность (Sentence ST)</div>
+
+          <label class="auto-rule-item">
+            <input type="checkbox" id="auto-cfg-sentence_purpose">
+            <div class="auto-rule-info">
+              <div class="auto-rule-name">Цель высказывания по пунктуации (Purpose)</div>
+              <div class="auto-rule-desc"><code>!</code> → Exclamatory; <code>?</code> → Interrogative (+ Wh-вопросы → Special); <code>.</code> → Declarative</div>
+            </div>
+          </label>
+
+          <label class="auto-rule-item">
+            <input type="checkbox" id="auto-cfg-sentence_polarity">
+            <div class="auto-rule-info">
+              <div class="auto-rule-name">Полярность: утверждение / отрицание (Polarity)</div>
+              <div class="auto-rule-desc">100% Negative при наличии <code>not, n't, never, nobody, nothing, nowhere, neither, none</code>; иначе Affirmative</div>
+            </div>
+          </label>
+        </div>
+
+        <!-- Group 3: Syntax & Verb Forms -->
+        <div class="auto-rule-group">
+          <div class="auto-rule-group-title">Члены предложения и залог (Members & Voice)</div>
+
+          <label class="auto-rule-item">
+            <input type="checkbox" id="auto-cfg-passive_voice">
+            <div class="auto-rule-info">
+              <div class="auto-rule-name">Пассивный залог глаголов (Passive Voice)</div>
+              <div class="auto-rule-desc">Аналитическая цепочка <code>be / been / being + Participle II</code> (<i>“should be disregarded”</i>) → Voice: Passive</div>
+            </div>
+          </label>
+
+          <label class="auto-rule-item">
+            <input type="checkbox" id="auto-cfg-subject_pronouns">
+            <div class="auto-rule-info">
+              <div class="auto-rule-name">Подлежащее при именительном местоимении (Subject)</div>
+              <div class="auto-rule-desc"><code>I, he, she, we, they</code> непосредственно перед личным глаголом (<i>“that <u>I</u> want”</i>, <i>“<u>he</u> rises”</i>) → Subject</div>
+            </div>
+          </label>
+
+          <label class="auto-rule-item">
+            <input type="checkbox" id="auto-cfg-address_vocative">
+            <div class="auto-rule-info">
+              <div class="auto-rule-name">Обращение перед запятой (Address)</div>
+              <div class="auto-rule-desc">Вокативное существительное в начале реплики перед запятой (<i>“<u>Gentlemen</u>, it is...”</i>) → Address</div>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="auto-config-footer">
+      <div id="auto-config-stats" class="auto-config-stats">Настройки сохраняются автоматически</div>
+      <div style="flex:1;"></div>
+      <button type="button" id="btn-auto-config-close" class="btn-hist-sec">Готово</button>
+      <button type="button" id="btn-auto-config-apply" class="btn-auto-apply pri">Применить к предложению</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Web & GitHub Pages storage bridge: transparently mirrors chrome.storage.local to localStorage
+(function() {
+  if (typeof window === 'undefined') return;
+  window.chrome = window.chrome || {};
+  if (!window.chrome.storage || !window.chrome.storage.local) {
+    window.chrome.storage = window.chrome.storage || {};
+    window.chrome.storage.local = {
+      get: function(keys, callback) {
+        var res = {};
+        var list = [];
+        if (!keys) {
+          for (var i = 0; i < localStorage.length; i++) {
+            list.push(localStorage.key(i));
+          }
+        } else if (Array.isArray(keys)) {
+          list = keys;
+        } else if (typeof keys === 'string') {
+          list = [keys];
+        } else if (typeof keys === 'object') {
+          list = Object.keys(keys);
+          res = Object.assign({}, keys);
+        }
+        list.forEach(function(k) {
+          try {
+            var raw = localStorage.getItem(k);
+            if (raw !== null) res[k] = JSON.parse(raw);
+          } catch (_) {
+            res[k] = localStorage.getItem(k);
+          }
+        });
+        if (typeof callback === 'function') {
+          setTimeout(function() { callback(res); }, 0);
+        }
+        return Promise.resolve(res);
+      },
+      set: function(items, callback) {
+        if (items && typeof items === 'object') {
+          Object.keys(items).forEach(function(k) {
+            try {
+              localStorage.setItem(k, JSON.stringify(items[k]));
+            } catch (e) {
+              console.warn('localStorage set failed for', k, e);
+            }
+          });
+        }
+        if (typeof callback === 'function') {
+          setTimeout(function() { callback(); }, 0);
+        }
+        return Promise.resolve();
+      },
+      remove: function(keys, callback) {
+        var list = Array.isArray(keys) ? keys : [keys];
+        list.forEach(function(k) {
+          try { localStorage.removeItem(k); } catch (_) {}
+        });
+        if (typeof callback === 'function') {
+          setTimeout(function() { callback(); }, 0);
+        }
+        return Promise.resolve();
+      },
+      clear: function(callback) {
+        try { localStorage.clear(); } catch (_) {}
+        if (typeof callback === 'function') {
+          setTimeout(function() { callback(); }, 0);
+        }
+        return Promise.resolve();
+      }
+    };
+  }
+})();
+</script>
+<script src="parser.js"></script>
+</body>
+</html>
