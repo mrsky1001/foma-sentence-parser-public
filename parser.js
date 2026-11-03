@@ -967,6 +967,7 @@ let renderMode = 'color_focus'; // 'color_focus' | 'bw'
 let showWordPopover = true;
 let wordPopoverLayout = 'row'; // 'row' | 'column'
 let partsFormat = 'combo'; // 'combo' | 'full' | 'short' | 'symbols_only'
+let showProgressBar = true;
 
 try {
   const savedRMode = localStorage.getItem('foma_render_mode');
@@ -977,6 +978,8 @@ try {
   if (savedLayout === 'column' || savedLayout === 'row') wordPopoverLayout = savedLayout;
   const savedFormat = localStorage.getItem('foma_parts_format');
   if (['combo', 'full', 'short', 'symbols_only'].includes(savedFormat)) partsFormat = savedFormat;
+  const savedProgress = localStorage.getItem('foma_show_progress_bar');
+  if (savedProgress !== null) showProgressBar = (savedProgress !== '0' && savedProgress !== 'false');
 } catch (_) {}
 
 const LAYER_COLORS = {
@@ -2594,6 +2597,8 @@ function applyStatic() {
   setText('btn-layout-col', 'Столбец', 'Column');
   setTitle('btn-layout-row', 'Горизонтальные чипы в несколько строк', 'Horizontal chips wrapping in rows');
   setTitle('btn-layout-col', 'Вертикальный список в один столбец', 'Vertical list in a single column');
+  setText('lbl-cfg-progress-title', 'Полоса прогресса разметки предложения', 'Sentence parsing progress bar');
+  setText('lbl-cfg-progress-desc', 'Тонкая полоса под шапкой, показывающая процент разобранных слов в предложении', 'Thin indicator bar below the header showing percentage of parsed words');
   setText('lbl-settings-status', 'Настройки сохраняются автоматически', 'Settings are saved automatically');
   setText('btn-settings-done', 'Готово', 'Done');
   setTitle('btn-settings', 'Настройки сайта (Ctrl+,)', 'Site Settings (Ctrl+,)');
@@ -5411,6 +5416,11 @@ function updateWordPopover() {
 }
 
 function updateProgressBar() {
+  const bar = $('top-progress-bar');
+  if (bar) {
+    bar.style.display = showProgressBar ? '' : 'none';
+  }
+  if (!showProgressBar) return;
   const fill = $('top-progress-fill');
   if (!fill) return;
 
@@ -6868,6 +6878,17 @@ function setShowWordPopover(val) {
   updateWordPopover();
 }
 
+function setShowProgressBar(val) {
+  showProgressBar = Boolean(val);
+  try {
+    localStorage.setItem('foma_show_progress_bar', showProgressBar ? '1' : '0');
+    chrome.storage?.local?.set({ foma_show_progress_bar: showProgressBar });
+  } catch (_) {}
+  const bar = $('top-progress-bar');
+  if (bar) bar.style.display = showProgressBar ? '' : 'none';
+  if (showProgressBar) updateProgressBar();
+}
+
 function setWordPopoverLayout(layout) {
   if (layout !== 'column' && layout !== 'row') return;
   wordPopoverLayout = layout;
@@ -6902,6 +6923,8 @@ function setupSettingsModal() {
     if (radio) radio.checked = true;
     const popToggle = $('cfg-show-word-popover');
     if (popToggle) popToggle.checked = Boolean(showWordPopover);
+    const progToggle = $('cfg-show-progress-bar');
+    if (progToggle) progToggle.checked = Boolean(showProgressBar);
     const isCol = wordPopoverLayout === 'column';
     $('btn-layout-row')?.classList.toggle('active', !isCol);
     $('btn-layout-col')?.classList.toggle('active', isCol);
@@ -6945,6 +6968,10 @@ function setupSettingsModal() {
 
   $('cfg-show-word-popover')?.addEventListener('change', e => {
     setShowWordPopover(e.target.checked);
+  });
+
+  $('cfg-show-progress-bar')?.addEventListener('change', e => {
+    setShowProgressBar(e.target.checked);
   });
 
   $('btn-layout-row')?.addEventListener('click', () => {
@@ -8079,6 +8106,7 @@ async function init() {
       'foma_show_word_popover',
       'foma_word_popover_layout',
       'foma_parts_format',
+      'foma_show_progress_bar',
       HIST_KEY
     ], res => {
       if (res.foma_theme) {
@@ -8088,6 +8116,11 @@ async function init() {
       }
       if (res.foma_show_word_popover !== undefined) {
         showWordPopover = Boolean(res.foma_show_word_popover);
+      }
+      if (res.foma_show_progress_bar !== undefined) {
+        showProgressBar = Boolean(res.foma_show_progress_bar);
+        const bar = $('top-progress-bar');
+        if (bar) bar.style.display = showProgressBar ? '' : 'none';
       }
       if (res.foma_word_popover_layout && (res.foma_word_popover_layout === 'row' || res.foma_word_popover_layout === 'column')) {
         wordPopoverLayout = res.foma_word_popover_layout;
@@ -8198,6 +8231,10 @@ async function init() {
       }
       const savedPopover = localStorage.getItem('foma_show_word_popover');
       if (savedPopover !== null) showWordPopover = (savedPopover !== '0' && savedPopover !== 'false');
+      const savedProgress = localStorage.getItem('foma_show_progress_bar');
+      if (savedProgress !== null) showProgressBar = (savedProgress !== '0' && savedProgress !== 'false');
+      const bar = $('top-progress-bar');
+      if (bar) bar.style.display = showProgressBar ? '' : 'none';
       const savedLayout = localStorage.getItem('foma_word_popover_layout');
       if (savedLayout === 'column' || savedLayout === 'row') wordPopoverLayout = savedLayout;
       const savedFormat = localStorage.getItem('foma_parts_format');
