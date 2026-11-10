@@ -1280,11 +1280,13 @@ function parse() {
   const old = toks, re = /(\s*)([\p{L}\p{N}]+(?:[-'’][\p{L}\p{N}]+)*|[^\s])/gu, rawOut = [];
   let m;
   while ((m = re.exec(ta.value))) {
-    rawOut.push({ t: m[2], word: /[\p{L}\p{N}]/u.test(m[2]), sp: m[1].length > 0, br: m[1].includes('\n') });
+    const rawBr = m[1].includes('\n');
+    rawOut.push({ t: m[2], word: /[\p{L}\p{N}]/u.test(m[2]), sp: m[1].length > 0, br: rawBr, rawBr });
   }
 
   // Detect sentence number prefixes (e.g. "1.", "2)") and sentence boundaries
   let currentSentence = 1;
+  let sentenceCountInText = 0;
   let atSentenceStart = true;
   for (let i = 0; i < rawOut.length; i++) {
     const k = rawOut[i];
@@ -1296,14 +1298,17 @@ function parse() {
         i++; // skip dot
         continue;
       }
+      sentenceCountInText++;
       k.sentIndex = currentSentence;
       k.isSentStart = true;
-      if (currentSentence > 1) k.br = true;
+      if (sentenceCountInText > 1) k.br = true;
       atSentenceStart = false;
     } else {
       k.sentIndex = currentSentence;
     }
-    if (k.br || (k.t === '.' || k.t === '!' || k.t === '?')) {
+    const isTerminal = k.t === '.' || k.t === '!' || k.t === '?';
+    const nextHasNewline = rawOut[i + 1] && rawOut[i + 1].rawBr;
+    if (isTerminal || nextHasNewline) {
       currentSentence++;
       atSentenceStart = true;
     }
