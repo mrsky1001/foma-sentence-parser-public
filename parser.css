@@ -1096,28 +1096,79 @@ footer button.pri:active,
 
 .tr {
   margin-top: 8px;
-  padding: 8px 10px;
+  padding: 8px 12px;
   border-radius: 8px;
   background: var(--accbg);
   color: var(--ink);
   font-size: 13px;
   line-height: 1.45;
-  white-space: pre-wrap;
   user-select: text;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
 }
 
 .tr.err {
   background: #fbe9e9;
   color: #b3261e;
+  display: block;
+}
+
+[data-theme="dark"] .tr.err {
+  background: #381515;
+  color: #fca5a5;
+}
+
+.tr .btn-copy-tr {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--bg-card, #ffffff);
+  color: var(--ink);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+  line-height: 1.2;
+  margin-top: 1px;
+}
+
+[data-theme="dark"] .tr .btn-copy-tr {
+  background: #1c1c1f;
+  border-color: #2e2e33;
+  color: var(--ink);
+}
+
+.tr .btn-copy-tr:hover {
+  background: #3b83bd;
+  color: #ffffff;
+  border-color: #3b83bd;
+}
+
+.tr .btn-copy-tr.copied {
+  background: #16a34a !important;
+  color: #ffffff !important;
+  border-color: #16a34a !important;
+}
+
+.tr .btn-copy-tr svg {
+  width: 12px;
+  height: 12px;
+}
+
+.tr .tr-text {
+  flex: 1;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .tr .tg {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--accink);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-right: 6px;
+  display: none;
 }
 
 /* ── History Button & Modal ────────────────────────────────── */
@@ -3292,6 +3343,17 @@ footer button.pri:active,
   to { transform: rotate(360deg); }
 }
 
+.ic-spin {
+  animation: foma-ai-spin 0.8s linear infinite;
+  transform-origin: center;
+}
+
+#btn-ai-run.is-loading {
+  opacity: 0.85;
+  cursor: wait;
+  pointer-events: none;
+}
+
 .ai-loading-text {
   color: var(--ink);
 }
@@ -5435,21 +5497,199 @@ h2.sec {
 }
 
 /* ==========================================================================
-   Environment Scopes: Public Web vs Chrome Extension
+   AI Settings in Modal Dialog
    ========================================================================== */
-[data-env="public"] .ai-only,
-[data-env="public"] #tab-nav-ai,
-[data-env="public"] #top-mode-ai-lock,
-[data-env="public"] #top-mode-ai-tag,
-[data-env="public"] #ai-top-controls,
-[data-env="public"] #view-ai,
-[data-env="public"] #ai-top-actions,
-[data-env="public"] #btn-json-import,
-[data-env="public"] #btn-json-import-ai,
-[data-env="public"] #json-import-overlay {
-  display: none !important;
+.settings-ai-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
 }
 
-[data-env="public"] #mode-tabs {
-  display: none !important;
+.settings-ai-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 580px) {
+  .settings-ai-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.settings-ai-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settings-ai-field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.settings-ai-field select,
+.settings-ai-field input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--bg-card, #ffffff);
+  color: var(--ink);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.settings-ai-field select:focus,
+.settings-ai-field input:focus {
+  border-color: #3b83bd;
+  box-shadow: 0 0 0 2px rgba(59, 131, 189, 0.2);
+}
+
+.settings-key-card {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+[data-theme="dark"] .settings-key-card {
+  background: #141416;
+  border-color: var(--line);
+}
+
+.settings-key-card:hover {
+  border-color: #a1a1aa;
+}
+
+[data-theme="dark"] .settings-key-card:hover {
+  border-color: #3f3f46;
+}
+
+.settings-key-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.settings-key-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.settings-key-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.settings-key-badge.badge-ok {
+  background: rgba(22, 163, 74, 0.12);
+  color: #16a34a;
+}
+
+.settings-key-badge.badge-none {
+  background: rgba(148, 163, 184, 0.12);
+  color: #64748b;
+}
+
+[data-theme="dark"] .settings-key-badge.badge-ok {
+  background: rgba(34, 197, 94, 0.18);
+  color: #4ade80;
+}
+
+[data-theme="dark"] .settings-key-badge.badge-none {
+  background: rgba(100, 116, 139, 0.2);
+  color: #94a3b8;
+}
+
+.settings-key-desc {
+  font-size: 11.5px;
+  color: var(--mute);
+  line-height: 1.35;
+}
+
+.settings-key-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.settings-key-input-row input {
+  flex: 1;
+  padding: 7px 11px;
+  border-radius: 7px;
+  border: 1px solid var(--line);
+  background: var(--bg-card, #ffffff);
+  color: var(--ink);
+  font-size: 12.5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.settings-key-input-row input:focus {
+  border-color: #3b83bd;
+  box-shadow: 0 0 0 2px rgba(59, 131, 189, 0.2);
+}
+
+[data-theme="dark"] .settings-key-input-row input {
+  background: #1c1c1f;
+  border-color: #27272a;
+}
+
+.btn-toggle-pw {
+  cursor: pointer;
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--mute);
+  font-size: 13px;
+  line-height: 1;
+  user-select: none;
+}
+
+.btn-toggle-pw:hover {
+  color: var(--ink);
+  border-color: #3b83bd;
+}
+
+/* Action Button to Pull AI parse into manual bottom bar */
+.btn-pull-ai {
+  background: rgba(59, 131, 189, 0.1) !important;
+  color: #3b83bd !important;
+  border: 1px solid rgba(59, 131, 189, 0.35) !important;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-pull-ai:hover {
+  background: #3b83bd !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .btn-pull-ai {
+  background: rgba(59, 131, 189, 0.18) !important;
+  color: #70b2e6 !important;
+  border-color: rgba(59, 131, 189, 0.45) !important;
+}
+
+[data-theme="dark"] .btn-pull-ai:hover {
+  background: #3b83bd !important;
+  color: #ffffff !important;
 }

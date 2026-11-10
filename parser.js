@@ -1,67 +1,4 @@
 /**
- * FOMA Sentence Parser (Beta) — Visual English Sentence Syntax Analyzer
- * Author & Developer: Nikita Kolyada (https://foma-creative.com)
- * Company / Organization: foma-creative.com
- *
- * 100% Client-Side Privacy:
- * - No external server tracking or telemetry.
- * - Autonomous in-browser grammar parsing.
- */
-(function() {
-  if (typeof window === 'undefined') return;
-  window.chrome = window.chrome || {};
-  if (!window.chrome.storage || !window.chrome.storage.local) {
-    window.chrome.storage = window.chrome.storage || {};
-    window.chrome.storage.local = {
-      get: function(keys, callback) {
-        var res = {};
-        var list = [];
-        if (!keys) {
-          for (var i = 0; i < localStorage.length; i++) list.push(localStorage.key(i));
-        } else if (Array.isArray(keys)) {
-          list = keys;
-        } else if (typeof keys === 'string') {
-          list = [keys];
-        } else if (typeof keys === 'object') {
-          list = Object.keys(keys);
-          res = Object.assign({}, keys);
-        }
-        list.forEach(function(k) {
-          try {
-            var raw = localStorage.getItem(k);
-            if (raw !== null) res[k] = JSON.parse(raw);
-          } catch (_) {
-            res[k] = localStorage.getItem(k);
-          }
-        });
-        if (typeof callback === 'function') setTimeout(function() { callback(res); }, 0);
-        return Promise.resolve(res);
-      },
-      set: function(items, callback) {
-        if (items && typeof items === 'object') {
-          Object.keys(items).forEach(function(k) {
-            try { localStorage.setItem(k, JSON.stringify(items[k])); } catch (_) {}
-          });
-        }
-        if (typeof callback === 'function') setTimeout(function() { callback(); }, 0);
-        return Promise.resolve();
-      },
-      remove: function(keys, callback) {
-        var list = Array.isArray(keys) ? keys : [keys];
-        list.forEach(function(k) { try { localStorage.removeItem(k); } catch (_) {} });
-        if (typeof callback === 'function') setTimeout(function() { callback(); }, 0);
-        return Promise.resolve();
-      },
-      clear: function(callback) {
-        try { localStorage.clear(); } catch (_) {}
-        if (typeof callback === 'function') setTimeout(function() { callback(); }, 0);
-        return Promise.resolve();
-      }
-    };
-  }
-})();
-
-/**
  * FOMA Sentence Parser — Core Application Logic
  * Ported from Google Docs Apps Script add-on to Chrome Extension / Web Standard.
  */
@@ -883,6 +820,7 @@ const AUTO_100_RULES_INFO = {
 const PROVIDERS = {
   positionapi: {
     name: 'PositionAPI (positionapi.top)',
+    shortName: 'PositionAPI',
     base: 'https://positionapi.top/v1',
     keyPlaceholder: 'PositionAPI Key (sk-…)',
     defaultModel: 'gpt-4o',
@@ -890,6 +828,7 @@ const PROVIDERS = {
   },
   groq: {
     name: 'Groq Cloud (Ultra-fast)',
+    shortName: 'Groq',
     base: 'https://api.groq.com/openai/v1',
     keyPlaceholder: 'Groq API Key (gsk_…)',
     defaultModel: 'openai/gpt-oss-120b',
@@ -900,8 +839,25 @@ const PROVIDERS = {
       'allam-2-7b'
     ]
   },
+  openai: {
+    name: 'OpenAI (Official)',
+    shortName: 'OpenAI',
+    base: 'https://api.openai.com/v1',
+    keyPlaceholder: 'OpenAI API Key (sk-proj-…)',
+    defaultModel: 'gpt-4o',
+    models: ['gpt-4o', 'gpt-4o-mini', 'o3-mini', 'gpt-4-turbo']
+  },
+  gemini: {
+    name: 'Google Gemini',
+    shortName: 'Gemini',
+    base: 'https://generativelanguage.googleapis.com/v1beta/openai',
+    keyPlaceholder: 'Gemini API Key (AIzaSy…)',
+    defaultModel: 'gemini-2.5-flash',
+    models: ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash']
+  },
   custom: {
     name: 'Custom (OpenAI-compatible)',
+    shortName: 'Custom',
     base: '',
     keyPlaceholder: 'API Key (optional/sk-…)',
     defaultModel: 'gpt-4o',
@@ -914,22 +870,63 @@ let AI = {
   keys: {
     positionapi: '',
     groq: '',
+    openai: '',
+    gemini: '',
     custom: ''
   },
   models: {
     positionapi: [...PROVIDERS.positionapi.models],
     groq: [...PROVIDERS.groq.models],
+    openai: [...PROVIDERS.openai.models],
+    gemini: [...PROVIDERS.gemini.models],
     custom: []
   },
   activeModel: {
     positionapi: 'gpt-4o',
     groq: 'openai/gpt-oss-120b',
+    openai: 'gpt-4o',
+    gemini: 'gemini-2.5-flash',
     custom: 'gpt-4o'
   },
   customUrl: 'http://localhost:11434/v1',
   lang: 'Russian',
   hasKey: false
 };
+
+let openSettingsModal = null;
+
+function saveAiSettings() {
+  const data = {
+    aiprovider: AI.provider,
+    aikeys: AI.keys,
+    aicustomurl: AI.customUrl,
+    aiactivemodels: AI.activeModel,
+    aimodels: AI.models,
+    ailang: AI.lang
+  };
+  try {
+    localStorage.setItem('foma_ai_settings', JSON.stringify(data));
+  } catch (_) {}
+  if (typeof chrome !== 'undefined' && chrome.storage?.local) {
+    chrome.storage.local.set(data);
+  }
+}
+
+function loadAiSettingsFromLocalStorage() {
+  try {
+    const raw = localStorage.getItem('foma_ai_settings');
+    if (raw) {
+      const data = JSON.parse(raw);
+      if (data.aiprovider) AI.provider = data.aiprovider;
+      if (data.aikeys) AI.keys = { ...AI.keys, ...data.aikeys };
+      if (data.aicustomurl) AI.customUrl = data.aicustomurl;
+      if (data.aiactivemodels) AI.activeModel = { ...AI.activeModel, ...data.aiactivemodels };
+      if (data.aimodels) AI.models = { ...AI.models, ...data.aimodels };
+      if (data.ailang) AI.lang = data.ailang;
+    }
+  } catch (_) {}
+}
+loadAiSettingsFromLocalStorage();
 
 let AIR = '', AII = [];
 let currentTopMode = 'manual'; // 'manual' | 'ai'
@@ -2495,14 +2492,31 @@ function applyStatic() {
   setTitle('btn-ai-run', 'Заполнить синтаксический разбор этой языковой моделью', 'Generate parse using this model');
   setTitle('btn-json-import-ai', 'Вставить готовый JSON-разбор от ChatGPT / Gemini / Claude', 'Paste pre-made JSON parse from ChatGPT / Gemini / Claude');
   setText('top-filter-label', 'Слои:', 'Layers:');
-  setText('lbl-ai-apply-manual', 'В мой разбор', 'To My Parse');
-  setTitle('btn-ai-apply-manual', 'Скопировать результат ИИ в «Мой разбор» для правки', 'Copy AI result to My Parse for editing');
+  setText('lbl-ai-apply-manual', 'Вставить в «Мой разбор»', 'Insert into My Parse');
+  setTitle('btn-ai-apply-manual', 'Скопировать результат ИИ в «Мой разбор» для редактирования', 'Copy AI result to My Parse for editing');
+  setText('lbl-ai-apply-subbar', 'Редактировать в Моем разборе', 'Edit in My Parse');
+  setTitle('btn-ai-apply-manual-subbar', 'Скопировать результат ИИ в «Мой разбор» для редактирования', 'Copy AI result to My Parse for editing');
+  setText('lbl-ai-apply-card', 'Вставить в «Мой разбор»', 'Insert into My Parse');
+  setTitle('btn-ai-apply-card', 'Скопировать результат ИИ в «Мой разбор» для редактирования', 'Copy AI result to My Parse for editing');
+  setText('lbl-btn-pull-ai', 'Вставить разбор от ИИ', 'Insert AI Parse');
+  setTitle('btn-manual-pull-ai', 'Вставить готовый разбор нейросети на этот холст для редактирования', 'Insert ready AI parse into this canvas for editing');
   setText('lbl-ai-copy-img', 'Картинка', 'Image');
   setTitle('btn-ai-copy-img', 'Скопировать изображение разбора ИИ', 'Copy AI parse image');
   setText('lbl-btn-history', 'История', 'History');
   setTitle('btn-history', 'Открыть историю предложений', 'Open sentence history');
   setTitle('btn-tips', 'Горячие клавиши и справка', 'Hotkeys & Tips');
   setTitle('btn-theme-toggle', 'Переключить тему оформления (Светлая / Тёмная)', 'Toggle theme (Light / Dark)');
+
+  // Settings Modal AI Section
+  setText('lbl-cfg-ai-title-text', 'Нейросети и API-ключи', 'AI Models & API Keys');
+  setText('lbl-cfg-ai-desc', 'Выберите сервис и языковую модель для автоматического разбора предложений, а также укажите ваши API-ключи:', 'Choose an AI service and language model for automated parsing, and specify your API keys:');
+  setText('lbl-cfg-ai-provider', 'Сервис (провайдер)', 'AI Service (Provider)');
+  setText('lbl-cfg-ai-model', 'Языковая модель', 'Language Model');
+  setText('lbl-desc-positionapi', 'Шлюз positionapi.top: GPT-4o, Claude 3.5 Sonnet, DeepSeek Chat, GPT-6 Astra', 'Gateway positionapi.top: GPT-4o, Claude 3.5 Sonnet, DeepSeek Chat, GPT-6 Astra');
+  setText('lbl-desc-groq', 'Сверхбыстрый бесплатный инференс моделей gpt-oss-120b, qwen3.8-27b', 'Ultra-fast inference for gpt-oss-120b, qwen3.8-27b models');
+  setText('lbl-desc-openai', 'Официальный API OpenAI для моделей gpt-4o, gpt-4o-mini, o3-mini', 'Official OpenAI API for gpt-4o, gpt-4o-mini, o3-mini models');
+  setText('lbl-desc-gemini', 'Google Gemini API для моделей gemini-2.5-flash, gemini-2.5-pro', 'Google Gemini API for gemini-2.5-flash, gemini-2.5-pro models');
+  setText('lbl-desc-custom', 'Для локальных Ollama / vLLM / LM Studio серверов', 'For local Ollama / vLLM / LM Studio servers');
 
   // Language buttons
   if ($('lang')) $('lang').querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.l === TL));
@@ -4239,20 +4253,79 @@ function onEnterAiMode() {
   runAiDirectFill();
 }
 
+function populateAiModelSelect(selectEl, prov, selectedModel) {
+  if (!selectEl) return;
+  const cfg = PROVIDERS[prov] || PROVIDERS.positionapi;
+  const models = AI.models[prov]?.length ? AI.models[prov] : (cfg.models || []);
+  const cur = selectedModel || AI.activeModel[prov] || cfg.defaultModel || models[0] || '';
+  if (!models.length && prov === 'custom') {
+    selectEl.innerHTML = `<option value="gpt-4o">gpt-4o</option><option value="custom">custom-model</option>`;
+  } else {
+    selectEl.innerHTML = models.map(m => `<option value="${esc(m)}"${m === cur ? ' selected' : ''}>${esc(m)}</option>`).join('');
+  }
+  selectEl.value = cur;
+}
+
 function syncAiSelectors() {
+  const prov = AI.provider || 'positionapi';
   const provSel = $('sel-ai-provider');
   const modelSel = $('sel-ai-model');
-  if (!provSel || !modelSel) return;
-
-  const prov = AI.provider || 'positionapi';
-  provSel.value = prov;
-
-  const models = AI.models[prov] || PROVIDERS[prov]?.models || [];
-  const curModel = AI.activeModel[prov] || PROVIDERS[prov]?.defaultModel || models[0] || '';
-
-  modelSel.innerHTML = models.map(m => `<option value="${esc(m)}"${m === curModel ? ' selected' : ''}>${esc(m)}</option>`).join('');
-
+  if (provSel) provSel.value = prov;
+  if (modelSel) populateAiModelSelect(modelSel, prov, AI.activeModel[prov]);
   updateAiKeyInlineBar();
+}
+
+function syncAiSettingsModal() {
+  const prov = AI.provider || 'positionapi';
+  const cfgProv = $('cfg-ai-provider');
+  const cfgModel = $('cfg-ai-model');
+  const cfgCustomUrl = $('cfg-custom-url');
+
+  if (cfgProv) cfgProv.value = prov;
+  if (cfgModel) populateAiModelSelect(cfgModel, prov, AI.activeModel[prov]);
+  if (cfgCustomUrl) cfgCustomUrl.value = AI.customUrl || 'http://localhost:11434/v1';
+
+  ['positionapi', 'groq', 'openai', 'gemini', 'custom'].forEach(p => {
+    const inp = $('cfg-key-' + p);
+    if (inp) {
+      inp.value = AI.keys[p] || '';
+    }
+    updateAiKeyBadge(p);
+  });
+}
+
+function updateAiKeyBadge(prov) {
+  const badge = $('badge-key-' + prov);
+  if (!badge) return;
+  if (prov === 'custom') {
+    badge.className = 'settings-key-badge badge-ok';
+    badge.textContent = L('Локальный / кастомный', 'Local / custom');
+    return;
+  }
+  const hasKey = !!(AI.keys[prov] && AI.keys[prov].trim());
+  if (hasKey) {
+    badge.className = 'settings-key-badge badge-ok';
+    badge.textContent = L('Настроен ✓', 'Configured ✓');
+  } else {
+    badge.className = 'settings-key-badge badge-none';
+    badge.textContent = L('Не настроен', 'Not configured');
+  }
+}
+
+function setAiRunningState(running) {
+  const btn = $('btn-ai-run');
+  const btnRetry = $('btn-ai-retry');
+  if (btn) {
+    btn.disabled = running;
+    if (running) {
+      btn.classList.add('is-loading');
+      btn.innerHTML = `<svg viewBox="0 0 24 24" class="ic-sm ic-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span id="lbl-ai-run">${L('Думает…', 'Thinking…')}</span>`;
+    } else {
+      btn.classList.remove('is-loading');
+      btn.innerHTML = `<svg viewBox="0 0 24 24" class="ic-sm"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83"/></svg><span id="lbl-ai-run">${L('Заполнить', 'Run AI')}</span>`;
+    }
+  }
+  if (btnRetry) btnRetry.disabled = running;
 }
 
 function updateAiKeyInlineBar() {
@@ -4289,6 +4362,7 @@ function updateAiKeyInlineBar() {
 }
 
 function showAiLoading(modelName = null, providerName = null) {
+  setAiRunningState(true);
   const loading = $('ai-loading-state');
   const wrapAi = $('wrap-ai');
   const errorBox = $('ai-error-state');
@@ -4309,6 +4383,7 @@ function showAiLoading(modelName = null, providerName = null) {
 }
 
 function showAiError(message, isKeyMissing = false) {
+  setAiRunningState(false);
   const loading = $('ai-loading-state');
   const wrapAi = $('wrap-ai');
   const errorBox = $('ai-error-state');
@@ -4339,10 +4414,7 @@ async function runAiDirectFill(forcedProv = null, forcedModel = null) {
   const selModel = forcedModel || $('sel-ai-model')?.value || AI.activeModel[prov] || PROVIDERS[prov]?.defaultModel;
   AI.activeModel[prov] = selModel;
 
-  chrome.storage?.local?.set({
-    aiprovider: AI.provider,
-    aiactivemodels: AI.activeModel
-  });
+  saveAiSettings();
 
   const key = AI.keys[prov] || '';
   if (prov !== 'custom' && !key) {
@@ -4400,14 +4472,17 @@ async function runAiDirectFill(forcedProv = null, forcedModel = null) {
     renderAiCanvas();
     updateAiHeaderInfo();
     renderAiVerdictCard(parsed);
+    updateManualPullAiButton();
   } catch (err) {
     showAiError(err.message, err.message.includes('API-ключ'));
   } finally {
     isAiFilling = false;
+    setAiRunningState(false);
   }
 }
 
 function renderAiCanvas() {
+  setAiRunningState(false);
   const loading = $('ai-loading-state');
   const errorBox = $('ai-error-state');
   const wrapAi = $('wrap-ai');
@@ -5711,28 +5786,43 @@ function renderAiVerdictCard(r) {
 }
 
 function applyAiToManual() {
-  if (!currentAiIdeal) return;
+  if (!currentAiIdeal) {
+    msg(L('Сначала выполните разбор нейросетью во вкладке «Разбор ИИ».', 'First run AI parse in "AI Parse" tab.'));
+    return;
+  }
   toks.forEach((k, i) => {
     const src = currentAiIdeal.toks[i];
     if (src) { k.p = src.p; k.s = src.s ? [...src.s] : []; }
   });
+  const sourceAn = currentAiIdeal.an || (aiGranularity === 'macro' ? currentAiIdeal.macroAn : currentAiIdeal.detailedAn) || [];
   const seenAn = new Set();
   const cleanAn = [];
-  for (const a of (currentAiIdeal.an || [])) {
+  for (const a of sourceAn) {
     const key = `${a.k}:${a.v}:${[...(a.ix || [])].sort((x, y) => x - y).join(',')}`;
     if (!seenAn.has(key)) {
       seenAn.add(key);
-      cleanAn.push({ k: a.k, v: a.v, ix: [...a.ix], f: a.f });
+      cleanAn.push({ k: a.k, v: a.v, ix: [...a.ix], f: a.f ? [...a.f] : null });
     }
   }
   an = cleanAn;
-  ST = [...currentAiIdeal.st];
+  ST = [...(currentAiIdeal.st || [])];
   const firstPred = an.find(a => a.k === 'f');
   FS = firstPred && firstPred.f ? [...firstPred.f] : ['', '', '', ''];
+  sel = [];
   saveCurrentToHistory(false);
   switchTopMode('manual');
+  render();
+  ui();
+  updateManualPullAiButton();
   const modeLbl = aiGranularity === 'macro' ? L('составной', 'macro') : L('детальный', 'detailed');
-  msg(L(`Разбор от ИИ (${modeLbl}) применён к вашему ручному холсту!`, `AI parse (${modeLbl}) applied to manual canvas!`));
+  msg(L(`Разбор от ИИ (${modeLbl}) скопирован в «Мой разбор»! Теперь вы можете его редактировать.`, `AI parse (${modeLbl}) copied to My Parse! You can now edit it.`));
+}
+
+function updateManualPullAiButton() {
+  const btn = $('btn-manual-pull-ai');
+  if (btn) {
+    btn.style.display = currentAiIdeal ? 'inline-flex' : 'none';
+  }
 }
 
 function exportAiCanvas(sc) {
@@ -6453,7 +6543,7 @@ function setupTopModeEvents() {
     const m = $('sel-ai-model').value;
     if (m) {
       AI.activeModel[prov] = m;
-      chrome.storage?.local?.set({ aiactivemodels: AI.activeModel });
+      saveAiSettings();
       updateAiHeaderInfo();
     }
   });
@@ -6463,7 +6553,23 @@ function setupTopModeEvents() {
   $('btn-gran-macro')?.addEventListener('click', () => setAiGranularity('macro'));
   $('btn-ai-copy-img')?.addEventListener('click', () => copyImage());
   $('btn-ai-apply-manual')?.addEventListener('click', () => applyAiToManual());
+  $('btn-ai-apply-manual-subbar')?.addEventListener('click', () => applyAiToManual());
+  $('btn-ai-apply-card')?.addEventListener('click', () => applyAiToManual());
+  $('btn-manual-pull-ai')?.addEventListener('click', () => applyAiToManual());
+  $('btn-ai-copy-text')?.addEventListener('click', () => {
+    const text = (ta?.value || '').trim();
+    if (!text) return;
+    navigator.clipboard?.writeText(text);
+    msg(L('Текст предложения скопирован!', 'Sentence text copied!'));
+  });
   $('btn-ai-retry')?.addEventListener('click', () => runAiDirectFill());
+
+  $('btn-api-key')?.addEventListener('click', () => {
+    if (typeof openSettingsModal === 'function') openSettingsModal();
+  });
+  $('btn-ai-open-settings')?.addEventListener('click', () => {
+    if (typeof openSettingsModal === 'function') openSettingsModal();
+  });
 
   $('btn-ai-save-inline-key')?.addEventListener('click', () => {
     const inp = $('ai-key-inline-input');
@@ -6471,20 +6577,11 @@ function setupTopModeEvents() {
     if (!val) return;
     const prov = AI.provider || 'positionapi';
     AI.keys[prov] = val;
-    chrome.storage?.local?.set({ aikeys: AI.keys }, () => {
-      msg(L(`Ключ сохранён для ${PROVIDERS[prov]?.name || prov}!`, `Key saved for ${PROVIDERS[prov]?.name || prov}!`));
-      if (inp) inp.value = '';
-      updateAiKeyInlineBar();
-      runAiDirectFill();
-    });
-  });
-
-  $('btn-ai-open-settings')?.addEventListener('click', () => {
-    switchTopMode('manual');
-    tab = 'ai';
-    ui();
-    const el = $('sec-ai');
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    saveAiSettings();
+    msg(L(`Ключ сохранён для ${PROVIDERS[prov]?.name || prov}!`, `Key saved for ${PROVIDERS[prov]?.name || prov}!`));
+    if (inp) inp.value = '';
+    updateAiKeyInlineBar();
+    runAiDirectFill();
   });
 }
 
@@ -6993,6 +7090,7 @@ function setupSettingsModal() {
     const isCol = wordPopoverLayout === 'column';
     $('btn-layout-row')?.classList.toggle('active', !isCol);
     $('btn-layout-col')?.classList.toggle('active', isCol);
+    syncAiSettingsModal();
   }
 
   function openModal() {
@@ -7003,6 +7101,8 @@ function setupSettingsModal() {
   function closeModal() {
     overlay.style.display = 'none';
   }
+
+  openSettingsModal = openModal;
 
   $('btn-settings')?.addEventListener('click', openModal);
   $('btn-sidebar-settings')?.addEventListener('click', openModal);
@@ -7021,6 +7121,60 @@ function setupSettingsModal() {
       if (overlay.style.display !== 'none') closeModal();
       else openModal();
     }
+  });
+
+  // AI Provider & Model in Settings Modal
+  $('cfg-ai-provider')?.addEventListener('change', e => {
+    const prov = e.target.value;
+    AI.provider = prov;
+    const modelSel = $('cfg-ai-model');
+    if (modelSel) populateAiModelSelect(modelSel, prov, AI.activeModel[prov]);
+    syncAiSelectors();
+    saveAiSettings();
+    updateAiHeaderInfo();
+  });
+
+  $('cfg-ai-model')?.addEventListener('change', e => {
+    const prov = AI.provider || 'positionapi';
+    const m = e.target.value;
+    if (m) {
+      AI.activeModel[prov] = m;
+      syncAiSelectors();
+      saveAiSettings();
+      updateAiHeaderInfo();
+    }
+  });
+
+  $('cfg-custom-url')?.addEventListener('input', e => {
+    AI.customUrl = e.target.value.trim();
+    saveAiSettings();
+    updateAiKeyInlineBar();
+  });
+
+  // Provider API Keys inputs in Settings Modal
+  ['positionapi', 'groq', 'openai', 'gemini', 'custom'].forEach(prov => {
+    const input = $('cfg-key-' + prov);
+    if (!input) return;
+    const handleKeyChange = () => {
+      AI.keys[prov] = input.value.trim();
+      updateAiKeyBadge(prov);
+      saveAiSettings();
+      updateAiKeyInlineBar();
+    };
+    input.addEventListener('input', handleKeyChange);
+    input.addEventListener('change', handleKeyChange);
+  });
+
+  // Password visibility toggles
+  document.querySelectorAll('.btn-toggle-pw').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.getAttribute('data-target');
+      const input = $(targetId);
+      if (input) {
+        input.type = input.type === 'password' ? 'text' : 'password';
+        btn.textContent = input.type === 'password' ? '👁' : '🔒';
+      }
+    });
   });
 
   document.querySelectorAll('input[name="cfg-parts-format"]').forEach(radio => {
@@ -8117,8 +8271,37 @@ async function translate() {
 
   try {
     const x = await webTr(t, to);
-    o.innerHTML = `<span class="tg">${x.src} · ${to.toUpperCase()}</span>`;
-    o.appendChild(document.createTextNode(x.r));
+    o.innerHTML = '';
+
+    const copyBtn = document.createElement('button');
+    copyBtn.type = 'button';
+    copyBtn.className = 'btn-copy-tr';
+    copyBtn.id = 'btn-copy-tr';
+    copyBtn.title = L('Скопировать перевод в буфер обмена', 'Copy translation to clipboard');
+    copyBtn.innerHTML = `<svg viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" fill="none" stroke="currentColor" stroke-width="2"/></svg><span class="btn-copy-tr-label">${L('Скопировать', 'Copy')}</span>`;
+
+    copyBtn.onclick = async (e) => {
+      e.stopPropagation();
+      try {
+        await navigator.clipboard.writeText(x.r);
+        copyBtn.classList.add('copied');
+        const lbl = copyBtn.querySelector('.btn-copy-tr-label');
+        if (lbl) lbl.textContent = L('Скопировано!', 'Copied!');
+        setTimeout(() => {
+          copyBtn.classList.remove('copied');
+          if (lbl) lbl.textContent = L('Скопировать', 'Copy');
+        }, 1800);
+      } catch (err) {
+        msg(L('Не удалось скопировать перевод', 'Failed to copy translation'));
+      }
+    };
+
+    const textSpan = document.createElement('span');
+    textSpan.className = 'tr-text';
+    textSpan.textContent = x.r;
+
+    o.appendChild(copyBtn);
+    o.appendChild(textSpan);
   } catch (e) {
     o.className = 'tr err';
     o.textContent = L('Ошибка перевода: ', 'Translation error: ') + (e && e.message || e);

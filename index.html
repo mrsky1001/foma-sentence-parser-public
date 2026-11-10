@@ -1,28 +1,14 @@
 <!DOCTYPE html>
-<html lang="en" data-env="public">
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>FOMA Sentence Parser (Beta) — Интерактивный синтаксический разбор предложений</title>
+  <title>FOMA Sentence Parser (Beta)</title>
   <link rel="icon" type="image/svg+xml" href="icons/favicon.svg?v=2">
   <link rel="icon" type="image/png" sizes="32x32" href="icons/icon32.png?v=2">
   <link rel="icon" type="image/png" sizes="16x16" href="icons/icon16.png?v=2">
   <link rel="apple-touch-icon" sizes="128x128" href="icons/icon128.png?v=2">
   <link rel="shortcut icon" href="favicon.ico?v=2">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="FOMA Sentence Parser (Beta) — Интерактивный синтаксический разбор предложений английского языка: части речи, члены предложения, типы придаточных, видовременные формы глаголов. Автор и разработчик: Nikita Kolyada (foma-creative.com)">
-  <meta name="author" content="Nikita Kolyada, foma-creative.com">
   <link rel="stylesheet" href="parser.css">
-  <script>
-    (function() {
-      try {
-        var saved = localStorage.getItem('foma_theme');
-        if (saved) {
-          var t = JSON.parse(saved);
-          if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
-        }
-      } catch (_) {}
-    })();
-  </script>
 </head>
 <body>
 <div id="top">
@@ -41,10 +27,87 @@
           <span class="author-link">foma-creative.com</span>
         </a>
       </div>
-      
+      <div class="foma-tabs" id="mode-tabs">
+        <button type="button" class="foma-tab active" id="tab-nav-manual" title="Мой собственный интерактивный синтаксический разбор">
+          <svg viewBox="0 0 24 24" class="ic"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+          <span class="nav-tab-label" id="lbl-nav-manual">Мой разбор</span>
+        </button>
+        <button type="button" class="foma-tab" id="tab-nav-ai" title="Разбор, сгенерированный языковой моделью ИИ">
+          <svg viewBox="0 0 24 24" class="ic"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+          <span class="nav-tab-label" id="lbl-nav-ai">Разбор ИИ</span>
+          <span class="lock-tag" id="top-mode-ai-lock" title="Только чтение">
+            <svg viewBox="0 0 24 24" class="ic-xs"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </span>
+          <span class="nav-tab-badge" id="top-mode-ai-tag" style="display:none;"></span>
+        </button>
+      </div>
 
       <!-- Center Contextual AI Controls (shown only when in AI mode) -->
-      
+      <div class="foma-ai-context-group" id="ai-top-controls" style="display: none;">
+        <div class="foma-sep"></div>
+
+        <!-- Compact Combo-Selector with Popover -->
+        <div class="foma-dropdown-wrap">
+          <button type="button" class="foma-model-btn" id="model-trigger" title="Настройки провайдера и модели ИИ">
+            <span class="dot-online" id="ai-combo-status-dot"></span>
+            <span class="prov-label" id="ai-combo-prov">Groq</span>
+            <span class="slash">·</span>
+            <span class="mod-label" id="ai-combo-model">gpt-oss-120b</span>
+            <svg viewBox="0 0 24 24" class="ic-xs"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+
+          <!-- Popover for Provider & Model & API Key -->
+          <div class="foma-popover" id="model-popover" hidden>
+            <div class="pop-row">
+              <label for="sel-ai-provider" id="lbl-ai-provider">Сервис</label>
+              <select id="sel-ai-provider">
+                <option value="positionapi">PositionAPI (positionapi.top)</option>
+                <option value="groq">Groq Cloud (Ultra-fast)</option>
+                <option value="openai">OpenAI (Official)</option>
+                <option value="gemini">Google Gemini</option>
+                <option value="custom">Custom (OpenAI-compatible)</option>
+              </select>
+            </div>
+            <div class="pop-row">
+              <label for="sel-ai-model" id="lbl-ai-model">Модель</label>
+              <select id="sel-ai-model"></select>
+            </div>
+
+            <!-- Expandable Inline Key Box inside Popover -->
+            <div id="ai-key-inline-bar" class="pop-key-bar" style="display: none;">
+              <span id="ai-key-prompt-label" class="pop-key-label">API-ключ:</span>
+              <div class="pop-key-input-row">
+                <input type="password" id="ai-key-inline-input" class="ai-key-input" placeholder="sk-…" autocomplete="off" />
+                <button type="button" id="btn-ai-save-inline-key" class="foma-btn-primary foma-btn-xs">Сохранить</button>
+              </div>
+              <div class="pop-key-hint" id="ai-key-security-hint">Ключ хранится локально в браузере.</div>
+            </div>
+
+            <div class="pop-footer">
+              <div id="ai-key-badge-status" class="key-ok">
+                <span class="dot-online"></span>
+                <span id="ai-key-status-text">Ключ настроен</span>
+              </div>
+              <button type="button" class="link-btn" id="btn-api-key">Настроить ключ</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Primary Generation Button -->
+        <button type="button" class="foma-btn-primary" id="btn-ai-run" title="Заполнить синтаксический разбор этой языковой моделью">
+          <svg viewBox="0 0 24 24" class="ic"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <span id="lbl-ai-run">Заполнить</span>
+        </button>
+
+        <!-- Response Latency Badge -->
+        <span class="foma-time-badge" id="ai-model-latency" style="display: none;"></span>
+
+        <!-- Import JSON Button -->
+        <button type="button" class="foma-btn-ghost" id="btn-json-import-ai" title="Вставить готовый JSON-разбор от ChatGPT / Gemini / Claude">
+          <svg viewBox="0 0 24 24" class="ic"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+          <span>JSON</span>
+        </button>
+      </div>
     </div>
 
     <!-- Center: Layer Filters & Display Toggles (Shared across Manual & AI) -->
@@ -56,7 +119,19 @@
     <!-- Right: Global Actions & System Controls -->
     <div class="foma-group top-nav-actions">
       <!-- AI Contextual Action Buttons (visible only in AI mode) -->
-      
+      <div class="foma-ai-actions-group" id="ai-top-actions" style="display: none;">
+        <button type="button" class="foma-btn-primary" id="btn-ai-apply-manual" title="Скопировать результат ИИ в «Мой разбор» для редактирования">
+          <svg viewBox="0 0 24 24" class="ic"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          <span id="lbl-ai-apply-manual">Вставить в «Мой разбор»</span>
+        </button>
+
+        <button type="button" class="foma-btn-ghost" id="btn-ai-copy-img" title="Скопировать изображение разбора ИИ">
+          <svg viewBox="0 0 24 24" class="ic"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+          <span id="lbl-ai-copy-img">Картинка</span>
+        </button>
+
+        <div class="foma-sep"></div>
+      </div>
 
       <!-- History -->
       <button type="button" id="btn-history" class="foma-btn-ghost btn-top-hist" title="Открыть историю предложений">
@@ -154,7 +229,10 @@
           <!-- 4. Automation Group -->
           <div class="sidebar-section">
             <div class="sidebar-sec-title" id="lbl-sec-text">Авторасстановка</div>
-            
+            <button type="button" id="btn-json-import" class="sidebar-row-btn" title="Вставить готовый JSON-разбор от ChatGPT / Gemini / Claude">
+              <svg viewBox="0 0 24 24" class="ic-xs"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+              <span id="lbl-btn-import-json">Импорт JSON</span>
+            </button>
             <div class="auto-btn-group" id="auto-btn-group" style="width: 100%;">
               <button type="button" id="auto" class="sidebar-row-btn" title="Автоматически расставить выбранные параметры со 100% уверенностью" style="flex:1;">Авто (100%)</button>
               <button type="button" id="btn-auto-config" class="btn-auto-config" title="Настроить параметры авторасстановки"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></button>
@@ -195,6 +273,10 @@
           <svg viewBox="0 0 24 24" class="ic-xs"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
           <span id="lbl-btn-edit-text">Редактировать текст</span>
         </button>
+        <button type="button" id="btn-manual-pull-ai" class="btn-toggle-edit btn-scheme-edit btn-pull-ai" style="display: none;" title="Вставить готовый разбор нейросети на этот холст для редактирования">
+          <svg viewBox="0 0 24 24" class="ic-xs"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          <span id="lbl-btn-pull-ai">Вставить разбор от ИИ</span>
+        </button>
       </div>
 
       <div class="edit collapsed" id="ed" style="display: none;">
@@ -211,7 +293,82 @@
     </div>
 
     <!-- VIEW 2: AI FILLED (READ-ONLY) -->
-    
+    <div id="view-ai" class="view-panel" style="display: none;">
+      <!-- ROW 2: View Bar (Depth Granularity + Layer Filters + Full Height) -->
+      <div class="foma-toolbar-sub" id="ai-view-subbar">
+        <div class="foma-group">
+          <!-- Segmented Depth Granularity Switcher -->
+          <div class="foma-seg-sm" id="ai-granularity-switch" role="group" aria-label="Детализация разбора">
+            <button type="button" class="btn-granularity active" id="btn-gran-detailed" title="Подробный аналитический разбор: атрибуты отдельно, ядерное подлежащее отдельно">Детальный</button>
+            <button type="button" class="btn-granularity" id="btn-gran-macro" title="Составной разбор: цельное подлежащее со всеми определениями">Составной</button>
+          </div>
+        </div>
+
+        <div class="foma-group">
+          <button type="button" class="foma-btn-primary foma-btn-sm" id="btn-ai-apply-manual-subbar" title="Скопировать этот разбор в «Мой разбор» для ручной правки">
+            <svg viewBox="0 0 24 24" class="ic"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            <span id="lbl-ai-apply-subbar">Редактировать в Моем разборе</span>
+          </button>
+        </div>
+
+        <div class="foma-group">
+          <button type="button" class="foma-btn-ghost foma-btn-sm" id="btn-ai-toggle-height" title="Развернуть на всю высоту разбора без внутреннего скролла">
+            <svg viewBox="0 0 24 24" class="ic"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+            <span id="lbl-ai-toggle-height">На всю высоту</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div id="ai-loading-state" class="ai-loading-box" style="display: none;">
+        <div class="ai-spinner"></div>
+        <div class="ai-loading-text">
+          <div id="ai-loading-title" style="font-weight: 600; font-size: 14px;">ИИ выполняет синтаксический разбор предложения…</div>
+          <div style="font-size: 12px; color: var(--mute); margin-top: 4px;" id="ai-loading-model-info">Отправка запроса к языковой модели…</div>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div id="ai-error-state" class="ai-error-box" style="display: none;">
+        <div id="ai-error-message" style="color: #ef4444; font-size: 13px; font-weight: 500;"></div>
+        <div class="ai-quick-config" style="margin-top: 10px; display: flex; gap: 8px;">
+          <button type="button" id="btn-ai-retry" class="btn-hist-sec">Повторить попытку</button>
+          <button type="button" id="btn-ai-open-settings" class="btn-hist-sec">Настройки API и модели</button>
+        </div>
+      </div>
+
+      <!-- AI Canvas Area (The exact same form!) -->
+      <div class="paper" id="wrap-ai">
+        <canvas id="cv-ai" role="img" aria-label="Синтаксическая схема предложения (разбор ИИ)" tabindex="0"></canvas>
+      </div>
+
+      <div class="canvas-resizer" id="canvas-resizer-ai" title="Потяните вверх или вниз, чтобы изменить высоту области схемы (двойной клик — сброс)">
+        <div class="canvas-resizer-handle"></div>
+      </div>
+
+      <!-- Linguistic Analysis Summary Card (Cleaned up, no duplicate raw sentence preview) -->
+      <div id="ai-verdict-card" class="ai-verdict-card" style="display: none;">
+        <div class="ai-verdict-header">
+          <div class="ai-verdict-status-line">
+            <div id="ai-verdict-badge" class="ai-verdict-badge">
+              <span id="ai-verdict-status-ready" class="status-ready">✓ Разбор от ИИ готов</span>
+            </div>
+            <div id="ai-parsed-stats" class="ai-parsed-stats" style="font-size: 12px; color: var(--mute);"></div>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button type="button" class="foma-btn-primary foma-btn-xs" id="btn-ai-apply-card" title="Скопировать этот разбор в «Мой разбор» для ручной правки">
+              <svg viewBox="0 0 24 24" class="ic-xs"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <span id="lbl-ai-apply-card">Вставить в «Мой разбор»</span>
+            </button>
+            <button type="button" class="foma-btn-ghost foma-btn-xs" id="btn-ai-copy-text" title="Скопировать исходный текст предложения в буфер обмена">
+              <svg viewBox="0 0 24 24" class="ic-xs"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              <span id="lbl-ai-copy-text">Скопировать текст</span>
+            </button>
+          </div>
+        </div>
+        <div id="ai-verdict-summary" class="ai-verdict-summary"></div>
+      </div>
+    </div>
   </div>
 
   <!-- TABS ROW / PALETTE DOCK -->
@@ -302,7 +459,50 @@
 </div>
 
 <!-- ══ JSON Import Modal ══════════════════════════════════════════════ -->
+<div id="json-import-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="json-import-title">
+  <div id="json-import-dialog">
+    <div class="json-import-header">
+      <div>
+        <div id="json-import-title" class="json-import-title">Импорт JSON-разбора от внешнего LLM</div>
+        <div id="json-import-sub" class="json-import-subtitle">Вставьте JSON от ChatGPT / Gemini / Claude — аддон применит его к текущему предложению</div>
+      </div>
+      <button id="json-import-close" class="btn-hist-sec" title="Закрыть">&times;</button>
+    </div>
 
+    <div class="json-import-body">
+      <!-- Schema reference strip -->
+      <div class="json-schema-ref">
+        <div id="json-schema-ref-label" class="json-schema-ref-label">Ожидаемая структура JSON:</div>
+        <pre class="json-schema-pre">{
+  "sentence_type": ["Simple", "Declarative", "Affirmative"],
+  "sentence_parts": [{"words": ["is","passing","by"], "tag": "Predicate"}],
+  "clauses_and_phrases": [{"words": ["without","taking","off"], "tag": "Gerund phrase"}],
+  "tense_voice_mood": [{"words": ["is","passing"], "tags": ["Present","Continuous","Active","Indicative"]}],
+  "part_of_speech": [{"words": ["lad"], "tag": "Noun"}]
+}</pre>
+        <button type="button" id="btn-json-copy-prompt" class="btn-hist-sec json-copy-prompt-btn" title="Скопировать prompt для ChatGPT/Gemini/Claude">
+          Скопировать промпт для LLM
+        </button>
+      </div>
+
+      <!-- Paste area -->
+      <label id="lbl-json-import-ta" class="json-import-label" for="json-import-ta">Вставьте JSON-разбор:</label>
+      <textarea id="json-import-ta" class="json-import-textarea" rows="10"
+        spellcheck="false"
+        placeholder='{"sentence_type": [...], "sentence_parts": [...], ...}'></textarea>
+
+      <div id="json-import-error" class="json-import-error" style="display:none;"></div>
+      <div id="json-import-stats" class="json-import-stats" style="display:none;"></div>
+    </div>
+
+    <div class="json-import-footer">
+      <button type="button" id="btn-json-clear" class="btn-hist-sec">Очистить</button>
+      <div style="flex:1;"></div>
+      <button type="button" id="btn-json-cancel" class="btn-hist-sec">Отмена</button>
+      <button type="button" id="btn-json-apply" class="btn-json-apply pri">Применить разбор</button>
+    </div>
+  </div>
+</div>
 
 <!-- ══ Auto 100% Config Modal ══════════════════════════════════════════════ -->
 <div id="auto-config-overlay" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="auto-config-title">
@@ -463,7 +663,104 @@
     </div>
 
     <div class="settings-body">
-      <!-- Section 1: Format of sentence parts -->
+      <!-- Section 1: AI Models & API Keys (Нейросети и API-ключи) -->
+      <div class="settings-group" id="settings-group-ai">
+        <div class="settings-group-title" id="lbl-cfg-ai-title">
+          <svg viewBox="0 0 24 24" class="ic-sm"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83"/></svg>
+          <span id="lbl-cfg-ai-title-text">Нейросети и API-ключи</span>
+        </div>
+        <div class="settings-group-desc" id="lbl-cfg-ai-desc">Выберите сервис и языковую модель для автоматического разбора предложений, а также укажите ваши API-ключи:</div>
+
+        <div class="settings-ai-grid">
+          <!-- Active Provider & Model Row -->
+          <div class="settings-ai-row">
+            <div class="settings-ai-field">
+              <label for="cfg-ai-provider" id="lbl-cfg-ai-provider">Сервис (провайдер)</label>
+              <select id="cfg-ai-provider" class="foma-select">
+                <option value="positionapi">PositionAPI (positionapi.top)</option>
+                <option value="groq">Groq Cloud (Ultra-fast)</option>
+                <option value="openai">OpenAI (Official)</option>
+                <option value="gemini">Google Gemini</option>
+                <option value="custom">Custom (OpenAI-compatible)</option>
+              </select>
+            </div>
+            <div class="settings-ai-field">
+              <label for="cfg-ai-model" id="lbl-cfg-ai-model">Языковая модель</label>
+              <select id="cfg-ai-model" class="foma-select"></select>
+            </div>
+          </div>
+
+          <!-- PositionAPI Card -->
+          <div class="settings-key-card" id="card-key-positionapi">
+            <div class="settings-key-header">
+              <span class="settings-key-name">PositionAPI (positionapi.top)</span>
+              <span class="settings-key-badge badge-none" id="badge-key-positionapi">Не настроен</span>
+            </div>
+            <div class="settings-key-desc" id="lbl-desc-positionapi">Шлюз positionapi.top: GPT-4o, Claude 3.5 Sonnet, DeepSeek Chat, GPT-6 Astra</div>
+            <div class="settings-key-input-row">
+              <input type="password" id="cfg-key-positionapi" class="foma-input settings-key-input" placeholder="sk-…" autocomplete="off" />
+              <button type="button" class="foma-btn-ghost foma-btn-xs btn-toggle-pw" data-target="cfg-key-positionapi" title="Показать/скрыть ключ">👁</button>
+            </div>
+          </div>
+
+          <!-- Groq Card -->
+          <div class="settings-key-card" id="card-key-groq">
+            <div class="settings-key-header">
+              <span class="settings-key-name">Groq Cloud (api.groq.com)</span>
+              <span class="settings-key-badge badge-none" id="badge-key-groq">Не настроен</span>
+            </div>
+            <div class="settings-key-desc" id="lbl-desc-groq">Сверхбыстрый бесплатный инференс моделей gpt-oss-120b, qwen3.8-27b</div>
+            <div class="settings-key-input-row">
+              <input type="password" id="cfg-key-groq" class="foma-input settings-key-input" placeholder="gsk_…" autocomplete="off" />
+              <button type="button" class="foma-btn-ghost foma-btn-xs btn-toggle-pw" data-target="cfg-key-groq" title="Показать/скрыть ключ">👁</button>
+            </div>
+          </div>
+
+          <!-- OpenAI Card -->
+          <div class="settings-key-card" id="card-key-openai">
+            <div class="settings-key-header">
+              <span class="settings-key-name">OpenAI (api.openai.com)</span>
+              <span class="settings-key-badge badge-none" id="badge-key-openai">Не настроен</span>
+            </div>
+            <div class="settings-key-desc" id="lbl-desc-openai">Официальный API OpenAI для моделей gpt-4o, gpt-4o-mini, o3-mini</div>
+            <div class="settings-key-input-row">
+              <input type="password" id="cfg-key-openai" class="foma-input settings-key-input" placeholder="sk-proj-…" autocomplete="off" />
+              <button type="button" class="foma-btn-ghost foma-btn-xs btn-toggle-pw" data-target="cfg-key-openai" title="Показать/скрыть ключ">👁</button>
+            </div>
+          </div>
+
+          <!-- Google Gemini Card -->
+          <div class="settings-key-card" id="card-key-gemini">
+            <div class="settings-key-header">
+              <span class="settings-key-name">Google Gemini (generativelanguage.googleapis.com)</span>
+              <span class="settings-key-badge badge-none" id="badge-key-gemini">Не настроен</span>
+            </div>
+            <div class="settings-key-desc" id="lbl-desc-gemini">Google Gemini API для моделей gemini-2.5-flash, gemini-2.5-pro</div>
+            <div class="settings-key-input-row">
+              <input type="password" id="cfg-key-gemini" class="foma-input settings-key-input" placeholder="AIzaSy…" autocomplete="off" />
+              <button type="button" class="foma-btn-ghost foma-btn-xs btn-toggle-pw" data-target="cfg-key-gemini" title="Показать/скрыть ключ">👁</button>
+            </div>
+          </div>
+
+          <!-- Custom Card -->
+          <div class="settings-key-card" id="card-key-custom">
+            <div class="settings-key-header">
+              <span class="settings-key-name">Custom OpenAI-compatible URL</span>
+              <span class="settings-key-badge badge-none" id="badge-key-custom">Локальный / кастомный</span>
+            </div>
+            <div class="settings-key-desc" id="lbl-desc-custom">Для локальных Ollama / vLLM / LM Studio серверов</div>
+            <div class="settings-key-input-row" style="margin-bottom: 6px;">
+              <input type="text" id="cfg-custom-url" class="foma-input settings-key-input" placeholder="http://localhost:11434/v1" autocomplete="off" />
+            </div>
+            <div class="settings-key-input-row">
+              <input type="password" id="cfg-key-custom" class="foma-input settings-key-input" placeholder="API Key (необязательно)" autocomplete="off" />
+              <button type="button" class="foma-btn-ghost foma-btn-xs btn-toggle-pw" data-target="cfg-key-custom" title="Показать/скрыть ключ">👁</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Format of sentence parts -->
       <div class="settings-group">
         <div class="settings-group-title" id="lbl-cfg-parts-title">Отображение членов предложения</div>
         <div class="settings-group-desc" id="lbl-cfg-parts-desc">Выберите, как оформлять грамматические роли слов на схеме предложения:</div>
@@ -580,66 +877,6 @@
   </div>
 </div>
 
-<script>
-// Web & GitHub Pages storage bridge: transparently mirrors chrome.storage.local to localStorage
-(function() {
-  if (typeof window === 'undefined') return;
-  window.chrome = window.chrome || {};
-  if (!window.chrome.storage || !window.chrome.storage.local) {
-    window.chrome.storage = window.chrome.storage || {};
-    window.chrome.storage.local = {
-      get: function(keys, callback) {
-        var res = {};
-        var list = [];
-        if (!keys) {
-          for (var i = 0; i < localStorage.length; i++) list.push(localStorage.key(i));
-        } else if (Array.isArray(keys)) {
-          list = keys;
-        } else if (typeof keys === 'string') {
-          list = [keys];
-        } else if (typeof keys === 'object') {
-          list = Object.keys(keys);
-          res = Object.assign({}, keys);
-        }
-        list.forEach(function(k) {
-          try {
-            var raw = localStorage.getItem(k);
-            if (raw !== null) res[k] = JSON.parse(raw);
-          } catch (_) {
-            res[k] = localStorage.getItem(k);
-          }
-        });
-        if (typeof callback === 'function') setTimeout(function() { callback(res); }, 0);
-        return Promise.resolve(res);
-      },
-      set: function(items, callback) {
-        if (items && typeof items === 'object') {
-          Object.keys(items).forEach(function(k) {
-            try {
-              localStorage.setItem(k, JSON.stringify(items[k]));
-            } catch (e) {
-              console.warn('localStorage set failed for', k, e);
-            }
-          });
-        }
-        if (typeof callback === 'function') setTimeout(function() { callback(); }, 0);
-        return Promise.resolve();
-      },
-      remove: function(keys, callback) {
-        var list = Array.isArray(keys) ? keys : [keys];
-        list.forEach(function(k) { try { localStorage.removeItem(k); } catch (_) {} });
-        if (typeof callback === 'function') setTimeout(function() { callback(); }, 0);
-        return Promise.resolve();
-      },
-      clear: function(callback) {
-        try { localStorage.clear(); } catch (_) {}
-        if (typeof callback === 'function') setTimeout(function() { callback(); }, 0);
-        return Promise.resolve();
-      }
-    };
-  }
-})();
-</script>
 <script src="parser.js"></script>
 </body>
 </html>
