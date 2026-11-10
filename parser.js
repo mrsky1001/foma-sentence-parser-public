@@ -70,8 +70,8 @@
 
 const $ = id => document.getElementById(id);
 
-/* ---------- data ---------- */
-const MG = [
+/* ---------- Data Structures & Grammar Taxonomy ---------- */
+const MEMBER_GROUPS = [
   ['Core', [['Subject', 'solid', '1'], ['Predicate', 'double', '2'], ['Predicative', 'ddash', '']]],
   ['Objects', [['Indirect object', 'dotted', '3'], ['Direct object', 'dashed', '4'], ['Prepositional object', 'dashed', '']]],
   ['Attributes', [['Attribute', 'wavy', '0'], ['Apposition', 'wavy', '']]],
@@ -82,11 +82,13 @@ const MG = [
   ]],
   ['Other', [['Introductory element', 'dotted', ''], ['Address', 'dotted', '']]]
 ];
+const MG = MEMBER_GROUPS;
 
-const MS = {}, KEY = {};
-MG.forEach(([g, a]) => a.forEach(([n, s, k]) => { MS[n] = s; if (k) KEY[k] = n; }));
+const MEMBER_STYLES = {}, HOTKEY_MEMBER_MAP = {};
+MEMBER_GROUPS.forEach(([g, a]) => a.forEach(([n, s, k]) => { MEMBER_STYLES[n] = s; if (k) HOTKEY_MEMBER_MAP[k] = n; }));
+const MS = MEMBER_STYLES, KEY = HOTKEY_MEMBER_MAP;
 
-const CG = [
+const CLAUSE_GROUPS = [
   ['Clauses', [
     'Main clause', 'Coordinate clause', 'Subject clause', 'Predicative clause',
     'Object clause', 'Attributive clause (defining)', 'Attributive clause (non-defining)'
@@ -100,24 +102,28 @@ const CG = [
     'Absolute construction', 'Complex object', 'Complex subject', 'Noun phrase', 'Verb phrase'
   ]]
 ];
+const CG = CLAUSE_GROUPS;
 
-const TFG = [
+const TENSE_FORM_GROUPS = [
   ['Present', 'Past', 'Future'],
   ['Simple', 'Continuous', 'Perfect', 'Perfect Continuous'],
   ['Active', 'Passive'],
   ['Indicative', 'Imperative', 'Subjunctive', 'Conditional']
 ];
+const TFG = TENSE_FORM_GROUPS;
 
-const SG = [
+const SENTENCE_STRUCTURE_GROUPS = [
   ['Structure', ['Simple', 'Compound', 'Complex', 'Compound-complex']],
   ['Purpose', ['Declarative', 'Interrogative', 'Imperative', 'Exclamatory']],
   ['Question type', ['General', 'Special', 'Alternative', 'Disjunctive']],
   ['Polarity', ['Affirmative', 'Negative']]
 ];
+const SG = SENTENCE_STRUCTURE_GROUPS;
 
-const PK = ['n', 'pron', 'adj', 'num', 'v', 'adv', 'art', 'prep', 'conj', 'part', 'int', 'det'];
+const POS_KEYS = ['n', 'pron', 'adj', 'num', 'v', 'adv', 'art', 'prep', 'conj', 'part', 'int', 'det'];
+const PK = POS_KEYS;
 
-const PO = {
+const POS_OPTIONS = {
   n: ['Noun', 'n.', [['common', 'proper'], ['countable', 'uncountable'], ['concrete', 'abstract', 'collective', 'material'], ['singular', 'plural'], ['common case', 'possessive case']]],
   pron: ['Pronoun', 'pron.', [['personal', 'possessive', 'reflexive', 'demonstrative', 'interrogative', 'relative', 'indefinite', 'negative', 'reciprocal', 'defining'], ['nominative', 'objective'], ['conjoint', 'absolute']]],
   adj: ['Adjective', 'adj.', [['qualitative', 'relative'], ['positive', 'comparative', 'superlative']]],
@@ -131,6 +137,7 @@ const PO = {
   int: ['Interjection', 'int.', []],
   det: ['Determiner', 'det.', [['quantifier', 'demonstrative', 'possessive', 'distributive']]]
 };
+const PO = POS_OPTIONS;
 
 const CL = [
   ['art', ['indefinite'], 'a an'],
@@ -413,12 +420,19 @@ function getSmartSubLabel(ctx, k, maxW = Infinity) {
   return lines.join(' ');
 }
 
-const F = '28px "Times New Roman",Georgia,serif',
-      FL = '14px system-ui,Arial,sans-serif',
-      FS_ = '12px system-ui,Arial,sans-serif',
-      FB = 'italic 14px system-ui,Arial,sans-serif';
+/* ---------- Canvas Fonts & Dimensions ---------- */
+const FONT_TOKEN = '28px "Times New Roman",Georgia,serif',
+      FONT_POS_LABEL = '14px system-ui,Arial,sans-serif',
+      FONT_POS_SUB = '12px system-ui,Arial,sans-serif',
+      FONT_HEADER_INFO = 'italic 14px system-ui,Arial,sans-serif';
 
-const TOP = 8, PX = 30, CR = 22, MR = 24;
+const F = FONT_TOKEN,
+      FL = FONT_POS_LABEL,
+      FS_ = FONT_POS_SUB,
+      FB = FONT_HEADER_INFO;
+
+const MARGIN_TOP = 8, PADDING_X = 30, CLAUSE_RADIUS = 22, MEMBER_RADIUS = 24;
+const TOP = MARGIN_TOP, PX = PADDING_X, CR = CLAUSE_RADIUS, MR = MEMBER_RADIUS;
 
 /* ---------- state ---------- */
 const ta = $('ta'), cv = $('cv'), wrap = $('wrap');
@@ -1392,7 +1406,7 @@ function levels(list) {
   }
 }
 
-function layout(ctx, W) {
+function layout(ctx, W, preserveLines = false) {
   ensureLayerItems(aiLayers);
   const showPos = aiLayers?.pos !== false;
   const showParts = aiLayers?.parts !== false;
@@ -1423,10 +1437,15 @@ function layout(ctx, W) {
     const tw = ctx.measureText(k.t).width;
     const posVisible = showPos && isPosVisible(k.p);
     const bw = Math.max(tw, posVisible ? lw(ctx, k, showSubs) : 0);
-    const shouldWrap = (k.br && !fresh) || (k.sp && x + sp + bw > GUTTER + maxLineW);
+    const shouldWrap = preserveLines && k._sourceLine !== undefined
+      ? (k._sourceLine > line)
+      : ((k.br && !fresh) || (k.sp && x + sp + bw > GUTTER + maxLineW));
     if (!fresh && shouldWrap) { line++; x = GUTTER; fresh = true; }
     if (!fresh && k.sp) x += sp;
     k.x = x; k.w = bw; k.tx = x + (bw - tw) / 2; k.line = line; x += bw; fresh = false;
+    if (!preserveLines) {
+      k._sourceLine = line;
+    }
   }
 
   const n = line + 1;
@@ -1654,16 +1673,42 @@ function renderSmartBelow(ctx, belowList, getSegs, getTok, getLine, hitsCollecto
   }
 }
 
+const CANVAS_PALETTE = {
+  light: {
+    background: '#fff',
+    emptyPromptText: '#9aa0b0',
+    gutterText: '#9ca3af',
+    sentenceTypeLabel: '#444',
+    selectionFill: 'rgba(224, 231, 255, 0.85)',
+    selectionStroke: 'rgba(59, 130, 246, 0.4)',
+    tokenText: '#111',
+    posBwText: '#444',
+    posBwSubtext: '#777'
+  },
+  dark: {
+    background: '#141416',
+    emptyPromptText: '#71717a',
+    gutterText: '#71717a',
+    sentenceTypeLabel: '#d4d4d8',
+    selectionFill: 'rgba(30, 41, 59, 0.9)',
+    selectionStroke: 'rgba(96, 165, 250, 0.45)',
+    tokenText: '#f4f4f5',
+    posBwText: '#a1a1aa',
+    posBwSubtext: '#71717a'
+  }
+};
+
 function paint(ctx, W, H, exp, expBw = false) {
   const isDark = !exp && currentTheme === 'dark';
   const isBw = expBw || (renderMode === 'bw');
-  ctx.fillStyle = isDark ? '#141416' : '#fff';
+  const palette = CANVAS_PALETTE[isDark ? 'dark' : 'light'];
+  ctx.fillStyle = palette.background;
   ctx.fillRect(0, 0, W, H);
   hits = [];
 
   const GUTTER = 52;
   if (!toks.length && !exp) {
-    ctx.fillStyle = isDark ? '#71717a' : '#9aa0b0';
+    ctx.fillStyle = palette.emptyPromptText;
     ctx.font = FL;
     ctx.textAlign = 'left';
     ctx.fillText('Type or paste a sentence below under “Edit sentence text”.', GUTTER, TOP + 40);
@@ -1672,7 +1717,7 @@ function paint(ctx, W, H, exp, expBw = false) {
   // Draw Gutter Sentence Numbers (Left Field)
   ctx.save();
   ctx.font = '600 13.5px "Inter", -apple-system, sans-serif';
-  ctx.fillStyle = isDark ? '#71717a' : '#9ca3af';
+  ctx.fillStyle = palette.gutterText;
   ctx.textAlign = 'right';
   const drawnSentences = new Set();
   toks.forEach(k => {
@@ -1710,7 +1755,7 @@ function paint(ctx, W, H, exp, expBw = false) {
 
   if (lab) {
     ctx.font = FB;
-    ctx.fillStyle = isDark ? '#d4d4d8' : '#444';
+    ctx.fillStyle = palette.sentenceTypeLabel;
     ctx.fillText(lab, GUTTER, TOP + 14);
   }
 
@@ -1721,7 +1766,7 @@ function paint(ctx, W, H, exp, expBw = false) {
       const k = toks[i], L = Ls[k.line];
       if (!k || !L) continue;
       const rx = k.x - 3, ry = L.y + L.ca, rw = k.w + 6, rh = L.p + 44;
-      ctx.fillStyle = isDark ? 'rgba(30, 41, 59, 0.9)' : 'rgba(224, 231, 255, 0.85)';
+      ctx.fillStyle = palette.selectionFill;
       ctx.beginPath();
       if (ctx.roundRect) {
         ctx.roundRect(rx, ry, rw, rh, 4);
@@ -1729,7 +1774,7 @@ function paint(ctx, W, H, exp, expBw = false) {
         ctx.rect(rx, ry, rw, rh);
       }
       ctx.fill();
-      ctx.strokeStyle = isDark ? 'rgba(96, 165, 250, 0.45)' : 'rgba(59, 130, 246, 0.4)';
+      ctx.strokeStyle = palette.selectionStroke;
       ctx.lineWidth = 1;
       ctx.stroke();
     }
@@ -1738,7 +1783,7 @@ function paint(ctx, W, H, exp, expBw = false) {
 
   // Tokens text
   ctx.font = F;
-  ctx.fillStyle = isDark ? '#f4f4f5' : '#111';
+  ctx.fillStyle = palette.tokenText;
   for (const k of toks) ctx.fillText(k.t, k.tx, Ls[k.line].b);
 
   // POS Rendering
@@ -1747,14 +1792,14 @@ function paint(ctx, W, H, exp, expBw = false) {
     for (const k of toks) {
       if (k.p && isPosVisible(k.p)) {
         const L = Ls[k.line], cx = k.x + k.w / 2, s = showSubs ? subs(k) : null, t = L.y + L.ca;
-        const posColor = !isBw ? getPosColor(k.p, isDark) : (isDark ? '#a1a1aa' : '#444');
+        const posColor = !isBw ? getPosColor(k.p, isDark) : palette.posBwText;
         ctx.font = FL;
         ctx.fillStyle = posColor;
         const pLabel = PO[k.p] ? PO[k.p][1] : String(k.p);
         ctx.fillText(pLabel, cx, t + (s ? 13 : 14));
         if (s) {
           ctx.font = FS_;
-          ctx.fillStyle = !isBw ? posColor : (isDark ? '#71717a' : '#777');
+          ctx.fillStyle = !isBw ? posColor : palette.posBwSubtext;
           const subLines = getSmartSubLines(ctx, k, Math.max(k.w + 14, 52));
           for (let li = 0; li < subLines.length; li++) {
             ctx.fillText(subLines[li], cx, t + 27 + li * 13);
@@ -1773,20 +1818,28 @@ function paint(ctx, W, H, exp, expBw = false) {
 }
 
 const wExp = sc => Math.round(600 / (sc / 100));
+let lastRenderAvailableW = 800;
 
 function render() {
   sanitizeSentenceParts();
   const ctx = cv.getContext('2d');
-  const baseW = Math.max(300, (wrap && wrap.clientWidth) ? (wrap.clientWidth - 4) : 800);
-  const H = Math.max(layout(ctx, baseW), 70);
-  const maxWordRight = toks.length ? Math.max(...toks.map(k => k.x + k.w)) : 0;
-  const W = Math.ceil(Math.max(baseW, maxWordRight + PX));
+  const availableW = Math.max(300, (wrap && wrap.clientWidth) ? wrap.clientWidth : 800);
+  lastRenderAvailableW = availableW;
+  const H = Math.max(layout(ctx, availableW), 70);
+  const W = availableW;
   const d = window.devicePixelRatio || 1;
 
   cv.width = W * d;
   cv.height = H * d;
   cv.style.width = W + 'px';
+  cv.style.maxWidth = '100%';
   cv.style.height = H + 'px';
+  if (ta?.value) {
+    const rawVal = ta.value.trim();
+    if (rawVal) {
+      cv.setAttribute('aria-label', `Синтаксическая схема: "${rawVal}"`);
+    }
+  }
   ctx.setTransform(d, 0, 0, d, 0, 0);
   paint(ctx, W, H, false);
 }
@@ -2430,6 +2483,7 @@ function applyStatic() {
   setText('lbl-ai-provider', 'Сервис', 'Provider');
   setText('lbl-ai-model', 'Модель', 'Model');
   setText('ai-key-prompt-label', 'API-ключ:', 'API Key:');
+  setText('ai-key-security-hint', 'Ключ хранится локально в браузере.', 'Key is stored locally in your browser.');
   setText('btn-ai-save-inline-key', 'Сохранить', 'Save');
   setText('btn-api-key', 'Настроить ключ', 'Configure key');
   setText('lbl-ai-run', 'Заполнить', 'Run AI');
@@ -3098,14 +3152,18 @@ $('clr').onclick = del;
 if ($('aichk')) $('aichk').onclick = () => { switchTopMode('ai'); };
 
 /* ---------- Canvas Schema Renderer for AI / Custom States ---------- */
-function renderCustomSchema(targetCv, cToks, cAn, cST, scale = 70, customPixelRatio = null, layers = aiLayers) {
+function renderCustomSchema(targetCv, cToks, cAn, cST, scale = 70, customPixelRatio = null, layers = aiLayers, preserveLines = false) {
   if (!targetCv || !cToks || !cToks.length) return;
   ensureLayerItems(layers);
   cToks = ensureToksSpacing(cToks, toks);
   const ctx = targetCv.getContext('2d');
   const d = customPixelRatio || window.devicePixelRatio || 1;
-  const parentW = targetCv.parentElement?.clientWidth || 700;
-  const W = customPixelRatio ? wExp(scale) : Math.max(300, Math.min(parentW - 20, wExp(scale)));
+  const parentW = targetCv.parentElement?.clientWidth || $('wrap-ai')?.clientWidth || $('wrap')?.clientWidth || 800;
+  const W = Math.max(300, parentW);
+  const textStr = cToks.filter(k => k.word).map(k => k.t).join(' ');
+  if (textStr) {
+    targetCv.setAttribute('aria-label', `Синтаксическая схема: "${textStr}"`);
+  }
 
   const showPos = layers?.pos !== false;
   const showParts = layers?.parts !== false;
@@ -3136,10 +3194,15 @@ function renderCustomSchema(targetCv, cToks, cAn, cST, scale = 70, customPixelRa
     const tw = ctx.measureText(k.t).width;
     const posVisible = showPos && isPosVisible(k.p);
     const bw = Math.max(tw, posVisible ? lw(ctx, k, showSubs) : 0);
-    const shouldWrap = hasExplicitBreaks ? k.br : (k.br || (k.sp && x + sp + bw > W - PX));
+    const shouldWrap = preserveLines && k._sourceLine !== undefined
+      ? (k._sourceLine > line)
+      : (hasExplicitBreaks ? k.br : (k.br || (k.sp && x + sp + bw > W - PX)));
     if (!fresh && shouldWrap) { line++; x = PX; fresh = true; }
     if (!fresh && k.sp) x += sp;
     k.x = x; k.w = bw; k.tx = x + (bw - tw) / 2; k.line = line; x += bw; fresh = false;
+    if (!preserveLines) {
+      k._sourceLine = line;
+    }
   }
 
   const n = line + 1;
@@ -3207,11 +3270,12 @@ function renderCustomSchema(targetCv, cToks, cAn, cST, scale = 70, customPixelRa
   }
   const H = Math.max(y + TOP, 70);
   const maxWordRight = cToks.length ? Math.max(...cToks.map(k => k.x + k.w)) : 0;
-  const actualW = Math.ceil(Math.max(W, maxWordRight + PX));
+  const actualW = customPixelRatio ? Math.ceil(Math.max(maxWordRight + PX, 60)) : W;
 
   targetCv.width = actualW * d;
   targetCv.height = H * d;
   targetCv.style.width = actualW + 'px';
+  targetCv.style.maxWidth = '100%';
   targetCv.style.height = H + 'px';
   ctx.setTransform(d, 0, 0, d, 0, 0);
 
@@ -3872,7 +3936,7 @@ async function aiAct(a, i) {
                 <button id="btn-copy-ai-img" class="btn-hist-sec" title="${L('Скопировать изображение разбора ИИ', 'Copy AI parse image')}">${L('Копировать картинку ИИ', 'Copy AI image')}</button>
               </div>
             </div>
-            <div class="paper" id="ai-wrap" style="overflow-x:auto;background:#fff;border-radius:8px;border:1px solid var(--line);padding:8px 0;">
+            <div class="paper" id="ai-wrap" style="overflow-x:hidden;overflow-y:auto;background:#fff;border-radius:8px;border:1px solid var(--line);padding:8px 0;">
               <canvas id="ai-cv"></canvas>
             </div>
           </div>
@@ -4707,10 +4771,6 @@ function setupLayerFilterToolbar() {
 
     container.appendChild(chip);
   });
-}
-
-function updateAllLayerPillBadges() {
-  setupLayerFilterToolbar();
 }
 
 /* ── Interactive Sidebar Palette & Word Popover System ────────── */
@@ -5673,7 +5733,7 @@ function applyAiToManual() {
 function exportAiCanvas(sc) {
   if (!currentAiIdeal) return null;
   const c = document.createElement('canvas');
-  renderCustomSchema(c, currentAiIdeal.toks, currentAiIdeal.an, currentAiIdeal.st, sc, 3, aiLayers);
+  renderCustomSchema(c, currentAiIdeal.toks, currentAiIdeal.an, currentAiIdeal.st, sc, 3, aiLayers, true);
   return c;
 }
 
@@ -7305,9 +7365,28 @@ window.addEventListener('resize', () => {
   }
 });
 
+if (typeof ResizeObserver !== 'undefined') {
+  let roTimer = null;
+  const ro = new ResizeObserver(() => {
+    if (roTimer) cancelAnimationFrame(roTimer);
+    roTimer = requestAnimationFrame(() => {
+      if (currentTopMode === 'ai') {
+        renderAiCanvas();
+      } else {
+        render();
+      }
+    });
+  });
+  if (wrap) ro.observe(wrap);
+  const wrapAi = $('wrap-ai');
+  if (wrapAi) ro.observe(wrapAi);
+}
+
 /* ---------- export canvas ---------- */
 function exportCanvas(sc) {
-  const S = 3, c = document.createElement('canvas'), ctx = c.getContext('2d'), h = layout(ctx, wExp(sc));
+  const S = 3, c = document.createElement('canvas'), ctx = c.getContext('2d');
+  const availableW = lastRenderAvailableW || Math.max(300, (wrap && wrap.clientWidth) ? wrap.clientWidth : 800);
+  const h = layout(ctx, availableW, true);
   const w = Math.ceil(Math.max(...toks.map(k => k.x + k.w), 60) + PX);
   c.width = w * S;
   c.height = h * S;
