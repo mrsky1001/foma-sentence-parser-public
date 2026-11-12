@@ -1106,17 +1106,50 @@ footer button.pri:active,
   display: flex;
   align-items: flex-start;
   gap: 10px;
+  max-height: 160px;
+  box-sizing: border-box;
 }
 
 .tr.err {
   background: #fbe9e9;
   color: #b3261e;
   display: block;
+  max-height: 160px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(220, 38, 38, 0.4) transparent;
+}
+
+.tr.err::-webkit-scrollbar {
+  width: 5px;
+}
+
+.tr.err::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tr.err::-webkit-scrollbar-thumb {
+  background: rgba(220, 38, 38, 0.35);
+  border-radius: 4px;
+}
+
+.tr.err::-webkit-scrollbar-thumb:hover {
+  background: #dc2626;
 }
 
 [data-theme="dark"] .tr.err {
   background: #381515;
   color: #fca5a5;
+  scrollbar-color: rgba(252, 165, 165, 0.3) transparent;
+}
+
+[data-theme="dark"] .tr.err::-webkit-scrollbar-thumb {
+  background: rgba(252, 165, 165, 0.25);
+}
+
+[data-theme="dark"] .tr.err::-webkit-scrollbar-thumb:hover {
+  background: rgba(252, 165, 165, 0.45);
 }
 
 .tr .btn-copy-tr {
@@ -1163,8 +1196,44 @@ footer button.pri:active,
 
 .tr .tr-text {
   flex: 1;
+  min-width: 0;
   white-space: pre-wrap;
   word-break: break-word;
+  max-height: 144px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 131, 189, 0.4) transparent;
+  padding-right: 4px;
+}
+
+.tr .tr-text::-webkit-scrollbar {
+  width: 5px;
+}
+
+.tr .tr-text::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tr .tr-text::-webkit-scrollbar-thumb {
+  background: rgba(59, 131, 189, 0.35);
+  border-radius: 4px;
+}
+
+.tr .tr-text::-webkit-scrollbar-thumb:hover {
+  background: var(--acc, #3b83bd);
+}
+
+[data-theme="dark"] .tr .tr-text {
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+[data-theme="dark"] .tr .tr-text::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .tr .tr-text::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
 }
 
 .tr .tg {
