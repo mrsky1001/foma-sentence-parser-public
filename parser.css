@@ -2803,17 +2803,34 @@ footer button.pri:active,
   background: rgba(16, 185, 129, 0.18);
 }
 
-.word-nav-btn-del {
+.word-nav-btn-del,
+.word-nav-btn-close {
   background: transparent;
   border: 1px solid transparent;
   color: #ef4444;
   font-size: 11px;
 }
 
-.word-nav-btn-del:hover {
+.word-nav-btn-del:hover,
+.word-nav-btn-close:hover {
   background: #fee2e2;
   border-color: #fca5a5;
   color: #dc2626;
+}
+
+.word-nav-btn-clear-marks {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--mute, #8a8d9c);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.word-nav-btn-clear-marks:hover {
+  background: var(--hov, #efeff5);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.2);
 }
 
 .word-popover-body {
@@ -4839,15 +4856,22 @@ h2.sec {
 [data-theme="dark"] .footer-floating {
   background: transparent;
 }
+[data-theme="dark"] button.btn-copy-close,
 [data-theme="dark"] .btn-copy-close {
-  background: #3B83BD;
-  color: #101010 !important;
-  border-color: #3B83BD;
+  background: #3B83BD !important;
+  color: #ffffff !important;
+  border-color: #3B83BD !important;
   font-weight: 700;
 }
+[data-theme="dark"] button.btn-copy-close:hover,
 [data-theme="dark"] .btn-copy-close:hover {
-  background: #4d96d1;
-  color: #101010 !important;
+  background: #4d96d1 !important;
+  color: #ffffff !important;
+}
+[data-theme="dark"] .btn-copy-close kbd {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
 }
 
 [data-theme="dark"] .foma-toolbar-main,
@@ -5618,6 +5642,13 @@ h2.sec {
   box-shadow: 0 0 0 2px rgba(59, 131, 189, 0.2);
 }
 
+[data-theme="dark"] .settings-ai-field select,
+[data-theme="dark"] .settings-ai-field input {
+  background: #141416;
+  color: var(--ink);
+  border-color: var(--line);
+}
+
 .settings-key-card {
   padding: 12px 14px;
   border-radius: 10px;
@@ -5762,3 +5793,17 @@ h2.sec {
   background: #3b83bd !important;
   color: #ffffff !important;
 }
+
+/* Zero-AI enforcement for public web environment */
+[data-env="public"] #mode-tabs,
+[data-env="public"] #tab-nav-ai,
+[data-env="public"] #ai-top-controls,
+[data-env="public"] #ai-top-actions,
+[data-env="public"] #btn-manual-pull-ai,
+[data-env="public"] #view-ai,
+[data-env="public"] #settings-group-ai,
+[data-env="public"] #btn-json-import,
+[data-env="public"] #json-import-overlay {
+  display: none !important;
+}
+

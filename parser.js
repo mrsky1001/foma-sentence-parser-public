@@ -5302,30 +5302,46 @@ function updateWordPopover() {
   });
   navActions.appendChild(layoutBtn);
 
-  const doneBtn = document.createElement('button');
-  doneBtn.type = 'button';
-  doneBtn.className = 'word-nav-btn word-nav-btn-done';
-  doneBtn.innerHTML = `<span>✓</span><span>${TL === 'ru' ? 'Готово' : 'Done'}</span>`;
-  doneBtn.title = TL === 'ru' ? 'Завершить выбор' : 'Done';
-  doneBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    popover.style.display = 'none';
-  });
-  navActions.appendChild(doneBtn);
-
-  const delBtn = document.createElement('button');
-  delBtn.type = 'button';
-  delBtn.className = 'word-nav-btn word-nav-btn-del';
-  delBtn.innerHTML = `<span>✕</span>`;
-  delBtn.title = TL === 'ru' ? 'Снять метки (Del)' : 'Remove marks (Del)';
-  delBtn.addEventListener('click', (e) => {
+  // Clear marks (trash icon)
+  const clearMarksBtn = document.createElement('button');
+  clearMarksBtn.type = 'button';
+  clearMarksBtn.className = 'word-nav-btn word-nav-btn-clear-marks';
+  clearMarksBtn.innerHTML = `<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`;
+  clearMarksBtn.title = TL === 'ru' ? 'Снять метки со слова (Del)' : 'Remove marks (Del)';
+  clearMarksBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     del();
     updateWordPopover();
     updateSidebarPalette();
     updateProgressBar();
   });
-  navActions.appendChild(delBtn);
+  navActions.appendChild(clearMarksBtn);
+
+  const doneBtn = document.createElement('button');
+  doneBtn.type = 'button';
+  doneBtn.className = 'word-nav-btn word-nav-btn-done';
+  doneBtn.innerHTML = `<span>✓</span><span>${TL === 'ru' ? 'Готово' : 'Done'}</span>`;
+  doneBtn.title = TL === 'ru' ? 'Завершить выбор и снять выделение' : 'Done and deselect';
+  doneBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    sel = [];
+    selChanged();
+    popover.style.display = 'none';
+  });
+  navActions.appendChild(doneBtn);
+
+  const closeBtn = document.createElement('button');
+  closeBtn.type = 'button';
+  closeBtn.className = 'word-nav-btn word-nav-btn-del word-nav-btn-close';
+  closeBtn.innerHTML = `<span>✕</span>`;
+  closeBtn.title = TL === 'ru' ? 'Закрыть и снять выделение (Esc)' : 'Close and deselect (Esc)';
+  closeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    sel = [];
+    selChanged();
+    popover.style.display = 'none';
+  });
+  navActions.appendChild(closeBtn);
 
   navEl.appendChild(navActions);
   popover.appendChild(navEl);
@@ -5514,6 +5530,8 @@ function updateWordPopover() {
         doneSubBtn.innerHTML = `<span>✓</span><span>${TL === 'ru' ? 'Готово' : 'Done'}</span>`;
         doneSubBtn.addEventListener('click', (e) => {
           e.stopPropagation();
+          sel = [];
+          selChanged();
           popover.style.display = 'none';
         });
         footerEl.appendChild(doneSubBtn);
@@ -8356,6 +8374,12 @@ async function init() {
     if (aiActions) aiActions.style.display = 'none';
     const viewAi = $('view-ai');
     if (viewAi) viewAi.style.display = 'none';
+    const aiGroup = $('settings-group-ai');
+    if (aiGroup) aiGroup.style.display = 'none';
+    const btnJsonImport = $('btn-json-import');
+    if (btnJsonImport) btnJsonImport.style.display = 'none';
+    const jsonImportOverlay = $('json-import-overlay');
+    if (jsonImportOverlay) jsonImportOverlay.style.display = 'none';
   }
 
   const params = new URLSearchParams(window.location.search);
