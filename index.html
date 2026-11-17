@@ -2,17 +2,51 @@
 <html lang="en" data-env="public">
 <head>
   <meta charset="utf-8">
-  <title>FOMA Sentence Parser (Beta)</title>
+  <title>FOMA Sentence Parser (Beta) — Интерактивный синтаксический разбор предложений</title>
   <link rel="icon" type="image/svg+xml" href="icons/favicon.svg?v=2">
   <link rel="icon" type="image/png" sizes="32x32" href="icons/icon32.png?v=2">
   <link rel="icon" type="image/png" sizes="16x16" href="icons/icon16.png?v=2">
   <link rel="apple-touch-icon" sizes="128x128" href="icons/icon128.png?v=2">
   <link rel="shortcut icon" href="favicon.ico?v=2">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="FOMA Sentence Parser (Beta) — Интерактивный синтаксический разбор предложений английского языка: части речи, части предложения, типы придаточных, видовременные формы глаголов. Автор и разработчик: Nikita Kolyada (foma-creative.com)">
+  <meta name="author" content="Nikita Kolyada, foma-creative.com">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon16.png">
+  <link rel="apple-touch-icon" sizes="128x128" href="icons/icon128.png">
   <link rel="stylesheet" href="parser.css">
+  <script>
+    (function() {
+      // 1. Theme preloader to prevent white flash
+      try {
+        var saved = localStorage.getItem('foma_theme');
+        if (saved) {
+          var t = JSON.parse(saved);
+          if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
+        }
+      } catch (_) {}
+
+      // 2. Anti-inspection & keyboard protection
+      document.addEventListener('contextmenu', function(e) {
+        if (!e.target.matches('textarea, input')) {
+          e.preventDefault();
+        }
+      });
+      document.addEventListener('keydown', function(e) {
+        // Block F12, Ctrl+Shift+I/J/C, Ctrl+U, Ctrl+S
+        if (e.key === 'F12' || 
+            (e.ctrlKey && e.shiftKey && ['I','i','J','j','C','c'].includes(e.key)) ||
+            (e.ctrlKey && ['U','u','S','s'].includes(e.key))) {
+          e.preventDefault();
+          return false;
+        }
+      });
+    })();
+  </script>
 </head>
 <body>
 <div id="top">
-  <!-- ROW 1: BRAND + LAYER FILTERS + ACTIONS -->
+  <!-- ROW 1: NAVIGATION + AI MODEL/TRIGGER + ACTIONS -->
   <div class="top-nav-tabs foma-toolbar-main" id="top-nav-tabs">
     <!-- Left: Modes Switcher -->
     <div class="foma-group">
@@ -26,9 +60,8 @@
           <span class="author-dot">·</span>
           <span class="author-link">foma-creative.com</span>
         </a>
-    </div>
-
-    <!-- Center: Layer Filters & Display Toggles -->
+      </div>
+      <!-- Center: Layer Filters & Display Toggles (Shared across Manual & AI) -->
     <div class="foma-group foma-layers-top" id="top-layer-filters">
       <span class="foma-sub-label" id="top-filter-label">Слои:</span>
       <div id="ai-layer-pills" class="ai-layer-pills"></div>
@@ -36,7 +69,6 @@
 
     <!-- Right: Global Actions & System Controls -->
     <div class="foma-group top-nav-actions">
-
       <!-- History -->
       <button type="button" id="btn-history" class="foma-btn-ghost btn-top-hist" title="Открыть историю предложений">
         <svg viewBox="0 0 24 24" class="ic"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
@@ -57,6 +89,11 @@
       <button type="button" id="btn-theme-toggle" class="foma-btn-ghost foma-btn-icon" title="Переключить тему оформления (Светлая / Тёмная)" aria-label="Toggle theme">
         <svg viewBox="0 0 24 24" class="ic ic-sun" id="ic-theme-sun"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
         <svg viewBox="0 0 24 24" class="ic ic-moon" id="ic-theme-moon" style="display: none;"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+
+      <!-- Zen / Focus Mode (Collapse/Hide all panels) -->
+      <button type="button" id="btn-zen-mode" class="foma-btn-ghost foma-btn-icon" title="Скрыть все панели: режим фокуса (Z)" aria-label="Toggle zen focus mode">
+        <svg viewBox="0 0 24 24" class="ic"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
       </button>
 
       <!-- Language Switcher -->
@@ -81,11 +118,21 @@
         <div class="canvas-main-col">
           <div class="paper" id="wrap">
             <canvas id="cv" role="img" aria-label="Синтаксическая схема предложения (интерактивный разбор)" tabindex="0"></canvas>
+            <!-- Floating restore button when panels are hidden -->
+            <button type="button" id="btn-zen-restore" class="foma-zen-restore-btn" style="display: none;" title="Показать скрытые панели (Z)">
+              <svg viewBox="0 0 24 24" class="ic-xs"><path d="M4 14h6m0 0v6m0-6L3 21m17-7h-6m0 0v6m0-6 7 7M14 4h6m-6 0v6m0-6 7-7M4 10h6m-6 0V4m6 6L3 3"/></svg>
+              <span id="lbl-zen-restore">Показать панели</span>
+            </button>
             <!-- Floating word-anchored popover -->
             <div id="word-popover" class="word-popover" style="display: none;"></div>
             <!-- Word hover details tooltip -->
             <div id="word-hover-tooltip" class="word-hover-tooltip" style="display: none;"></div>
           </div>
+          <!-- Expand sidebar tab when collapsed -->
+          <button type="button" id="btn-expand-sidebar" class="sidebar-expand-tab" title="Показать боковую панель">
+            <svg viewBox="0 0 24 24" class="ic-xs" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;"><polyline points="15 18 9 12 15 6"/></svg>
+            <span id="lbl-expand-sidebar">Панель</span>
+          </button>
         </div>
 
         <div class="bar bar--sidebar" id="sidebar-panel">
@@ -93,16 +140,19 @@
 
           <!-- 2. Selection Group -->
           <div class="sidebar-section">
-            <div class="sidebar-sec-title" id="lbl-sec-selection">Выделение</div>
+            <div class="sidebar-sec-header">
+              <div class="sidebar-sec-title" id="lbl-sec-selection">Выделение</div>
+              <button type="button" id="btn-collapse-sidebar" class="foma-sidebar-close-btn" title="Скрыть боковую панель" aria-label="Collapse sidebar">&times;</button>
+            </div>
             <label class="foma-switch-row" for="multi">
               <span class="switch-label" id="lbl-multi-text">Мульти-выбор</span>
               <input type="checkbox" id="multi" class="foma-switch-input">
               <span class="foma-switch-toggle"></span>
             </label>
-            <label class="foma-switch-row" for="restr" title="Метки можно ставить только на подходящие части речи и члены предложения">
+            <label class="foma-switch-row" for="restr" title="Метки можно ставить только на подходящие части речи и части предложения">
               <span class="switch-label">
                 <span id="lbl-restr-text">Строгий режим</span>
-                <span class="foma-info-tip" title="Метки ставятся только на подходящие части речи и члены предложения">ⓘ</span>
+                <span class="foma-info-tip" title="Метки ставятся только на подходящие части речи и части предложения">ⓘ</span>
               </span>
               <input type="checkbox" id="restr" checked class="foma-switch-input">
               <span class="foma-switch-toggle"></span>
@@ -133,6 +183,7 @@
           <!-- 4. Automation Group -->
           <div class="sidebar-section">
             <div class="sidebar-sec-title" id="lbl-sec-text">Авторасстановка</div>
+            
             <div class="auto-btn-group" id="auto-btn-group" style="width: 100%;">
               <button type="button" id="auto" class="sidebar-row-btn" title="Автоматически расставить выбранные параметры со 100% уверенностью" style="flex:1;">Авто (100%)</button>
               <button type="button" id="btn-auto-config" class="btn-auto-config" title="Настроить параметры авторасстановки"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></button>
@@ -173,6 +224,10 @@
           <svg viewBox="0 0 24 24" class="ic-xs"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
           <span id="lbl-btn-edit-text">Редактировать текст</span>
         </button>
+        <button type="button" id="btn-manual-pull-ai" class="btn-toggle-edit btn-scheme-edit btn-pull-ai" style="display: none;" title="Вставить готовый разбор нейросети на этот холст для редактирования">
+          <svg viewBox="0 0 24 24" class="ic-xs"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          <span id="lbl-btn-pull-ai">Вставить разбор от ИИ</span>
+        </button>
       </div>
 
       <div class="edit collapsed" id="ed" style="display: none;">
@@ -187,9 +242,8 @@
         <div id="tr" class="tr" hidden></div>
       </div>
     </div>
-  </div>
 
-  <!-- TABS ROW / PALETTE DOCK -->
+    <!-- TABS ROW / PALETTE DOCK -->
   <div id="msg" role="status"></div>
   <div class="tabs" id="tabs"></div>
 </div>
@@ -276,6 +330,51 @@
   </div>
 </div>
 
+<!-- ══ JSON Import Modal ══════════════════════════════════════════════ -->
+<div id="json-import-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="json-import-title">
+  <div id="json-import-dialog">
+    <div class="json-import-header">
+      <div>
+        <div id="json-import-title" class="json-import-title">Импорт JSON-разбора от внешнего LLM</div>
+        <div id="json-import-sub" class="json-import-subtitle">Вставьте JSON от ChatGPT / Gemini / Claude — аддон применит его к текущему предложению</div>
+      </div>
+      <button id="json-import-close" class="btn-hist-sec" title="Закрыть">&times;</button>
+    </div>
+
+    <div class="json-import-body">
+      <!-- Schema reference strip -->
+      <div class="json-schema-ref">
+        <div id="json-schema-ref-label" class="json-schema-ref-label">Ожидаемая структура JSON:</div>
+        <pre class="json-schema-pre">{
+  "sentence_type": ["Simple", "Declarative", "Affirmative"],
+  "sentence_parts": [{"words": ["is","passing","by"], "tag": "Predicate"}],
+  "clauses_and_phrases": [{"words": ["without","taking","off"], "tag": "Gerund phrase"}],
+  "tense_voice_mood": [{"words": ["is","passing"], "tags": ["Present","Continuous","Active","Indicative"]}],
+  "part_of_speech": [{"words": ["lad"], "tag": "Noun"}]
+}</pre>
+        <button type="button" id="btn-json-copy-prompt" class="btn-hist-sec json-copy-prompt-btn" title="Скопировать prompt для ChatGPT/Gemini/Claude">
+          Скопировать промпт для LLM
+        </button>
+      </div>
+
+      <!-- Paste area -->
+      <label id="lbl-json-import-ta" class="json-import-label" for="json-import-ta">Вставьте JSON-разбор:</label>
+      <textarea id="json-import-ta" class="json-import-textarea" rows="10"
+        spellcheck="false"
+        placeholder='{"sentence_type": [...], "sentence_parts": [...], ...}'></textarea>
+
+      <div id="json-import-error" class="json-import-error" style="display:none;"></div>
+      <div id="json-import-stats" class="json-import-stats" style="display:none;"></div>
+    </div>
+
+    <div class="json-import-footer">
+      <button type="button" id="btn-json-clear" class="btn-hist-sec">Очистить</button>
+      <div style="flex:1;"></div>
+      <button type="button" id="btn-json-cancel" class="btn-hist-sec">Отмена</button>
+      <button type="button" id="btn-json-apply" class="btn-json-apply pri">Применить разбор</button>
+    </div>
+  </div>
+</div>
 
 <!-- ══ Auto 100% Config Modal ══════════════════════════════════════════════ -->
 <div id="auto-config-overlay" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="auto-config-title">
@@ -383,7 +482,7 @@
 
         <!-- Group 3: Syntax & Verb Forms -->
         <div class="auto-rule-group">
-          <div class="auto-rule-group-title">Члены предложения и залог (Members & Voice)</div>
+          <div class="auto-rule-group-title">Части предложения и залог (Sentence Parts & Voice)</div>
 
           <label class="auto-rule-item">
             <input type="checkbox" id="auto-cfg-passive_voice">
@@ -436,9 +535,106 @@
     </div>
 
     <div class="settings-body">
-      <!-- Section 1: Format of sentence parts -->
+      <!-- Section 1: AI Models & API Keys (Нейросети и API-ключи) -->
+      <div class="settings-group" id="settings-group-ai">
+        <div class="settings-group-title" id="lbl-cfg-ai-title">
+          <svg viewBox="0 0 24 24" class="ic-sm"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83"/></svg>
+          <span id="lbl-cfg-ai-title-text">Нейросети и API-ключи</span>
+        </div>
+        <div class="settings-group-desc" id="lbl-cfg-ai-desc">Выберите сервис и языковую модель для автоматического разбора предложений, а также укажите ваши API-ключи:</div>
+
+        <div class="settings-ai-grid">
+          <!-- Active Provider & Model Row -->
+          <div class="settings-ai-row">
+            <div class="settings-ai-field">
+              <label for="cfg-ai-provider" id="lbl-cfg-ai-provider">Сервис (провайдер)</label>
+              <select id="cfg-ai-provider" class="foma-select">
+                <option value="positionapi">PositionAPI (positionapi.top)</option>
+                <option value="groq">Groq Cloud (Ultra-fast)</option>
+                <option value="openai">OpenAI (Official)</option>
+                <option value="gemini">Google Gemini</option>
+                <option value="custom">Custom (OpenAI-compatible)</option>
+              </select>
+            </div>
+            <div class="settings-ai-field">
+              <label for="cfg-ai-model" id="lbl-cfg-ai-model">Языковая модель</label>
+              <select id="cfg-ai-model" class="foma-select"></select>
+            </div>
+          </div>
+
+          <!-- PositionAPI Card -->
+          <div class="settings-key-card" id="card-key-positionapi">
+            <div class="settings-key-header">
+              <span class="settings-key-name">PositionAPI (positionapi.top)</span>
+              <span class="settings-key-badge badge-none" id="badge-key-positionapi">Не настроен</span>
+            </div>
+            <div class="settings-key-desc" id="lbl-desc-positionapi">Шлюз positionapi.top: GPT-4o, Claude 3.5 Sonnet, DeepSeek Chat, GPT-6 Astra</div>
+            <div class="settings-key-input-row">
+              <input type="password" id="cfg-key-positionapi" class="foma-input settings-key-input" placeholder="sk-…" autocomplete="off" />
+              <button type="button" class="foma-btn-ghost foma-btn-xs btn-toggle-pw" data-target="cfg-key-positionapi" title="Показать/скрыть ключ">👁</button>
+            </div>
+          </div>
+
+          <!-- Groq Card -->
+          <div class="settings-key-card" id="card-key-groq">
+            <div class="settings-key-header">
+              <span class="settings-key-name">Groq Cloud (api.groq.com)</span>
+              <span class="settings-key-badge badge-none" id="badge-key-groq">Не настроен</span>
+            </div>
+            <div class="settings-key-desc" id="lbl-desc-groq">Сверхбыстрый бесплатный инференс моделей gpt-oss-120b, qwen3.8-27b</div>
+            <div class="settings-key-input-row">
+              <input type="password" id="cfg-key-groq" class="foma-input settings-key-input" placeholder="gsk_…" autocomplete="off" />
+              <button type="button" class="foma-btn-ghost foma-btn-xs btn-toggle-pw" data-target="cfg-key-groq" title="Показать/скрыть ключ">👁</button>
+            </div>
+          </div>
+
+          <!-- OpenAI Card -->
+          <div class="settings-key-card" id="card-key-openai">
+            <div class="settings-key-header">
+              <span class="settings-key-name">OpenAI (api.openai.com)</span>
+              <span class="settings-key-badge badge-none" id="badge-key-openai">Не настроен</span>
+            </div>
+            <div class="settings-key-desc" id="lbl-desc-openai">Официальный API OpenAI для моделей gpt-4o, gpt-4o-mini, o3-mini</div>
+            <div class="settings-key-input-row">
+              <input type="password" id="cfg-key-openai" class="foma-input settings-key-input" placeholder="sk-proj-…" autocomplete="off" />
+              <button type="button" class="foma-btn-ghost foma-btn-xs btn-toggle-pw" data-target="cfg-key-openai" title="Показать/скрыть ключ">👁</button>
+            </div>
+          </div>
+
+          <!-- Google Gemini Card -->
+          <div class="settings-key-card" id="card-key-gemini">
+            <div class="settings-key-header">
+              <span class="settings-key-name">Google Gemini (generativelanguage.googleapis.com)</span>
+              <span class="settings-key-badge badge-none" id="badge-key-gemini">Не настроен</span>
+            </div>
+            <div class="settings-key-desc" id="lbl-desc-gemini">Google Gemini API для моделей gemini-2.5-flash, gemini-2.5-pro</div>
+            <div class="settings-key-input-row">
+              <input type="password" id="cfg-key-gemini" class="foma-input settings-key-input" placeholder="AIzaSy…" autocomplete="off" />
+              <button type="button" class="foma-btn-ghost foma-btn-xs btn-toggle-pw" data-target="cfg-key-gemini" title="Показать/скрыть ключ">👁</button>
+            </div>
+          </div>
+
+          <!-- Custom Card -->
+          <div class="settings-key-card" id="card-key-custom">
+            <div class="settings-key-header">
+              <span class="settings-key-name">Custom OpenAI-compatible URL</span>
+              <span class="settings-key-badge badge-none" id="badge-key-custom">Локальный / кастомный</span>
+            </div>
+            <div class="settings-key-desc" id="lbl-desc-custom">Для локальных Ollama / vLLM / LM Studio серверов</div>
+            <div class="settings-key-input-row" style="margin-bottom: 6px;">
+              <input type="text" id="cfg-custom-url" class="foma-input settings-key-input" placeholder="http://localhost:11434/v1" autocomplete="off" />
+            </div>
+            <div class="settings-key-input-row">
+              <input type="password" id="cfg-key-custom" class="foma-input settings-key-input" placeholder="API Key (необязательно)" autocomplete="off" />
+              <button type="button" class="foma-btn-ghost foma-btn-xs btn-toggle-pw" data-target="cfg-key-custom" title="Показать/скрыть ключ">👁</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Format of sentence parts -->
       <div class="settings-group">
-        <div class="settings-group-title" id="lbl-cfg-parts-title">Отображение членов предложения</div>
+        <div class="settings-group-title" id="lbl-cfg-parts-title">Отображение частей предложения</div>
         <div class="settings-group-desc" id="lbl-cfg-parts-desc">Выберите, как оформлять грамматические роли слов на схеме предложения:</div>
         
         <div class="settings-options-list" role="radiogroup" aria-labelledby="lbl-cfg-parts-title">
@@ -466,7 +662,7 @@
               <div class="settings-radio-header">
                 <span class="settings-radio-label" id="lbl-opt-full-name">Словами (полные названия)</span>
               </div>
-              <div class="settings-radio-desc" id="lbl-opt-full-desc">Полные текстовые наименования членов предложения (Predicate, Subject, Direct object)</div>
+              <div class="settings-radio-desc" id="lbl-opt-full-desc">Полные текстовые наименования частей предложения (Predicate, Subject, Direct object)</div>
               <div class="settings-radio-preview">
                 <span class="preview-token">fears</span>
                 <span class="preview-ul ul-solid"></span>
@@ -553,6 +749,66 @@
   </div>
 </div>
 
+<script>
+// Web & GitHub Pages storage bridge: transparently mirrors chrome.storage.local to localStorage
+(function() {
+  if (typeof window === 'undefined') return;
+  window.chrome = window.chrome || {};
+  if (!window.chrome.storage || !window.chrome.storage.local) {
+    window.chrome.storage = window.chrome.storage || {};
+    window.chrome.storage.local = {
+      get: function(keys, callback) {
+        var res = {};
+        var list = [];
+        if (!keys) {
+          for (var i = 0; i < localStorage.length; i++) list.push(localStorage.key(i));
+        } else if (Array.isArray(keys)) {
+          list = keys;
+        } else if (typeof keys === 'string') {
+          list = [keys];
+        } else if (typeof keys === 'object') {
+          list = Object.keys(keys);
+          res = Object.assign({}, keys);
+        }
+        list.forEach(function(k) {
+          try {
+            var raw = localStorage.getItem(k);
+            if (raw !== null) res[k] = JSON.parse(raw);
+          } catch (_) {
+            res[k] = localStorage.getItem(k);
+          }
+        });
+        if (typeof callback === 'function') setTimeout(function() { callback(res); }, 0);
+        return Promise.resolve(res);
+      },
+      set: function(items, callback) {
+        if (items && typeof items === 'object') {
+          Object.keys(items).forEach(function(k) {
+            try {
+              localStorage.setItem(k, JSON.stringify(items[k]));
+            } catch (e) {
+              console.warn('localStorage set failed for', k, e);
+            }
+          });
+        }
+        if (typeof callback === 'function') setTimeout(function() { callback(); }, 0);
+        return Promise.resolve();
+      },
+      remove: function(keys, callback) {
+        var list = Array.isArray(keys) ? keys : [keys];
+        list.forEach(function(k) { try { localStorage.removeItem(k); } catch (_) {} });
+        if (typeof callback === 'function') setTimeout(function() { callback(); }, 0);
+        return Promise.resolve();
+      },
+      clear: function(callback) {
+        try { localStorage.clear(); } catch (_) {}
+        if (typeof callback === 'function') setTimeout(function() { callback(); }, 0);
+        return Promise.resolve();
+      }
+    };
+  }
+})();
+</script>
 <script src="parser.js"></script>
 </body>
 </html>

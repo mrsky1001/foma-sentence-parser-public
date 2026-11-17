@@ -5807,3 +5807,219 @@ h2.sec {
   display: none !important;
 }
 
+/* ─── Zen Focus Mode / Hide Panels ─── */
+.foma-zen-restore-btn {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--card, #ffffff);
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 20px;
+  color: var(--ink, #1e293b);
+  font-size: 11px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  opacity: 0.9;
+}
+
+.foma-zen-restore-btn:hover {
+  opacity: 1;
+  background: var(--hov, #f1f5f9);
+  border-color: var(--acc, #3b83bd);
+  color: var(--acc, #3b83bd);
+  transform: translateY(-1px);
+}
+
+[data-theme="dark"] .foma-zen-restore-btn {
+  background: #1c1c1e;
+  border-color: #38383a;
+  color: #f4f4f5;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .foma-zen-restore-btn:hover {
+  background: #27272a;
+  border-color: #60a5fa;
+  color: #60a5fa;
+}
+
+.foma-sidebar-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--mute, #8a8d9c);
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.foma-sidebar-close-btn:hover {
+  background: var(--hov, #f1f5f9);
+  color: var(--ink, #1e293b);
+}
+
+/* Master Zen Mode: Hide ALL panels except the canvas workspace and word popover */
+body.zen-mode {
+  overflow: hidden !important;
+}
+
+body.zen-mode #top-nav-tabs,
+body.zen-mode #top-progress-bar,
+body.zen-mode #sidebar-panel,
+body.zen-mode #canvas-resizer,
+body.zen-mode #scheme-bottom-bar,
+body.zen-mode #ed,
+body.zen-mode #msg,
+body.zen-mode #tabs,
+body.zen-mode main,
+body.zen-mode footer.footer-floating {
+  display: none !important;
+}
+
+body.zen-mode #top {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  z-index: 9999 !important;
+  background: var(--bg) !important;
+}
+
+body.zen-mode #card {
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+body.zen-mode #view-manual,
+body.zen-mode .canvas-with-sidebar,
+body.zen-mode .canvas-main-col,
+body.zen-mode .paper {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 100vh !important;
+  border-radius: 0 !important;
+}
+
+body.zen-mode .foma-zen-restore-btn {
+  display: inline-flex !important;
+}
+
+/* Individual Sidebar Collapse */
+body.sidebar-collapsed #sidebar-panel {
+  display: none !important;
+}
+
+.sidebar-expand-tab {
+  position: absolute;
+  top: 10px;
+  right: 0;
+  z-index: 40;
+  background: var(--card, #ffffff);
+  border: 1px solid var(--line, #e2e8f0);
+  border-right: none;
+  border-radius: 6px 0 0 6px;
+  padding: 6px 8px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--mute, #8a8d9c);
+  display: none;
+  align-items: center;
+  gap: 4px;
+  box-shadow: -2px 2px 6px rgba(0,0,0,0.06);
+}
+
+body.sidebar-collapsed:not(.zen-mode) .sidebar-expand-tab {
+  display: inline-flex !important;
+}
+
+.sidebar-expand-tab:hover {
+  color: var(--acc, #3b83bd);
+  background: var(--hov, #f1f5f9);
+}
+
+[data-theme="dark"] .sidebar-expand-tab {
+  background: #1c1c1e;
+  border-color: #38383a;
+  color: #a1a1aa;
+}
+
+/* Mobile & Small Screen Adaptability */
+@media (max-width: 768px) {
+  body:not(.zen-mode) .canvas-with-sidebar {
+    flex-direction: column;
+    height: auto;
+    max-height: none;
+  }
+
+  body:not(.zen-mode) .bar.bar--sidebar {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--line);
+    height: auto;
+    max-height: 260px;
+    overflow-y: auto;
+  }
+
+  #top {
+    padding: 6px 8px 0;
+  }
+
+  .brand-name {
+    font-size: 11px;
+  }
+
+  .word-popover {
+    max-width: calc(100vw - 16px) !important;
+  }
+
+  .word-popover-body {
+    max-height: 52vh !important;
+    overflow-y: auto !important;
+  }
+
+  .tabs-view-controls {
+    display: none !important;
+  }
+}
+
+
+/* --- Author & Company Badge (Nikita Kolyada / foma-creative.com) --- */
+.foma-author-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--mute);
+  font-size: 11px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.foma-author-badge:hover {
+  color: var(--ink);
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
