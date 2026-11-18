@@ -75,11 +75,6 @@
         <svg viewBox="0 0 24 24" class="ic ic-moon" id="ic-theme-moon" style="display: none;"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
       </button>
 
-      <!-- Zen / Focus Mode (Collapse/Hide all panels) -->
-      <button type="button" id="btn-zen-mode" class="foma-btn-ghost foma-btn-icon" title="Скрыть все панели: режим фокуса (Z)" aria-label="Toggle zen focus mode">
-        <svg viewBox="0 0 24 24" class="ic"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-      </button>
-
       <!-- Language Switcher -->
       <div class="foma-lang" id="lang">
         <button type="button" data-l="ru" class="active">RU</button>
@@ -103,10 +98,6 @@
           <div class="paper" id="wrap">
             <canvas id="cv" role="img" aria-label="Синтаксическая схема предложения (интерактивный разбор)" tabindex="0"></canvas>
             <!-- Floating restore button when panels are hidden -->
-            <button type="button" id="btn-zen-restore" class="foma-zen-restore-btn" style="display: none;" title="Показать скрытые панели (Z)">
-              <svg viewBox="0 0 24 24" class="ic-xs"><path d="M4 14h6m0 0v6m0-6L3 21m17-7h-6m0 0v6m0-6 7 7M14 4h6m-6 0v6m0-6 7-7M4 10h6m-6 0V4m6 6L3 3"/></svg>
-              <span id="lbl-zen-restore">Показать панели</span>
-            </button>
             <!-- Floating word-anchored popover -->
             <div id="word-popover" class="word-popover" style="display: none;"></div>
             <!-- Word hover details tooltip -->
