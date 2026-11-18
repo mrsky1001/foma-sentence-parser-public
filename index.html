@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="parser.css">
   <script>
     (function() {
-      // 1. Theme preloader to prevent white flash
+      // Theme preloader to prevent white flash
       try {
         var saved = localStorage.getItem('foma_theme');
         if (saved) {
@@ -25,22 +25,6 @@
           if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
         }
       } catch (_) {}
-
-      // 2. Anti-inspection & keyboard protection
-      document.addEventListener('contextmenu', function(e) {
-        if (!e.target.matches('textarea, input')) {
-          e.preventDefault();
-        }
-      });
-      document.addEventListener('keydown', function(e) {
-        // Block F12, Ctrl+Shift+I/J/C, Ctrl+U, Ctrl+S
-        if (e.key === 'F12' || 
-            (e.ctrlKey && e.shiftKey && ['I','i','J','j','C','c'].includes(e.key)) ||
-            (e.ctrlKey && ['U','u','S','s'].includes(e.key))) {
-          e.preventDefault();
-          return false;
-        }
-      });
     })();
   </script>
 </head>
