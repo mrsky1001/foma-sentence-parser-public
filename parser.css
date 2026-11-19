@@ -6035,7 +6035,6 @@ body.sidebar-collapsed:not(.zen-mode) .sidebar-expand-tab {
 [data-env="public"] #dock-drop-indicator,
 [data-env="public"] footer.footer-floating,
 [data-env="public"] #ins,
-[data-env="public"] .word-nav-actions,
 [data-env="public"] .word-nav-btn-layout,
 [data-env="public"] .word-nav-btn-clear-marks,
 [data-env="public"] .word-nav-btn-done,
