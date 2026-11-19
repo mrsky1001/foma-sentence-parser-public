@@ -25,16 +25,76 @@
           if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
         }
       } catch (_) {}
+
+      // Clean up stale zen mode from user's localStorage
+      try {
+        localStorage.removeItem('foma_zen_mode');
+      } catch (_) {}
     })();
   </script>
   <style>
-    /* Public build: sidebar hidden */
+    /* Public build: sidebar, extra buttons and modals hidden */
     #sidebar-panel,
     #btn-expand-sidebar,
-    .sidebar-expand-tab { display: none !important; }
-    /* Stretch canvas to fill without sidebar */
-    .canvas-with-sidebar { display: block !important; }
-    .canvas-main-col { width: 100% !important; max-width: 100% !important; }
+    .sidebar-expand-tab,
+    #btn-history,
+    #btn-tips,
+    #btn-settings,
+    #btn-theme-toggle,
+    #btn-zen-mode,
+    #btn-zen-restore,
+    #lang,
+    #trb,
+    #mode-tabs,
+    #ai-top-controls,
+    #ai-top-actions,
+    #view-ai,
+    #btn-json-import,
+    .modal-overlay,
+    #hist-overlay,
+    #settings-overlay,
+    #json-import-overlay,
+    #auto-config-overlay {
+      display: none !important;
+    }
+
+    /* Stretch canvas to fill 100% without sidebar */
+    .canvas-with-sidebar {
+      display: block !important;
+      grid-template-columns: 1fr !important;
+    }
+    .canvas-main-col {
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+
+    /* Ensure zen-mode never blanks out the screen */
+    body.zen-mode {
+      overflow: auto !important;
+    }
+    body.zen-mode #top {
+      position: static !important;
+      inset: auto !important;
+      width: auto !important;
+      height: auto !important;
+      background: transparent !important;
+      z-index: auto !important;
+    }
+    body.zen-mode #top-nav-tabs,
+    body.zen-mode #top-progress-bar,
+    body.zen-mode #scheme-bottom-bar,
+    body.zen-mode #tabs,
+    body.zen-mode main,
+    body.zen-mode #pane,
+    body.zen-mode footer.footer-floating {
+      display: block !important;
+    }
+    body.zen-mode #scheme-bottom-bar {
+      display: flex !important;
+    }
+    body.zen-mode footer.footer-floating {
+      display: flex !important;
+    }
   </style>
 </head>
 <body>
@@ -62,9 +122,22 @@
 
     <!-- Right: Global Actions & System Controls -->
     <div class="foma-group top-nav-actions">
+      <!-- AI Contextual Action Buttons (visible only in AI mode) -->
+      <div class="foma-ai-actions-group" id="ai-top-actions" style="display: none;">
+        <button type="button" class="foma-btn-primary" id="btn-ai-apply-manual" title="Скопировать результат ИИ в «Мой разбор» для редактирования">
+          <svg viewBox="0 0 24 24" class="ic"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          <span id="lbl-ai-apply-manual">Вставить в «Мой разбор»</span>
+        </button>
 
+        <button type="button" class="foma-btn-ghost" id="btn-ai-copy-img" title="Скопировать изображение разбора ИИ">
+          <svg viewBox="0 0 24 24" class="ic"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+          <span id="lbl-ai-copy-img">Картинка</span>
+        </button>
 
-    </div>
+        <div class="foma-sep"></div>
+      </div>
+
+      </div>
   </div>
 
   <!-- Thin Progress Bar right below header -->
@@ -80,6 +153,10 @@
           <div class="paper" id="wrap">
             <canvas id="cv" role="img" aria-label="Синтаксическая схема предложения (интерактивный разбор)" tabindex="0"></canvas>
             <!-- Floating restore button when panels are hidden -->
+            <button type="button" id="btn-zen-restore" class="foma-zen-restore-btn" style="display: none;" title="Показать скрытые панели (Z)">
+              <svg viewBox="0 0 24 24" class="ic-xs"><path d="M4 14h6m0 0v6m0-6L3 21m17-7h-6m0 0v6m0-6 7 7M14 4h6m-6 0v6m0-6 7-7M4 10h6m-6 0V4m6 6L3 3"/></svg>
+              <span id="lbl-zen-restore">Показать панели</span>
+            </button>
             <!-- Floating word-anchored popover -->
             <div id="word-popover" class="word-popover" style="display: none;"></div>
             <!-- Word hover details tooltip -->
@@ -140,7 +217,10 @@
           <!-- 4. Automation Group -->
           <div class="sidebar-section">
             <div class="sidebar-sec-title" id="lbl-sec-text">Авторасстановка</div>
-            
+            <button type="button" id="btn-json-import" class="sidebar-row-btn" title="Вставить готовый JSON-разбор от ChatGPT / Gemini / Claude">
+              <svg viewBox="0 0 24 24" class="ic-xs"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+              <span id="lbl-btn-import-json">Импорт JSON</span>
+            </button>
             <div class="auto-btn-group" id="auto-btn-group" style="width: 100%;">
               <button type="button" id="auto" class="sidebar-row-btn" title="Автоматически расставить выбранные параметры со 100% уверенностью" style="flex:1;">Авто (100%)</button>
               <button type="button" id="btn-auto-config" class="btn-auto-config" title="Настроить параметры авторасстановки"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></button>
@@ -199,7 +279,86 @@
       </div>
     </div>
 
-    <!-- TABS ROW / PALETTE DOCK -->
+    <!-- VIEW 2: AI FILLED (READ-ONLY) -->
+    <div id="view-ai" class="view-panel" style="display: none;">
+      <!-- ROW 2: View Bar (Depth Granularity + Layer Filters + Full Height) -->
+      <div class="foma-toolbar-sub" id="ai-view-subbar">
+        <div class="foma-group">
+          <!-- Segmented Depth Granularity Switcher -->
+          <div class="foma-seg-sm" id="ai-granularity-switch" role="group" aria-label="Детализация разбора">
+            <button type="button" class="btn-granularity active" id="btn-gran-detailed" title="Подробный аналитический разбор: атрибуты отдельно, ядерное подлежащее отдельно">Детальный</button>
+            <button type="button" class="btn-granularity" id="btn-gran-macro" title="Составной разбор: цельное подлежащее со всеми определениями">Составной</button>
+          </div>
+        </div>
+
+        <div class="foma-group">
+          <button type="button" class="foma-btn-primary foma-btn-sm" id="btn-ai-apply-manual-subbar" title="Скопировать этот разбор в «Мой разбор» для ручной правки">
+            <svg viewBox="0 0 24 24" class="ic"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            <span id="lbl-ai-apply-subbar">Редактировать в Моем разборе</span>
+          </button>
+        </div>
+
+        <div class="foma-group">
+          <button type="button" class="foma-btn-ghost foma-btn-sm" id="btn-ai-toggle-height" title="Развернуть на всю высоту разбора без внутреннего скролла">
+            <svg viewBox="0 0 24 24" class="ic"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+            <span id="lbl-ai-toggle-height">На всю высоту</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div id="ai-loading-state" class="ai-loading-box" style="display: none;">
+        <div class="ai-spinner"></div>
+        <div class="ai-loading-text">
+          <div id="ai-loading-title" style="font-weight: 600; font-size: 14px;">ИИ выполняет синтаксический разбор предложения…</div>
+          <div style="font-size: 12px; color: var(--mute); margin-top: 4px;" id="ai-loading-model-info">Отправка запроса к языковой модели…</div>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div id="ai-error-state" class="ai-error-box" style="display: none;">
+        <div id="ai-error-message" style="color: #ef4444; font-size: 13px; font-weight: 500;"></div>
+        <div class="ai-quick-config" style="margin-top: 10px; display: flex; gap: 8px;">
+          <button type="button" id="btn-ai-retry" class="btn-hist-sec">Повторить попытку</button>
+          <button type="button" id="btn-ai-open-settings" class="btn-hist-sec">Настройки API и модели</button>
+        </div>
+      </div>
+
+      <!-- AI Canvas Area (The exact same form!) -->
+      <div class="paper" id="wrap-ai">
+        <canvas id="cv-ai" role="img" aria-label="Синтаксическая схема предложения (разбор ИИ)" tabindex="0"></canvas>
+      </div>
+
+      <div class="canvas-resizer" id="canvas-resizer-ai" title="Потяните вверх или вниз, чтобы изменить высоту области схемы (двойной клик — сброс)">
+        <div class="canvas-resizer-handle"></div>
+      </div>
+
+      <!-- Linguistic Analysis Summary Card (Cleaned up, no duplicate raw sentence preview) -->
+      <div id="ai-verdict-card" class="ai-verdict-card" style="display: none;">
+        <div class="ai-verdict-header">
+          <div class="ai-verdict-status-line">
+            <div id="ai-verdict-badge" class="ai-verdict-badge">
+              <span id="ai-verdict-status-ready" class="status-ready">✓ Разбор от ИИ готов</span>
+            </div>
+            <div id="ai-parsed-stats" class="ai-parsed-stats" style="font-size: 12px; color: var(--mute);"></div>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button type="button" class="foma-btn-primary foma-btn-xs" id="btn-ai-apply-card" title="Скопировать этот разбор в «Мой разбор» для ручной правки">
+              <svg viewBox="0 0 24 24" class="ic-xs"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <span id="lbl-ai-apply-card">Вставить в «Мой разбор»</span>
+            </button>
+            <button type="button" class="foma-btn-ghost foma-btn-xs" id="btn-ai-copy-text" title="Скопировать исходный текст предложения в буфер обмена">
+              <svg viewBox="0 0 24 24" class="ic-xs"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              <span id="lbl-ai-copy-text">Скопировать текст</span>
+            </button>
+          </div>
+        </div>
+        <div id="ai-verdict-summary" class="ai-verdict-summary"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS ROW / PALETTE DOCK -->
   <div id="msg" role="status"></div>
   <div class="tabs" id="tabs"></div>
 </div>
@@ -225,7 +384,19 @@
   <button id="ins" class="pri btn-copy-close" title="Скопировать изображение в буфер обмена (Ctrl+Enter)">Скопировать и закрыть <kbd>Ctrl+Enter</kbd></button>
 </footer>
 
-<div class="hist-header-sub" id="hist-sub">Сохранённые предложения с быстрым восстановлением на холст</div>
+<div id="hist-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="hist-title">
+  <div id="hist-dialog">
+    <div class="hist-header">
+      <div class="hist-header-info">
+        <div class="hist-header-title-row">
+          <svg class="hist-header-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <h3 id="hist-title">История разборов</h3>
+          <span id="hist-header-count" class="hist-count-badge">0</span>
+        </div>
+        <div class="hist-header-sub" id="hist-sub">Сохранённые предложения с быстрым восстановлением на холст</div>
       </div>
       <button id="hist-close" class="hist-close-btn" title="Закрыть (Esc)" aria-label="Закрыть">&times;</button>
     </div>
@@ -464,7 +635,16 @@
   </div>
 </div>
 
-<div class="settings-subtitle" id="lbl-settings-sub">Формат подписей, режим подчёркиваний и параметры интерфейса</div>
+<!-- Site & Display Settings Modal -->
+<div id="settings-overlay" class="modal-overlay" style="display: none;">
+  <div id="settings-dialog" class="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="settings-header">
+      <div class="settings-title-wrap">
+        <div class="settings-title" id="settings-title">
+          <svg viewBox="0 0 24 24" class="ic-sm"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          <span id="lbl-settings-heading">Настройки синтаксического разбора</span>
+        </div>
+        <div class="settings-subtitle" id="lbl-settings-sub">Формат подписей, режим подчёркиваний и параметры интерфейса</div>
       </div>
       <button type="button" id="btn-settings-close" class="foma-btn-ghost foma-btn-icon" title="Закрыть (Esc)" aria-label="Close">✕</button>
     </div>

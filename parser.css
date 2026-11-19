@@ -6011,6 +6011,69 @@ body.sidebar-collapsed:not(.zen-mode) .sidebar-expand-tab {
   }
 }
 
+/* ════════════════════════════════════════════════════════════════════════════
+   PUBLIC WEB ENVIRONMENT OVERRIDES (data-env="public")
+   ════════════════════════════════════════════════════════════════════════════ */
+[data-env="public"] #sidebar-panel,
+[data-env="public"] #btn-expand-sidebar,
+[data-env="public"] .sidebar-expand-tab,
+[data-env="public"] #btn-history,
+[data-env="public"] #btn-tips,
+[data-env="public"] #btn-settings,
+[data-env="public"] #btn-theme-toggle,
+[data-env="public"] #btn-zen-mode,
+[data-env="public"] #btn-zen-restore,
+[data-env="public"] #lang,
+[data-env="public"] #trb,
+[data-env="public"] #hist-overlay,
+[data-env="public"] #settings-overlay,
+[data-env="public"] #json-import-overlay,
+[data-env="public"] #auto-config-overlay {
+  display: none !important;
+}
+
+[data-env="public"] .canvas-with-sidebar {
+  display: block !important;
+  grid-template-columns: 1fr !important;
+}
+
+[data-env="public"] .canvas-main-col {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Zen mode MUST NEVER turn the screen blank/white in public web */
+[data-env="public"] body.zen-mode {
+  overflow: auto !important;
+}
+
+[data-env="public"] body.zen-mode #top {
+  position: static !important;
+  inset: auto !important;
+  width: auto !important;
+  height: auto !important;
+  background: transparent !important;
+  z-index: auto !important;
+}
+
+[data-env="public"] body.zen-mode #top-nav-tabs,
+[data-env="public"] body.zen-mode #top-progress-bar,
+[data-env="public"] body.zen-mode #tabs,
+[data-env="public"] body.zen-mode main,
+[data-env="public"] body.zen-mode #pane,
+[data-env="public"] body.zen-mode #scheme-bottom-bar,
+[data-env="public"] body.zen-mode footer.footer-floating {
+  display: block !important;
+}
+
+[data-env="public"] body.zen-mode #scheme-bottom-bar {
+  display: flex !important;
+}
+
+[data-env="public"] body.zen-mode footer.footer-floating {
+  display: flex !important;
+}
+
 
 /* --- Author & Company Badge (Nikita Kolyada / foma-creative.com) --- */
 .foma-author-badge {
