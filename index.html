@@ -27,6 +27,14 @@
       } catch (_) {}
     })();
   </script>
+  <style>
+    /* Public build: sidebar hidden */
+    #sidebar-panel,
+    #btn-expand-sidebar,
+    .sidebar-expand-tab { display: none !important; }
+    .canvas-with-sidebar { grid-template-columns: 1fr !important; }
+    .canvas-main-col { width: 100% !important; }
+  </style>
 </head>
 <body>
 <div id="top">
