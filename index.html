@@ -8,7 +8,7 @@
   <link rel="icon" type="image/png" sizes="16x16" href="icons/icon16.png?v=2">
   <link rel="apple-touch-icon" sizes="128x128" href="icons/icon128.png?v=2">
   <link rel="shortcut icon" href="favicon.ico?v=2">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=1100">
   <meta name="description" content="FOMA Sentence Parser (Beta) — Интерактивный синтаксический разбор предложений английского языка: части речи, части предложения, типы придаточных, видовременные формы глаголов. Автор и разработчик: Nikita Kolyada (foma-creative.com)">
   <meta name="author" content="Nikita Kolyada, foma-creative.com">
   <link rel="icon" type="image/png" sizes="32x32" href="icons/icon32.png">
@@ -33,7 +33,7 @@
     })();
   </script>
   <style>
-    /* Public build: sidebar, extra buttons and modals hidden */
+    /* Public build: sidebar, extra buttons, palette dock, translate and modals hidden */
     #sidebar-panel,
     #btn-expand-sidebar,
     .sidebar-expand-tab,
@@ -45,11 +45,19 @@
     #btn-zen-restore,
     #lang,
     #trb,
+    #tr,
+    .tr,
     #mode-tabs,
     #ai-top-controls,
     #ai-top-actions,
     #view-ai,
     #btn-json-import,
+    #tabs,
+    main,
+    #pane,
+    #dock-drop-indicator,
+    footer.footer-floating,
+    #ins,
     .modal-overlay,
     #hist-overlay,
     #settings-overlay,
@@ -82,17 +90,10 @@
     }
     body.zen-mode #top-nav-tabs,
     body.zen-mode #top-progress-bar,
-    body.zen-mode #scheme-bottom-bar,
-    body.zen-mode #tabs,
-    body.zen-mode main,
-    body.zen-mode #pane,
-    body.zen-mode footer.footer-floating {
+    body.zen-mode #scheme-bottom-bar {
       display: block !important;
     }
     body.zen-mode #scheme-bottom-bar {
-      display: flex !important;
-    }
-    body.zen-mode footer.footer-floating {
       display: flex !important;
     }
   </style>
@@ -925,16 +926,5 @@
 })();
 </script>
 <script src="parser.js"></script>
-
-<!-- Mobile block overlay (public) — shown on screens < 900px -->
-<div id="mobile-block-overlay" style="display:none;position:fixed;inset:0;z-index:99999;background:#101010;color:#f1f5f9;font-family:system-ui,-apple-system,sans-serif;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px 24px;gap:16px;">
-  <svg viewBox="0 0 24 24" style="width:48px;height:48px;stroke:#3b83bd;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;margin-bottom:8px;"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-  <h2 style="color:#3b83bd;font-size:20px;margin:0;">FOMA Sentence Parser</h2>
-  <p style="color:#94a3b8;font-size:14px;line-height:1.6;max-width:320px;margin:0;">Интерактивный синтаксический разбор доступен только на десктопе.<br>Пожалуйста, откройте страницу на компьютере.</p>
-  <p style="color:#64748b;font-size:12px;margin:0;">Interactive sentence parsing requires a desktop browser.</p>
-</div>
-<script>
-(function(){function c(){var e=document.getElementById('mobile-block-overlay');if(!e)return;if(window.innerWidth<768){e.style.display='flex';document.body.style.overflow='hidden';}else{e.style.display='none';document.body.style.overflow='';}}c();window.addEventListener('resize',c);})();
-</script>
 </body>
 </html>
