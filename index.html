@@ -32,8 +32,9 @@
     #sidebar-panel,
     #btn-expand-sidebar,
     .sidebar-expand-tab { display: none !important; }
-    .canvas-with-sidebar { grid-template-columns: 1fr !important; }
-    .canvas-main-col { width: 100% !important; }
+    /* Stretch canvas to fill without sidebar */
+    .canvas-with-sidebar { display: block !important; }
+    .canvas-main-col { width: 100% !important; max-width: 100% !important; }
   </style>
 </head>
 <body>
@@ -753,7 +754,7 @@
   <p style="color:#64748b;font-size:12px;margin:0;">Interactive sentence parsing requires a desktop browser.</p>
 </div>
 <script>
-(function(){function c(){var e=document.getElementById('mobile-block-overlay');if(!e)return;if(window.innerWidth<900){e.style.display='flex';document.body.style.overflow='hidden';}else{e.style.display='none';document.body.style.overflow='';}}c();window.addEventListener('resize',c);})();
+(function(){function c(){var e=document.getElementById('mobile-block-overlay');if(!e)return;if(window.innerWidth<768){e.style.display='flex';document.body.style.overflow='hidden';}else{e.style.display='none';document.body.style.overflow='';}}c();window.addEventListener('resize',c);})();
 </script>
 </body>
 </html>
