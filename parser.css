@@ -6042,7 +6042,10 @@ body.sidebar-collapsed:not(.zen-mode) .sidebar-expand-tab {
 [data-env="public"] #hist-overlay,
 [data-env="public"] #settings-overlay,
 [data-env="public"] #json-import-overlay,
-[data-env="public"] #auto-config-overlay {
+[data-env="public"] #auto-config-overlay,
+[data-env="public"] .kbd-badge,
+[data-env="public"] kbd,
+[data-env="public"] .legend-hotkey {
   display: none !important;
 }
 
