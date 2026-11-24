@@ -2,14 +2,14 @@
 <html lang="en" data-env="public">
 <head>
   <meta charset="utf-8">
-  <title>FOMA Sentence Parser (Beta) — Interactive English Sentence Syntax Analyzer</title>
+  <title>FOMA Sentence Parser (Beta) — Интерактивный синтаксический разбор предложений</title>
   <link rel="icon" type="image/svg+xml" href="icons/favicon.svg?v=2">
   <link rel="icon" type="image/png" sizes="32x32" href="icons/icon32.png?v=2">
   <link rel="icon" type="image/png" sizes="16x16" href="icons/icon16.png?v=2">
   <link rel="apple-touch-icon" sizes="128x128" href="icons/icon128.png?v=2">
   <link rel="shortcut icon" href="favicon.ico?v=2">
-  <meta name="viewport" content="width=1100">
-  <meta name="description" content="FOMA Sentence Parser (Beta) — Interactive English sentence syntax analyzer: parts of speech, sentence parts, clause types, verb tenses and aspects. Author & Developer: Nikita Kolyada (foma-creative.com)">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="FOMA Sentence Parser (Beta) — Интерактивный синтаксический разбор предложений английского языка: части речи, части предложения, типы придаточных, видовременные формы глаголов. Автор и разработчик: Nikita Kolyada (foma-creative.com)">
   <meta name="author" content="Nikita Kolyada, foma-creative.com">
   <link rel="icon" type="image/png" sizes="32x32" href="icons/icon32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="icons/icon16.png">
@@ -17,11 +17,6 @@
   <link rel="stylesheet" href="parser.css">
   <script>
     (function() {
-      // Enforce English language in public build
-      try {
-        localStorage.setItem('tl', JSON.stringify('en'));
-      } catch (_) {}
-
       // Theme preloader to prevent white flash
       try {
         var saved = localStorage.getItem('foma_theme');
@@ -38,7 +33,7 @@
     })();
   </script>
   <style>
-    /* Public build: sidebar, extra buttons, palette dock, translate and modals hidden */
+    /* Public build: sidebar, extra buttons and modals hidden */
     #sidebar-panel,
     #btn-expand-sidebar,
     .sidebar-expand-tab,
@@ -50,33 +45,16 @@
     #btn-zen-restore,
     #lang,
     #trb,
-    #tr,
-    .tr,
     #mode-tabs,
     #ai-top-controls,
     #ai-top-actions,
-    #top-layer-filters,
-    .foma-layers-top,
     #view-ai,
     #btn-json-import,
-    #tabs,
-    main,
-    #pane,
-    #dock-drop-indicator,
-    footer.footer-floating,
-    #ins,
-    .word-nav-btn-layout,
-    .word-nav-btn-clear-marks,
-    .word-nav-btn-done,
-    .word-nav-btn-back,
     .modal-overlay,
     #hist-overlay,
     #settings-overlay,
     #json-import-overlay,
-    #auto-config-overlay,
-    .kbd-badge,
-    kbd,
-    .legend-hotkey {
+    #auto-config-overlay {
       display: none !important;
     }
 
@@ -104,10 +82,17 @@
     }
     body.zen-mode #top-nav-tabs,
     body.zen-mode #top-progress-bar,
-    body.zen-mode #scheme-bottom-bar {
+    body.zen-mode #scheme-bottom-bar,
+    body.zen-mode #tabs,
+    body.zen-mode main,
+    body.zen-mode #pane,
+    body.zen-mode footer.footer-floating {
       display: block !important;
     }
     body.zen-mode #scheme-bottom-bar {
+      display: flex !important;
+    }
+    body.zen-mode footer.footer-floating {
       display: flex !important;
     }
   </style>
@@ -119,11 +104,11 @@
     <!-- Left: Modes Switcher -->
     <div class="foma-group">
       <div class="foma-brand-block" id="foma-brand-block">
-        <div class="foma-brand-title" id="foma-brand-title" title="FOMA Sentence Parser — Beta Version">
+        <div class="foma-brand-title" id="foma-brand-title" title="FOMA Sentence Parser — Beta-версия">
           <span class="brand-name">FOMA SENTENCE PARSER</span>
           <span class="beta-badge">BETA</span>
         </div>
-        <a href="https://foma-creative.com" target="_blank" rel="noopener noreferrer" class="foma-brand-author" title="Author & Developer: Nikita Kolyada (foma-creative.com)">
+        <a href="https://foma-creative.com" target="_blank" rel="noopener noreferrer" class="foma-brand-author" title="Автор и разработчик: Nikita Kolyada (foma-creative.com)">
           <span class="author-label">by Nikita Kolyada</span>
           <span class="author-dot">·</span>
           <span class="author-link">foma-creative.com</span>
@@ -156,7 +141,7 @@
   </div>
 
   <!-- Thin Progress Bar right below header -->
-  <div class="top-progress-bar" id="top-progress-bar" title="Sentence parsing progress">
+  <div class="top-progress-bar" id="top-progress-bar" title="Прогресс разметки предложения">
     <div class="top-progress-fill" id="top-progress-fill" style="width: 0%;"></div>
   </div>
 
@@ -166,11 +151,11 @@
       <div class="canvas-with-sidebar" id="canvas-with-sidebar">
         <div class="canvas-main-col">
           <div class="paper" id="wrap">
-            <canvas id="cv" role="img" aria-label="Sentence syntax diagram (interactive parser)" tabindex="0"></canvas>
+            <canvas id="cv" role="img" aria-label="Синтаксическая схема предложения (интерактивный разбор)" tabindex="0"></canvas>
             <!-- Floating restore button when panels are hidden -->
-            <button type="button" id="btn-zen-restore" class="foma-zen-restore-btn" style="display: none;" title="Show hidden panels (Z)">
+            <button type="button" id="btn-zen-restore" class="foma-zen-restore-btn" style="display: none;" title="Показать скрытые панели (Z)">
               <svg viewBox="0 0 24 24" class="ic-xs"><path d="M4 14h6m0 0v6m0-6L3 21m17-7h-6m0 0v6m0-6 7 7M14 4h6m-6 0v6m0-6 7-7M4 10h6m-6 0V4m6 6L3 3"/></svg>
-              <span id="lbl-zen-restore">Show panels</span>
+              <span id="lbl-zen-restore">Показать панели</span>
             </button>
             <!-- Floating word-anchored popover -->
             <div id="word-popover" class="word-popover" style="display: none;"></div>
@@ -266,15 +251,15 @@
           </div>
         </div>
       </div>
-      <div class="canvas-resizer" id="canvas-resizer" title="Drag up or down to resize diagram canvas (double-click to reset)">
+      <div class="canvas-resizer" id="canvas-resizer" title="Потяните вверх или вниз, чтобы изменить высоту области схемы (двойной клик — сброс)">
         <div class="canvas-resizer-handle"></div>
       </div>
 
       <!-- Bottom toolbar under scheme, aligned left -->
       <div class="scheme-bottom-bar" id="scheme-bottom-bar">
-        <button type="button" id="btn-toggle-edit" class="btn-toggle-edit btn-scheme-edit" title="Edit sentence text" aria-expanded="false">
+        <button type="button" id="btn-toggle-edit" class="btn-toggle-edit btn-scheme-edit" title="Редактировать текст предложения" aria-expanded="false">
           <svg viewBox="0 0 24 24" class="ic-xs"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-          <span id="lbl-btn-edit-text">Edit text</span>
+          <span id="lbl-btn-edit-text">Редактировать текст</span>
         </button>
         <button type="button" id="btn-manual-pull-ai" class="btn-toggle-edit btn-scheme-edit btn-pull-ai" style="display: none;" title="Вставить готовый разбор нейросети на этот холст для редактирования">
           <svg viewBox="0 0 24 24" class="ic-xs"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -284,12 +269,12 @@
 
       <div class="edit collapsed" id="ed" style="display: none;">
         <div class="lbl">
-          <span id="lbl-ed-title">Edit sentence</span>
+          <span id="lbl-ed-title">Редактирование текста</span>
           <div style="display: inline-flex; gap: 6px; align-items: center;">
-            <button type="button" id="btn-close-edit" class="btn-close-edit" title="Close sentence editor" style="padding: 2px 7px; color: var(--mute);">&times;</button>
+            <button type="button" id="btn-close-edit" class="btn-close-edit" title="Закрыть редактор текста" style="padding: 2px 7px; color: var(--mute);">&times;</button>
           </div>
         </div>
-        <textarea id="ta" rows="2" spellcheck="false" placeholder="Enter English sentence..." aria-label="Sentence text"></textarea>
+        <textarea id="ta" rows="2" spellcheck="false" placeholder="Введите предложение на английском..." aria-label="Текст предложения"></textarea>
         <div id="tr" class="tr" hidden></div>
       </div>
     </div>
@@ -327,13 +312,22 @@
         <div class="ai-loading-text">
           <div id="ai-loading-title" style="font-weight: 600; font-size: 14px;">ИИ выполняет синтаксический разбор предложения…</div>
           <div style="font-size: 12px; color: var(--mute); margin-top: 4px;" id="ai-loading-model-info">Отправка запроса к языковой модели…</div>
+          <div style="font-size: 12px; color: var(--acc, #3b83bd); font-weight: 600; margin-top: 6px; font-variant-numeric: tabular-nums;" id="ai-loading-timer">0.0 с</div>
         </div>
+        <button type="button" class="foma-btn-ghost foma-btn-xs" id="btn-ai-cancel" style="margin-top: 6px;" title="Остановить ожидание ответа">Отменить</button>
       </div>
 
       <!-- Error State -->
       <div id="ai-error-state" class="ai-error-box" style="display: none;">
         <div id="ai-error-message" style="color: #ef4444; font-size: 13px; font-weight: 500;"></div>
-        <div class="ai-quick-config" style="margin-top: 10px; display: flex; gap: 8px;">
+        <div id="ai-error-key-box" class="ai-error-key-box" style="display: none; margin-top: 12px;">
+          <div style="display: flex; gap: 8px; justify-content: center; align-items: center; max-width: 440px; margin: 0 auto;">
+            <input type="password" id="ai-error-key-input" class="foma-input" placeholder="gsk_…" autocomplete="off" style="flex: 1;" />
+            <button type="button" id="btn-ai-error-save-key" class="foma-btn-primary foma-btn-sm">Сохранить и разобрать</button>
+          </div>
+          <div style="font-size: 11px; color: var(--mute); margin-top: 4px;">Ключ хранится локально в браузере.</div>
+        </div>
+        <div class="ai-quick-config" style="margin-top: 12px; display: flex; gap: 8px; justify-content: center;">
           <button type="button" id="btn-ai-retry" class="btn-hist-sec">Повторить попытку</button>
           <button type="button" id="btn-ai-open-settings" class="btn-hist-sec">Настройки API и модели</button>
         </div>
@@ -396,7 +390,7 @@
     <span class="sp" id="mode"></span>
     <button id="cp" type="button"></button>
   </div>
-  <button id="ins" class="pri btn-copy-close" title="Скопировать изображение в буфер обмена (Ctrl+Enter)">Скопировать и закрыть <kbd>Ctrl+Enter</kbd></button>
+  <button id="ins" class="pri btn-copy-close" title="Скопировать изображение в буфер обмена для Google Docs (Ctrl+Enter)">Скопировать и закрыть <kbd>Ctrl+Enter</kbd></button>
 </footer>
 
 <div id="hist-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="hist-title">
@@ -679,29 +673,15 @@
             <div class="settings-ai-field">
               <label for="cfg-ai-provider" id="lbl-cfg-ai-provider">Сервис (провайдер)</label>
               <select id="cfg-ai-provider" class="foma-select">
-                <option value="positionapi">PositionAPI (positionapi.top)</option>
-                <option value="groq">Groq Cloud (Ultra-fast)</option>
-                <option value="openai">OpenAI (Official)</option>
+                <option value="groq" selected>Groq Cloud (Ultra-fast)</option>
                 <option value="gemini">Google Gemini</option>
+                <option value="openai">OpenAI (Official)</option>
                 <option value="custom">Custom (OpenAI-compatible)</option>
               </select>
             </div>
             <div class="settings-ai-field">
               <label for="cfg-ai-model" id="lbl-cfg-ai-model">Языковая модель</label>
               <select id="cfg-ai-model" class="foma-select"></select>
-            </div>
-          </div>
-
-          <!-- PositionAPI Card -->
-          <div class="settings-key-card" id="card-key-positionapi">
-            <div class="settings-key-header">
-              <span class="settings-key-name">PositionAPI (positionapi.top)</span>
-              <span class="settings-key-badge badge-none" id="badge-key-positionapi">Не настроен</span>
-            </div>
-            <div class="settings-key-desc" id="lbl-desc-positionapi">Шлюз positionapi.top: GPT-4o, Claude 3.5 Sonnet, DeepSeek Chat, GPT-6 Astra</div>
-            <div class="settings-key-input-row">
-              <input type="password" id="cfg-key-positionapi" class="foma-input settings-key-input" placeholder="sk-…" autocomplete="off" />
-              <button type="button" class="foma-btn-ghost foma-btn-xs btn-toggle-pw" data-target="cfg-key-positionapi" title="Показать/скрыть ключ">👁</button>
             </div>
           </div>
 
@@ -940,5 +920,16 @@
 })();
 </script>
 <script src="parser.js"></script>
+
+<!-- Mobile block overlay (public) — shown on screens < 900px -->
+<div id="mobile-block-overlay" style="display:none;position:fixed;inset:0;z-index:99999;background:#101010;color:#f1f5f9;font-family:system-ui,-apple-system,sans-serif;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px 24px;gap:16px;">
+  <svg viewBox="0 0 24 24" style="width:48px;height:48px;stroke:#3b83bd;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;margin-bottom:8px;"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+  <h2 style="color:#3b83bd;font-size:20px;margin:0;">FOMA Sentence Parser</h2>
+  <p style="color:#94a3b8;font-size:14px;line-height:1.6;max-width:320px;margin:0;">Интерактивный синтаксический разбор доступен только на десктопе.<br>Пожалуйста, откройте страницу на компьютере.</p>
+  <p style="color:#64748b;font-size:12px;margin:0;">Interactive sentence parsing requires a desktop browser.</p>
+</div>
+<script>
+(function(){function c(){var e=document.getElementById('mobile-block-overlay');if(!e)return;if(window.innerWidth<768){e.style.display='flex';document.body.style.overflow='hidden';}else{e.style.display='none';document.body.style.overflow='';}}c();window.addEventListener('resize',c);})();
+</script>
 </body>
 </html>

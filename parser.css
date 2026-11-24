@@ -1922,17 +1922,6 @@ footer button.pri:active,
   flex-shrink: 0;
 }
 
-.ic-sm {
-  width: 16px;
-  height: 16px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  flex-shrink: 0;
-}
-
 .ic-xs {
   width: 12px;
   height: 12px;
@@ -2514,6 +2503,23 @@ footer button.pri:active,
   height: 100%;
   background: #94a3b8;
   transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.top-progress-bar.is-ai-loading {
+  display: block !important;
+  height: 3px;
+  background: rgba(59, 131, 189, 0.15) !important;
+}
+
+.top-progress-bar.is-ai-loading .top-progress-fill {
+  width: 40% !important;
+  background: var(--acc, #3b83bd) !important;
+  animation: foma-ai-indeterminate 1.4s infinite ease-in-out;
+}
+
+@keyframes foma-ai-indeterminate {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
 }
 
 /* ── Compact Layer Switchers (3-zone Header) ─────────────────── */
@@ -3451,6 +3457,20 @@ footer button.pri:active,
   pointer-events: none;
 }
 
+.foma-tab.is-loading {
+  position: relative;
+  color: var(--acc, #3b83bd) !important;
+}
+
+.foma-tab.is-loading .tab-ic-loading {
+  display: inline-block !important;
+  color: var(--acc, #3b83bd);
+}
+
+.foma-tab.is-loading .tab-ic-idle {
+  display: none !important;
+}
+
 .ai-loading-text {
   color: var(--ink);
 }
@@ -3461,6 +3481,18 @@ footer button.pri:active,
   text-align: center;
   background: #fff5f5;
   border-bottom: 1px solid #fed7d7;
+}
+
+.ai-error-key-box {
+  background: var(--paper-bg, #ffffff);
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+[data-theme="dark"] .ai-error-key-box {
+  background: #18181b;
+  border-color: #3f3f46;
 }
 
 /* AI Canvas Paper Container */
@@ -6009,86 +6041,6 @@ body.sidebar-collapsed:not(.zen-mode) .sidebar-expand-tab {
   .tabs-view-controls {
     display: none !important;
   }
-}
-
-/* ════════════════════════════════════════════════════════════════════════════
-   PUBLIC WEB ENVIRONMENT OVERRIDES (data-env="public")
-   ════════════════════════════════════════════════════════════════════════════ */
-[data-env="public"] #sidebar-panel,
-[data-env="public"] #btn-expand-sidebar,
-[data-env="public"] .sidebar-expand-tab,
-[data-env="public"] #btn-history,
-[data-env="public"] #btn-tips,
-[data-env="public"] #btn-settings,
-[data-env="public"] #btn-theme-toggle,
-[data-env="public"] #btn-zen-mode,
-[data-env="public"] #btn-zen-restore,
-[data-env="public"] #lang,
-[data-env="public"] #trb,
-[data-env="public"] #tr,
-[data-env="public"] .tr,
-[data-env="public"] #top-layer-filters,
-[data-env="public"] .foma-layers-top,
-[data-env="public"] #tabs,
-[data-env="public"] main,
-[data-env="public"] #pane,
-[data-env="public"] #dock-drop-indicator,
-[data-env="public"] footer.footer-floating,
-[data-env="public"] #ins,
-[data-env="public"] .word-nav-btn-layout,
-[data-env="public"] .word-nav-btn-clear-marks,
-[data-env="public"] .word-nav-btn-done,
-[data-env="public"] .word-nav-btn-back,
-[data-env="public"] #hist-overlay,
-[data-env="public"] #settings-overlay,
-[data-env="public"] #json-import-overlay,
-[data-env="public"] #auto-config-overlay,
-[data-env="public"] .kbd-badge,
-[data-env="public"] kbd,
-[data-env="public"] .legend-hotkey {
-  display: none !important;
-}
-
-[data-env="public"] .canvas-with-sidebar {
-  display: block !important;
-  grid-template-columns: 1fr !important;
-}
-
-[data-env="public"] .canvas-main-col {
-  width: 100% !important;
-  max-width: 100% !important;
-}
-
-/* Zen mode MUST NEVER turn the screen blank/white in public web */
-[data-env="public"] body.zen-mode {
-  overflow: auto !important;
-}
-
-[data-env="public"] body.zen-mode #top {
-  position: static !important;
-  inset: auto !important;
-  width: auto !important;
-  height: auto !important;
-  background: transparent !important;
-  z-index: auto !important;
-}
-
-[data-env="public"] body.zen-mode #top-nav-tabs,
-[data-env="public"] body.zen-mode #top-progress-bar,
-[data-env="public"] body.zen-mode #tabs,
-[data-env="public"] body.zen-mode main,
-[data-env="public"] body.zen-mode #pane,
-[data-env="public"] body.zen-mode #scheme-bottom-bar,
-[data-env="public"] body.zen-mode footer.footer-floating {
-  display: block !important;
-}
-
-[data-env="public"] body.zen-mode #scheme-bottom-bar {
-  display: flex !important;
-}
-
-[data-env="public"] body.zen-mode footer.footer-floating {
-  display: flex !important;
 }
 
 

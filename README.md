@@ -1,7 +1,7 @@
 # FOMA Sentence Parser (Beta)
 
-> **Interactive English Sentence Syntax Tree & Analytical Parser**  
-> Visual sentence diagramming tool for English grammar, syntax trees, parts of speech, and clause analysis.
+> **Интерактивный синтаксический анализатор английских предложений**  
+> Visual English Sentence Syntax Tree & Analytical Parser
 
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live%20Demo-brightgreen)](https://mrsky1001.github.io/foma-sentence-parser-public/)
 [![Version: Beta](https://img.shields.io/badge/Version-Beta-orange)](https://github.com/mrsky1001/foma-sentence-parser-public)
@@ -12,54 +12,62 @@
 
 ---
 
-## 🌐 Live Web Demo
+## 🌐 Онлайн-версия (Live Demo)
 
-The application is ready to use directly in your browser:  
+Веб-приложение доступно и готово к работе прямо в браузере:  
 👉 **[https://mrsky1001.github.io/foma-sentence-parser-public/](https://mrsky1001.github.io/foma-sentence-parser-public/)**
 
 ---
 
-## 💡 About the Project
+## 💡 О проекте
 
-**FOMA Sentence Parser (Beta)** is a visual English sentence syntax trainer and parsing tool designed for students, educators, and linguists.
+**FOMA Sentence Parser (Beta)** — это визуальный синтаксический тренажёр и инструмент разбора английских предложений для студентов, преподавателей и лингвистов.
 
-The tool provides full multi-level syntactic and morphological analysis:
+Приложение позволяет проводить полный многоуровневый синтаксический и морфологический разбор:
 
-### 5 Analytical Layers of Grammatical Parsing
+### 5 аналитических слоев грамматического разбора
 
-1. **Parts of Speech (POS)**: Nouns, Pronouns, Articles, Adjectives, Verbs, Prepositions, Conjunctions, Particles, Numerals, Interjections, Determiners.
-2. **Sentence Parts**: Subject, Predicate, Simple verbal predicate, Predicative, Direct object, Indirect object, Prepositional object, Attribute, Apposition, Adverbial modifiers (Time, Place, Manner, Cause, Purpose, Degree, Frequency, Concession), Introductory elements, Address.
-3. **Clauses & Phrases**: Main clause, Subject clauses, Predicative clauses, Object clauses, Attributive clauses, Adverbial clauses, Participial & Gerundial phrases.
-4. **Verb Tense, Aspect & Voice**: Simple / Continuous / Perfect / Perfect Continuous; Active / Passive Voice; Modal verbs and moods.
-5. **Sentence Types & Structure**: Simple / Compound / Complex / Compound-Complex; Declarative / Interrogative / Imperative / Exclamatory; Affirmative / Negative.
-
----
-
-## 🎨 Themes (Light & Dark)
-
-Full support for dual themes with automatic persistence:
-- **☀️ Light Theme (FOMA Calm Light)** — High-contrast paper canvas optimized for comfortable reading.
-- **🌙 Dark Theme (Antigravity Neutral Dark)** — Deep neutral palette (`#101010` background, `#18181b` cards, `#27272a` borders, steel azure accent `#3B83BD`).
+1. **Части речи (Parts of Speech — POS)**: существительные, местоимения, артикли, прилагательные, глаголы, предлоги, союзы, частицы, междометия.
+2. **Части предложения (Sentence Parts)**: подлежащее (*Subject*), сказуемое (*Predicate*), простое глагольное сказуемое (*Simple verbal*), предикатив (*Predicative*), дополнения (*Direct, Indirect, Prepositional Object*), определения (*Attribute*), обстоятельства (*Adverbial modifier: Time, Place, Manner, Cause, Purpose, Degree, Concession*), вводные элементы (*Introductory element*), обращения (*Address*).
+3. **Типы придаточных предложений (Clauses)**: главное (*Main clause*), придаточные подлежащные (*Subject*), сказуемные (*Predicative*), дополнительные (*Object*), определительные (*Attributive*), обстоятельственные (*Adverbial*).
+4. **Видовременные формы глаголов (Verb Tenses, Aspect, Voice)**: Indefinite / Continuous / Perfect / Perfect Continuous; Active / Passive Voice; модальные глаголы.
+5. **Тип предложения и коммуникативная цель (Sentence Types — ST)**: Simple / Compound / Complex / Compound-Complex; Declarative / Interrogative / Imperative / Exclamatory; Affirmative / Negative.
 
 ---
 
-## ⚡ Key Features
+## 🎨 Темы оформления (Light & Dark)
 
-- **Interactive Graphic Canvas (HTML5 Canvas)**: Word selection with mouse or click, visual brackets, sentence part underlines, connection lines, layer color coding.
-- **Auto Engine (100% Invariants)**: Instant automatic markup of unambiguous grammatical patterns and structures.
-- **Export in 1 Click**: Instant high-resolution diagram export to clipboard (`Ctrl+Enter`) for Google Docs, Word, or presentations.
-- **100% Client-Side Privacy**: Runs purely in your browser with zero telemetry or data collection.
+В сервисе реализована поддержка двух полноценных тем с автоматическим сохранением выбора:
+- **☀️ Светлая тема (FOMA Calm Light)** — нейтральный контрастный холст, оптимизированный для комфортного чтения.
+- **🌙 Тёмная тема (Antigravity Neutral Dark)** — глубокая нейтральная палитра (`#101010` фон, `#18181b` карточки, `#27272a` границы, лазурный акцент `#3B83BD`).
 
 ---
 
-## 👨‍💻 Author & Developer
+## ⚡ Ключевые возможности
 
-- **Author & Lead Developer**: **Nikita Kolyada**
-- **Organization / Studio**: **[foma-creative.com](https://foma-creative.com)**
+- **Интерактивный графический холст (HTML5 Canvas)**: быстрое выделение слов мышью, визуальные скобки, подчёркивания частей предложения, линии связи, цветовое кодирование по слоям.
+- **Движок инвариантов Auto (100%)**: мгновенная автоматическая разметка однозначных грамматических структур.
+- **Режим фокуса (Zen Mode)**: полное скрытие панелей по клавише `Z` для работы с текстом и поповером на 100% экрана.
+- **Экспорт в 1 клик**: мгновенное копирование готовой схемы высокого разрешения в буфер обмена (`Ctrl+Enter`) для Google Docs или Word.
+- **История предложений**: локальное сохранение всех разобранных предложений с поиском и фильтрацией.
+
+---
+
+## 🔒 Безопасность и конфиденциальность (100% Client-Side)
+
+- **Полная автономность**: приложение работает исключительно на стороне клиента в вашем браузере.
+- **Zero-Telemetry**: никаких внешних трекеров, систем аналитики или сбора пользовательских данных.
+
+---
+
+## 👨‍💻 Автор и разработчик
+
+- **Автор и ведущий разработчик**: **Nikita Kolyada**
+- **Компания**: **[foma-creative.com](https://foma-creative.com)**
 - **GitHub**: [@mrsky1001](https://github.com/mrsky1001)
 
 ---
 
-## 📄 License
+## 📄 Лицензия
 
-This project is distributed under the MIT License. See [LICENSE](LICENSE) for details.
+Проект распространяется под лицензией MIT. Подробности в файле [LICENSE](LICENSE).
